@@ -1,0 +1,8 @@
+SigninLogs  
+| where CreatedDateTime >= ago(30d)
+| extend errorCode = toint(Status.errorCode)
+| extend displayName = tostring(DeviceDetail.displayName)
+| extend trustType = tostring(DeviceDetail.trustType)
+| where AppDisplayName == 'Windows Sign In'
+| where errorCode == 0
+| distinct UserPrincipalName,displayName, trustType
