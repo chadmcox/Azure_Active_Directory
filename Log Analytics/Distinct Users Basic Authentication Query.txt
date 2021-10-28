@@ -34,4 +34,4 @@ SigninLogs
 | extend OS = tostring(DeviceDetail.operatingSystem)
 | extend Browser = tostring(DeviceDetail.browser)
 | extend User = UserDisplayName
-| distinct   User, UserPrincipalName, AppDisplayName, ClientAppUsed, isLegacyAuth, OS, UserAgent
+| distinct   User, UserPrincipalName, SigninStatus, AppDisplayName, ClientAppUsed, isLegacyAuth, OS, UserAgent
