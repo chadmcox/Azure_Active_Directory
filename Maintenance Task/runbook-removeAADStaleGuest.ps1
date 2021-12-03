@@ -32,7 +32,7 @@ This script will remove guest that have not logged on in x number of days.
 #this is the number of days a guest account has to accept before, they are considered to be deleted.
 $notsignedonindays = 120
 #this is a standard theshold, only the number provided below will be returned and deleted.
-$removalthreshold = 3
+$removalthreshold = 250
 
 $today = get-date
 
