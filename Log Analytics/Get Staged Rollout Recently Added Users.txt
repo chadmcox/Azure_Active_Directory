@@ -5,3 +5,13 @@ AuditLogs
 | mv-expand TargetResources
 | extend Target = tostring(TargetResources.userPrincipalName)
 | project Target
+
+
+
+#this will list the users removed from staged rollout
+AuditLogs
+| where ActivityDateTime >= ago(17h)
+| where ActivityDisplayName == "Remove user from feature rollout"
+| mv-expand TargetResources
+| extend Target = tostring(TargetResources.userPrincipalName)
+| project Target, ActivityDateTime
