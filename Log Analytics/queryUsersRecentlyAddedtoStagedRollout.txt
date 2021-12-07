@@ -1,0 +1,7 @@
+#this just goest back last 4 hours
+AuditLogs
+| where ActivityDateTime >= ago(4h)
+| where ActivityDisplayName == "Add user to feature rollout"
+| mv-expand TargetResources
+| extend Target = tostring(TargetResources.userPrincipalName)
+| project Target
