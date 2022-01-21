@@ -23,7 +23,7 @@ from the use or distribution of the Sample Code..
 .DESCRIPTION
 this script will connect to a GCC High Tenant and retrieve all users
 #>
-
+cd $env:USERPROFILE
 connect-mggraph -scopes "User.ReadBasic.All", "User.Read.All", "Directory.Read.All", "Directory.AccessAsUser.All", "AuditLog.Read.All" -Environment USGov
 
 function list-AllAADUsers{
