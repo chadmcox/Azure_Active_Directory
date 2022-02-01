@@ -1,4 +1,5 @@
 AuditLogs
+| where TimeGenerated > ago (180d)
 | where OperationName == "Admin updated security info"
 | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
 | extend Target = tostring(TargetResources[0].userPrincipalName)
