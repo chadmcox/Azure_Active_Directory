@@ -10,4 +10,7 @@ with(format="csv")
 | distinct ip
 );
 SigninLogs
+| where CreatedDateTime >= ago(30d)
 | where IPAddress in (BlockList)
+| extend DevicetrustType = tostring(DeviceDetail.trustType)
+| project TimeGenerated, AlternateSignInName, OperationName, Category, ResultType, ResultDescription, AppDisplayName, AuthenticationRequirement, IPAddress, DevicetrustType
