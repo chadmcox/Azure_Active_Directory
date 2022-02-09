@@ -1,6 +1,3 @@
-#Requires -Modules Az.Accounts
-<#
-.VERSION 2021.12.9
 .GUID 18c37c40-e24d-4524-8c78-607d6969cb6e
 .AUTHOR Chad.Cox@microsoft.com
     https://blogs.technet.microsoft.com/chadcox/ (retired)
@@ -42,7 +39,7 @@ function query-msgraphapi{
 }
 
 $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime"
-query-msgraphapi -uri $uri | select  displayName,userPrincipalName,userType,externalUserState,externalUserStateChangeDateTime,creationType,`
-    createdDateTime,accountEnabled,onPremisesSyncEnabled, @{Name="lastSignInDateTime";Expression={$_.signInActivity.lastSignInDateTime}},Mail, `
+query-msgraphapi -uri $uri | select  displayName,userPrincipalName,userType,externalUserState,@{Name="externalUserStateChangeDateTime";Expression={(get-date $_.externalUserStateChangeDateTime).tostring('yyyy-MM-dd')}},creationType,`
+    @{Name="createdDateTime";Expression={(get-date $_.createdDateTime).tostring('yyyy-MM-dd')}},accountEnabled,onPremisesSyncEnabled, @{Name="lastSignInDateTime";Expression={(get-date $_.signInActivity.lastSignInDateTime).tostring('yyyy-MM-dd')}},Mail, `
         @{Name="Domain";Expression={($_.mail -split("@"))[1]}} | export-csv "$defaultpath\aad_guests.csv" -NoTypeInformation
 write-host "Results can be found here: $defaultpath\aad_guests.csv"
