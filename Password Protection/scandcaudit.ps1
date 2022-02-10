@@ -16,4 +16,4 @@ Get-ADForest | select -ExpandProperty domains -pv domain | foreach{
             else{$event.id}}}
         }
     }
-}  | export-csv "$env:USERPROFILE\found_10025.csv" -notypeinformation
+}  | export-csv "$env:USERPROFILE\password_protection_results.csv" -notypeinformation
