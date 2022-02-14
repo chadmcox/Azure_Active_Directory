@@ -1,0 +1,4 @@
+SigninLogs
+| where ResultType == "0"
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))| distinct IPAddress, TrustedLocation, UserPrincipalName
+| summarize count = count() by IPAddress, TrustedLocation
