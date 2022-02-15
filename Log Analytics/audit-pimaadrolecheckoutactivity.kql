@@ -1,0 +1,20 @@
+let AADActivity = AuditLogs
+| where ActivityDisplayName <> 'Add member to role completed (PIM activation)'
+| extend activitytime = bin(TimeGenerated,1h)
+| extend fromazure = TimeGenerated
+| extend Caller = tostring(InitiatedBy.user.userPrincipalName)
+| extend aadOperationName = tostring(OperationName)
+| distinct Caller, activitytime, Result, aadOperationName, fromazure;
+let pimlogs = AuditLogs
+| where ActivityDisplayName == 'Add member to role completed (PIM activation)'
+| where Category == "RoleManagement"
+| extend ExpirationTime = todatetime(iff(AdditionalDetails[4].key == 'ExpirationTime', AdditionalDetails[4].value, iff(AdditionalDetails[3].key == 'ExpirationTime', AdditionalDetails[3].value,iff(AdditionalDetails[2].key == 'ExpirationTime', AdditionalDetails[2].value,""))))
+| extend Caller = tostring(InitiatedBy.user.userPrincipalName)
+| extend Role = tostring(TargetResources[0].displayName)
+| extend Resource = tostring(TargetResources[3].displayName)
+| extend activitytime = range(bin(TimeGenerated,1h),bin(ExpirationTime,1h),1h)
+| mv-expand activitytime to typeof(datetime)
+| where Caller <> ""
+| project Caller, TimeGenerated, ExpirationTime,activitytime, Role, Resource, OperationName, Identity, ResultReason;
+pimlogs
+| join kind=inner (AADActivity) on Caller, activitytime
