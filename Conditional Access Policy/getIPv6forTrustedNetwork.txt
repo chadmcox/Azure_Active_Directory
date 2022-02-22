@@ -1,0 +1,29 @@
+//in log analytics run the following kql to get the list of ipv6 addresses
+let timerange=8d;
+AADNonInteractiveUserSignInLogs
+| where TimeGenerated > ago(timerange)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| extend isIPv6 = tostring(iff(IPAddress matches regex @"(([\d|\w]{1,4}\:){7}[\d|\w]{1,4})",'Yes','No'))
+| where TrustedLocation <> "trustedNamedLocation"
+| where isIPv6 == 'Yes'
+| distinct IPAddress, TrustedLocation, UserPrincipalName, isIPv6, AppDisplayName
+| summarize count = count() by IPAddress
+| extend test = extract(@"(([\d|\w]{1,4}\:){2})", 1, IPAddress)
+| distinct test
+
+//export this out to a csv
+//The following powershell can be used to build the final list
+//----------------------------------------------------------------------------
+import-csv .\ipv6.csv | foreach{
+    if(((($_.test -split(":"))[1]).ToCharArray()).count -eq 4){
+        "$($_.test):/32"
+    }elseif(((($_.test -split(":"))[1]).ToCharArray()).count -eq 3){
+        "$($_.test):/28"
+    }elseif(((($_.test -split(":"))[1]).ToCharArray()).count -eq 2){
+        "$($_.test):/24"
+    }
+    elseif(((($_.test -split(":"))[1]).ToCharArray()).count -eq 1){
+        "$($_.test):/20"
+    }
+    
+} | Add-Content .\ipv6list.txt
