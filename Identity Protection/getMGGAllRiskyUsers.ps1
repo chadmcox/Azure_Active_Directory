@@ -1,3 +1,18 @@
+<#
+.GUID 18c37c40-e24d-4524-8c78-607d6969cb6e
+.AUTHOR Chad.Cox@microsoft.com
+    https://blogs.technet.microsoft.com/chadcox/ (retired)
+    https://github.com/chadmcox
+.Disclaimer
+Use at your own risk
+
+.Description
+This script is going to create a report to view current risky users.
+
+Once research consider using the link to the other script to flush out older risky users
+https://github.com/chadmcox/Azure_Active_Directory_Scripts/blob/master/Identity%20Protection/dismissMGAIPRiskyUsers.ps1
+#>
+
 Connect-MgGraph -Scopes "Policy.Read.All","Reports.Read.All","AuditLog.Read.All","Directory.Read.All","Directory.Read.All","User.Read.All","AuditLog.Read.All","IdentityRiskyUser.Read.All","IdentityRiskEvent.Read.All"
 
 function getAADRiskyUsers{
@@ -22,4 +37,4 @@ function getAADRiskyUsers{
 }
 
 
-getAADRiskyUsers
+getAADRiskyUsers | export-csv .\azuread_riskyusers.csv -notypeinformation
