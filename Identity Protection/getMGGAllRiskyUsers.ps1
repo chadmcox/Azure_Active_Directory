@@ -18,6 +18,7 @@ Connect-MgGraph -Scopes "Policy.Read.All","Reports.Read.All","AuditLog.Read.All"
 function getAADRiskyUsers{
     [cmdletbinding()] 
     param()
+$uri = "https://graph.microsoft.com/beta/riskyUsers"
     do{$results = $null
         for($i=0; $i -le 3; $i++){
             try{
