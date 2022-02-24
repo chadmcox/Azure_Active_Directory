@@ -1,3 +1,4 @@
+#Requires -module Microsoft.Graph.Authentication
 <#
 .GUID 18c37c40-e24d-4524-8c78-607d6969cb6e
 .AUTHOR Chad.Cox@microsoft.com
