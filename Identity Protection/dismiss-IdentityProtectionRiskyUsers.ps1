@@ -1,6 +1,6 @@
 #Requires -module Microsoft.Graph.Authentication
 <#
-.GUID 18c37c40-e24d-4524-8c78-607d6969cb6e
+.GUID 18c37c40-e24d-4534-8c78-607d6969cb6e
 .AUTHOR Chad.Cox@microsoft.com
     https://blogs.technet.microsoft.com/chadcox/ (retired)
     https://github.com/chadmcox
@@ -13,13 +13,13 @@ and will dismiss them based on critieria
 The default critiria is older than 120 days and are low and medium risk.
 
 #>
-
-$riskolderthanindays = 120 #in days
-$risklevel = "low","medium" #low, medium, high
-$log = ".\dismissedriskyuser.log"
+param($resultslocation = "$env:USERPROFILE\Downloads",
+$riskolderthanindays = 120, #in days
+$risklevel = @("low","medium"), #low, medium, high
+$log = ".\dismissedriskyuser.log")
 
 Connect-MgGraph -Scopes "Policy.Read.All","Reports.Read.All","AuditLog.Read.All","Directory.Read.All","Directory.Read.All","User.Read.All","AuditLog.Read.All","IdentityRiskyUser.Read.All","IdentityRiskEvent.Read.All","IdentityRiskyUser.ReadWrite.All"
-
+cd $resultslocation
 function getAADRiskyUsers{
     [cmdletbinding()] 
     param()
@@ -71,4 +71,4 @@ getAADRiskyUsers -pv riskyuser | where {((New-TimeSpan -Start $_.riskLastUpdated
     dismissRiskyUsers -user $riskyuser
 }
 
-write-host "Log file can be found here $log"
+write-host "Log file can be found here cd $resultslocation"
