@@ -1,0 +1,5 @@
+SigninLogs 
+| where CreatedDateTime >= ago(30d)
+| where AuthenticationProcessingDetails contains "ADAL"
+| distinct AppDisplayName, UserPrincipalName
+| summarize Count=count() by AppDisplayName
