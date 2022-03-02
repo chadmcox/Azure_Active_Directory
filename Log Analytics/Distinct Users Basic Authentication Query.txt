@@ -39,7 +39,7 @@ SigninLogs
 
 
 ----------------------------------------------------------
-//This works to get the same data.
+//This works to get the same data. but from the noninteractive logs.
 ----------------------------------------------------------
 AADNonInteractiveUserSignInLogs
 | where CreatedDateTime >= ago(7d)
