@@ -34,7 +34,7 @@ SigninLogs
 | extend OS = tostring(DeviceDetail.operatingSystem)
 | extend Browser = tostring(DeviceDetail.browser)
 | extend User = UserDisplayName
-| distinct   User, UserPrincipalName, SigninStatus, AppDisplayName, ClientAppUsed, isLegacyAuth, OS, UserAgent
+| distinct   User, UserPrincipalName, SigninStatus, Browser, AppDisplayName, ClientAppUsed, isLegacyAuth, OS, UserAgent
 
 
 
@@ -80,4 +80,4 @@ AADNonInteractiveUserSignInLogs
 | extend Browser = tostring(newDeviceDetail.browser)
 | extend User = UserDisplayName
 | where errorCode == 0
-| distinct   User, UserPrincipalName, SigninStatus, AppDisplayName, ClientAppUsed, isLegacyAuth, OS, UserAgent
+| distinct   User, UserPrincipalName, SigninStatus, Browser, AppDisplayName, ClientAppUsed, isLegacyAuth, OS, UserAgent
