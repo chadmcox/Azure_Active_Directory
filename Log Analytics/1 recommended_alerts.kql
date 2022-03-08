@@ -2,25 +2,49 @@
 //BreakGlass Accounts logged in
 
 //Audit logs
-ActivityDisplayName eq 'Enable passthrough authentication'
+//ActivityDisplayName eq 'Enable passthrough authentication'
+AuditLogs
+| where OperationName == "Enable passthrough authentication"
 
-ActivityDisplayName eq 'Set DirSync feature'
+//ActivityDisplayName eq 'Set DirSync feature'
+AuditLogs
+| where OperationName == "Set DirSync feature"
 
-ActivityDisplayName eq 'Register connector'
+//ActivityDisplayName eq 'Register connector'
+AuditLogs
+| where OperationName == "Register connector"
 
-ActivityDisplayName eq 'Set domain authentication'
+//ActivityDisplayName eq 'Set domain authentication'
+AuditLogs
+| where OperationName == "Set domain authentication"
 
-ActivityDisplayName eq 'Set federation settings on domain'
+//ActivityDisplayName eq 'Set federation settings on domain'
+AuditLogs
+| where OperationName == "Set federation settings on domain"
 
-ActivityDisplayName eq 'Set password policy'
+//ActivityDisplayName eq 'Set password policy'
+AuditLogs
+| where OperationName == "Set password policy"
 
-ActivityDisplayName eq 'Enable password writeback for directory'
+//ActivityDisplayName eq 'Enable password writeback for directory'
+AuditLogs
+| where OperationName == "Enable password writeback for directory"
 
-ActivityDisplayName eq 'Add role definition'
+//ActivityDisplayName eq 'Add role definition'
+AuditLogs
+| where OperationName == "Add role definition"
 
-Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role'
-
-Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role outside of PIM (permanent)'
+//Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role'
+//Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role outside of PIM (permanent)'
+AuditLogs
+| where OperationName in ("Add member to role","Add eligible member to role","Add member to role outside of PIM (permanent)")
+| where Result == "success"
+| extend Objecttype = tostring(TargetResources[0].type)
+| extend User = tostring(TargetResources[0].userPrincipalName)
+| extend Role = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend UserWhoAdded = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| where Objecttype == "User"
+| project TimeAdded=TimeGenerated, User, Role, UserWhoAdded, Objecttype
 
 //ActivityDisplayName eq 'Add conditional access policy'
 //ActivityDisplayName eq 'Update conditional access policy'
