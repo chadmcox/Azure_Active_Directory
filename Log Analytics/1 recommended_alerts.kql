@@ -61,8 +61,9 @@ AuditLogs
 | extend Objecttype = tostring(TargetResources[0].type)
 | extend User = tostring(TargetResources[0].userPrincipalName)
 | extend Role = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
-| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
 | where Objecttype == "User"
+| where Actor <> "MS-PIM"
 | project TimeAdded=TimeGenerated, User, Role, Actor, Objecttype
 
 //ActivityDisplayName eq 'Add conditional access policy'
