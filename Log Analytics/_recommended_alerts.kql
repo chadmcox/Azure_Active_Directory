@@ -1,0 +1,39 @@
+//Sign-in Logs
+//BreakGlass Accounts logged in
+
+//Audit logs
+ActivityDisplayName eq 'Enable passthrough authentication'
+
+ActivityDisplayName eq 'Set DirSync feature'
+
+ActivityDisplayName eq 'Register connector'
+
+ActivityDisplayName eq 'Set domain authentication'
+
+ActivityDisplayName eq 'Set federation settings on domain'
+
+ActivityDisplayName eq 'Set password policy'
+
+ActivityDisplayName eq 'Enable password writeback for directory'
+
+ActivityDisplayName eq 'Add role definition'
+
+Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role'
+
+Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role outside of PIM (permanent)'
+
+ActivityDisplayName eq 'Add conditional access policy'
+
+ActivityDisplayName eq 'Update conditional access policy'
+
+Category eq 'ApplicationManagement' and OperationType eq 'Update'
+
+ActivityDisplayName eq 'Add service principal credentials'
+
+ActivityDisplayName eq 'Add member to group'
+
+ActivityDisplayName eq 'Add user'
+
+ActivityDisplayName eq 'Add app role assignment to service principal'
+
+ActivityDisplayName eq 'Add app role assignment grant to user'
