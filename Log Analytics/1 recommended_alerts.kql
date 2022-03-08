@@ -61,22 +61,26 @@ AuditLogs
 AuditLogs
 | where OperationName == "n"
 
-ActivityDisplayName eq 'Add service principal credentials'
+//ActivityDisplayName eq 'Add service principal credentials'
 AuditLogs
 | where OperationName == "Add service principal credentials"
 
-ActivityDisplayName eq 'Add member to group'
+//ActivityDisplayName eq 'Add member to group'
 AuditLogs
 | where OperationName == "Add member to group"
 
-ActivityDisplayName eq 'Add user'
+//ActivityDisplayName eq 'Add user'
 AuditLogs
 | where OperationName == "Add user"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| where Actor !contains "Sync_"
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| project TimeGenerated, OperationName, Actor, Target
 
-ActivityDisplayName eq 'Add app role assignment to service principal'
+//ActivityDisplayName eq 'Add app role assignment to service principal'
 AuditLogs
 | where OperationName == "Add app role assignment to service principal"
 
-ActivityDisplayName eq 'Add app role assignment grant to user'
+//ActivityDisplayName eq 'Add app role assignment grant to user'
 AuditLogs
 | where OperationName == "Add app role assignment grant to user"
