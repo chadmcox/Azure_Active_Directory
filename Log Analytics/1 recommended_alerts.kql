@@ -84,6 +84,11 @@ AuditLogs
 //ActivityDisplayName eq 'Add member to group'
 AuditLogs
 | where OperationName == "Add member to group"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| extend group =  tostring(TargetResources[0].modifiedProperties[1].newValue)
+| where Actor !contains "Sync_"
+| distinct TimeGenerated, OperationName, Actor, Target, group
 
 //ActivityDisplayName eq 'Add user'
 AuditLogs
