@@ -22,9 +22,13 @@ Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role'
 
 Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role outside of PIM (permanent)'
 
-ActivityDisplayName eq 'Add conditional access policy'
-
-ActivityDisplayName eq 'Update conditional access policy'
+//ActivityDisplayName eq 'Add conditional access policy'
+//ActivityDisplayName eq 'Update conditional access policy'
+AuditLogs
+| where OperationName == "Add conditional access policy" or OperationName == "Update conditional access policy"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ConditionalAccessPolicy = tostring(TargetResources[0].displayName)
+| project TimeGenerated, Actor, OperationName, ConditionalAccessPolicy, Result, AADOperationType
 
 Category eq 'ApplicationManagement' and OperationType eq 'Update'
 
