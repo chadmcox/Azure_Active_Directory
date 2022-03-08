@@ -1,5 +1,8 @@
 //Sign-in Logs
 //BreakGlass Accounts logged in
+SigninLogs
+| project UserId,UserPrincipalName, Location, SourceSystem, TimeGenerated, IPAddress
+| where UserPrincipalName in ('breakglass@contoso.com','breakglass2@contoso.com')
 
 //Audit logs
 //ActivityDisplayName eq 'Enable passthrough authentication'
@@ -54,14 +57,26 @@ AuditLogs
 | extend ConditionalAccessPolicy = tostring(TargetResources[0].displayName)
 | project TimeGenerated, Actor, OperationName, ConditionalAccessPolicy, Result, AADOperationType
 
-Category eq 'ApplicationManagement' and OperationType eq 'Update'
+//Category eq 'ApplicationManagement' and OperationType eq 'Update'
+AuditLogs
+| where OperationName == "n"
 
 ActivityDisplayName eq 'Add service principal credentials'
+AuditLogs
+| where OperationName == "Add service principal credentials"
 
 ActivityDisplayName eq 'Add member to group'
+AuditLogs
+| where OperationName == "Add member to group"
 
 ActivityDisplayName eq 'Add user'
+AuditLogs
+| where OperationName == "Add user"
 
 ActivityDisplayName eq 'Add app role assignment to service principal'
+AuditLogs
+| where OperationName == "Add app role assignment to service principal"
 
 ActivityDisplayName eq 'Add app role assignment grant to user'
+AuditLogs
+| where OperationName == "Add app role assignment grant to user"
