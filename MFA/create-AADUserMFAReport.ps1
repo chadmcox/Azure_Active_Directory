@@ -42,7 +42,9 @@ function getAADUserMFAStatus{
 
 
 $results = getAADUserMFAStatus
-$results | export-csv .\AAD_User_MFA_Status.csv -NoTypeInformation
-$results | where {$_.isMFARegistered -eq $true} | export-csv .\AAD_User_Registered_AuthMethods.csv -NoTypeInformation
+$results | select id,userPrincipalName,userDisplayName, isRegistered, isEnabled, isCapable,isMfaRegistered, @{N="authMethods";E={[string]$_.authMethods}} `
+    | export-csv .\AAD_User_MFA_Status.csv -NoTypeInformation
+$results | where {$_.isMFARegistered -eq $true}  -PipelineVariable st | select -ExpandProperty authMethods | `
+    select @{N="userPrincipalName";E={$st.userPrincipalName}},@{N="authMethods";E={$_}} | export-csv .\AAD_User_Registered_AuthMethods.csv -NoTypeInformation
 
 write-host "Results found here $resultslocation"
