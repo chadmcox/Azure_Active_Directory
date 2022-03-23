@@ -4,4 +4,4 @@ SigninLogs
 | where UserDisplayName in ('*') or '*' in ('*')
 | extend errorCode = toint(Status.errorCode)
 | where errorCode == 50053
-| summarize Count=count() by UserPrincipalName, ResultDescription, AppDisplayName, IPAddress
+| summarize Count=count() by UserPrincipalName, ResultDescription, AppDisplayName, IPAddress, ClientAppUsed
