@@ -36,7 +36,7 @@ $graphResourceId = "00000003-0000-0000-c000-000000000000"
 #write all of the required graph scopes in this list.  it may be required to update based on usuage of the automation account
 $graphScope = "Reports.Read.All","User.Read.All","Directory.Read.All","Group.Read.All","AuditLog.Read.All","Organization.Read.All","Policy.Read.All",`
     "Device.Read.All","AdministrativeUnit.Read.All","PrivilegedAccess.Read.AzureAD","PrivilegedAccess.Read.AzureADGroup","PrivilegedAccess.Read.AzureResources", `
-    "Policy.ReadWrite.ConditionalAccess","Application.Read.All","User.Invite.All","User.ReadWrite.All"
+    "Policy.ReadWrite.ConditionalAccess","Application.Read.All","User.Invite.All","User.ReadWrite.All","IdentityRiskEvent.Read.All","IdentityRiskyUser.ReadWrite.All"
 
 #this creates a list of ID and scope that the cmdlet will be able to read to add the assignments.
 $requirePermissions = $graphScope | Find-MgGraphPermission -ExactMatch -PermissionType Application | foreach{@{ID = $_.id; Type = 'Role'}}
