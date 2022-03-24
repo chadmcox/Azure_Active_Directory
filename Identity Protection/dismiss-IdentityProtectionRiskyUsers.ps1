@@ -18,7 +18,8 @@ $riskolderthanindays = 120, #in days
 $risklevel = @("low","medium"), #low, medium, high
 $log = ".\dismissedriskyuser.log")
 
-Connect-MgGraph -Scopes "Policy.Read.All","Reports.Read.All","AuditLog.Read.All","Directory.Read.All","Directory.Read.All","User.Read.All","AuditLog.Read.All","IdentityRiskyUser.Read.All","IdentityRiskEvent.Read.All","IdentityRiskyUser.ReadWrite.All"
+Connect-MgGraph -Scopes "Policy.Read.All","Reports.Read.All","AuditLog.Read.All","Directory.Read.All","Directory.Read.All","User.Read.All", `
+    "AuditLog.Read.All","IdentityRiskyUser.Read.All","IdentityRiskEvent.Read.All","IdentityRiskyUser.ReadWrite.All"
 cd $resultslocation
 function getAADRiskyUsers{
     [cmdletbinding()] 
@@ -60,7 +61,8 @@ function dismissRiskyUsers{
 
     }catch{
         Write-host "Error $($_.Exception.response.statuscode)"
-        "$((Get-Date).toString("yyyy-dd-MM-HH:mm:ss:fff tt")) Failed, Dismissed: $($user.userPrincipalName) - error: $($_.Exception.response.statuscode)" | Add-Content $log
+        "$((Get-Date).toString("yyyy-dd-MM-HH:mm:ss:fff tt")) Failed, Dismissed: $($user.userPrincipalName) - error: $($_.Exception.response.statuscode)" | `
+            Add-Content $log
     }
 }
 
