@@ -40,3 +40,16 @@ SigninLogs
   | evaluate ipv4_lookup(IP_Data, IPAddress, network, return_unmatched = false)
   | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
   | summarize make_set(additionalDetails), StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by IPAddress, UserPrincipalName, TrustedLocation
+
+//known nord vpn
+//https://github.com/Azure/Azure-Sentinel/blob/master/Hunting%20Queries/SigninLogs/Signins-From-VPS-Providers.yaml
+ let nord_vpn_feed = (externaldata(id:int,ip_address: string,search_keywords: dynamic,categories:dynamic,name: string,domain:string,price:int,flag:string,country:string,location:dynamic ,load: int ,features:dynamic)
+    [@"https://raw.githubusercontent.com/microsoft/mstic/master/nordvpn-servers.csv"] with (format="csv", ignoreFirstRecord=True));
+  SigninLogs 
+    | where TimeGenerated > ago(4h) 
+    | where ResultType == 0 
+    | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+    | summarize TotalEvents = count(), AppList = make_set(AppDisplayName),  StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by IPAddress, UserPrincipalName, ClientAppUsed, ConditionalAccessStatus, AuthenticationRequirement, RiskDetail,TrustedLocation
+    | join kind= inner nord_vpn_feed on $left.IPAddress == $right.ip_address
+    | project StartTime , EndTime, IPAddress, UserPrincipalName, AppList, ClientAppUsed, ConditionalAccessStatus, AuthenticationRequirement, RiskDetail, categories, domain, country,TrustedLocation
+    | extend timestamp = StartTime, AccountCustomEntity = UserPrincipalName, IPCustomEntity = IPAddress
