@@ -27,3 +27,16 @@ SigninLogs
 | where IPAddress in (BlockList)
 | extend DevicetrustType = tostring(DeviceDetail.trustType)
 | project TimeGenerated, UserPrincipalName, OperationName, Category, ResultType, ResultDescription, AppDisplayName, AuthenticationRequirement, IPAddress, DevicetrustType
+
+
+//known vps
+//https://github.com/Azure/Azure-Sentinel/blob/master/Hunting%20Queries/SigninLogs/Signins-From-VPS-Providers.yaml
+ let IP_Data = (externaldata(network:string)
+  [@"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Feeds/VPS_Networks.csv"] with (format="csv"));
+  SigninLogs
+   | where CreatedDateTime >= ago(30d)
+  | where ResultType == 0
+  | extend additionalDetails = tostring(Status.additionalDetails)
+  | evaluate ipv4_lookup(IP_Data, IPAddress, network, return_unmatched = false)
+  | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+  | summarize make_set(additionalDetails), StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by IPAddress, UserPrincipalName, TrustedLocation
