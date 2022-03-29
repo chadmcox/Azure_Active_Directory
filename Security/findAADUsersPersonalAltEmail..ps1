@@ -23,7 +23,7 @@ function getAADUsers{
 
 Connect-MgGraph -Scopes "UserAuthenticationMethod.Read", "Directory.ReadWrite.All", "Directory.AccessAsUser.All"
 
-getAADUsers -pv user | where {$_.othermails -match "gmail|hotmail|msn|ymail|aol|msn|outlook|live|googlemail|yahoo|microsoft"} | select `
+getAADUsers -pv user | where {$_.othermails -match "gmail|hotmail|msn|ymail|aol|msn|outlook|live|googlemail|yahoo|cox.com|verizon.net|att.net|wanadoo|orange|comcast.net|facebook"} | select `
     id,userprincipalname,@{N="othermails";E={[string]$($_.othermails)}} | export-csv "$env:USERPROFILE\downloads\AAD_User_AlternateEmail.csv" -notypeinformation
     
 write-host "find results here $env:USERPROFILE\downloads"
