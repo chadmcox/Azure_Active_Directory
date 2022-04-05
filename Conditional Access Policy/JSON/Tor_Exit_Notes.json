@@ -1,6 +1,6 @@
 {
     "@odata.type":  "#microsoft.graph.ipNamedLocation",
-	"displayName": "Tor Exit Nodes",
+    "displayName": "Tor Exit Nodes",
     "isTrusted":  false,
     "ipRanges":  [
                      {
