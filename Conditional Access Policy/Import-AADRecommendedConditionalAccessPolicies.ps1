@@ -26,15 +26,29 @@ function add-AADCAP{
     [CmdletBinding()]
     param($objnewcap)
     write-host "Importing $($objnewcap.displayname)"
+    if($objnewcap.displayname -eq "Report Only - All Users - Block Tor Exit Nodes"){
+        $locations = @(add-TorExitNodes)
+        write-host "adding tor exit not locations to policy"
+        $objnewcap.conditions.locations.includeLocations = $locations
+    }
     try{Invoke-MgGraphRequest -Method POST -uri "https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies" `
             -ContentType "application/json" -Body ($objnewcap | convertto-json -Depth 99)}
         catch{Write-host "Error"}
+}
+function add-TorExitNodes{
+    write-host "importing tor exit node list"
+    #retrieve trusted location
+    $body = (invoke-webrequest -uri "https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Conditional%20Access%20Policy/JSON/Tor_Exit_Notes.json").content | convertfrom-json
+    $results = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/identity/conditionalAccess/namedLocations" -Body ($body | convertto-json -Depth 99)
+    return $results.id
 }
 
 $policy = $null
 #retrieve the list fromt he cloud
 $caps = ((Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Conditional%20Access%20Policy/JSON/recommended_conditional_access_policies.json").content  | convertfrom-json).value | `
     select displayName, state, sessionControls, conditions, grantControls
+
+Connect-MgGraph -Scopes "Policy.Read.All", "Policy.ReadWrite.ConditionalAccess", "Directory.ReadWrite.All", "Directory.AccessAsUser.All"
 
 if($caps){
 cls
@@ -71,3 +85,4 @@ if($selection -eq "exit"){
 }
 
 Write-host "Finished Importing, Make sure to add breakglass exclusions"
+
