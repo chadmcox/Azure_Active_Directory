@@ -60,7 +60,7 @@ getAADGuest -pv guest | where {!($_.onPremisesSyncEnabled -eq $true)} | `
         -or ((New-TimeSpan -Start $guest.signInActivity.lastNonInteractiveSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
     select * -first $removalthreshold | foreach{
     write-host "Removing $($guest.userPrincipalName) - $($guest.onPremisesSyncEnabled) - $($_.signInActivity.lastSignInDateTime) - $($_.signInActivity.lastNonInteractiveSignInDateTime)"
-    
+    "Removing $($guest.userPrincipalName) - $($guest.onPremisesSyncEnabled) - $($_.signInActivity.lastSignInDateTime) - $($_.signInActivity.lastNonInteractiveSignInDateTime)" | add-content ".\removeaadguest.log"
     removeAADGuest -guestid $guest.id
 
 }
