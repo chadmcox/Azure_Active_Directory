@@ -9,8 +9,6 @@ Use at your own risk
 
 .Description
 this script will remove guest users
-
-
 #>
 param($resultslocation = "$env:USERPROFILE\Downloads",$notsignedonindays = 120,$removalthreshold = 250)
 
