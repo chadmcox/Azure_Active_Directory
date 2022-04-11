@@ -22,6 +22,7 @@ cd $resultslocation
 function getAADGuest{
     [cmdletbinding()] 
     param()
+    write-host "Exporting all Guest to: $resultslocation, this may take a while"
     $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime"
     do{$results = $null
         for($i=0; $i -le 3; $i++){
