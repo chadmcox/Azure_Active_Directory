@@ -10,9 +10,6 @@ $body = @"
     "displayName": "AU.CAP.Exclusion - Conditional Access Policy Exclusion Groups",
     "description": "Conditional Access Policy Exclusion Groups for administration",
     "visibility": "HiddenMembership"
-    "membershipType": "Dynamic",
-  "membershipRule": "(group.displayname -eq \"Windows\")",
-  "membershipRuleProcessingState": "On"
 }
 "@
 
