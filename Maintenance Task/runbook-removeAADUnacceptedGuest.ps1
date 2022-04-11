@@ -34,7 +34,7 @@ This script will remove guest that have not accepted an invite after 30 days.
 #this is the number of days a guest account has to accept before, they are considered to be deleted.
 $notacceptedindays = 30
 #this is a standard theshold, only the number provided below will be returned and deleted.
-$removalthreshold = 3
+$removalthreshold = 100
 
 $today = get-date
 
