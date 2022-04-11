@@ -62,5 +62,4 @@ getAADGuest -pv guest | where {!($_.onPremisesSyncEnabled -eq $true)} | `
     write-host "Removing $($guest.userPrincipalName) - $($guest.onPremisesSyncEnabled) - $($_.signInActivity.lastSignInDateTime) - $($_.signInActivity.lastNonInteractiveSignInDateTime)"
     "Removing $($guest.userPrincipalName) - $($guest.onPremisesSyncEnabled) - $($_.signInActivity.lastSignInDateTime) - $($_.signInActivity.lastNonInteractiveSignInDateTime)" | add-content ".\removeaadguest.log"
     removeAADGuest -guestid $guest.id
-
 }
