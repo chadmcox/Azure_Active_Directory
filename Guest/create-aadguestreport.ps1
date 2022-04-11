@@ -41,5 +41,6 @@ function query-msgraphapi{
 $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime"
 query-msgraphapi -uri $uri | select  displayName,userPrincipalName,userType,externalUserState,@{Name="externalUserStateChangeDateTime";Expression={(get-date $_.externalUserStateChangeDateTime).tostring('yyyy-MM-dd')}},creationType,`
     @{Name="createdDateTime";Expression={(get-date $_.createdDateTime).tostring('yyyy-MM-dd')}},accountEnabled,onPremisesSyncEnabled, @{Name="lastSignInDateTime";Expression={(get-date $_.signInActivity.lastSignInDateTime).tostring('yyyy-MM-dd')}},Mail, `
+    @{Name="lastNonInteractiveSignInDateTime";Expression={(get-date $_.signInActivity.lastNonInteractiveSignInDateTime).tostring('yyyy-MM-dd')}}, `
         @{Name="Domain";Expression={($_.mail -split("@"))[1]}} | export-csv "$defaultpath\aad_guests.csv" -NoTypeInformation
 write-host "Results can be found here: $defaultpath\aad_guests.csv"
