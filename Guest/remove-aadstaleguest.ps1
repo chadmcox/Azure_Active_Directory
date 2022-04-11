@@ -56,6 +56,7 @@ getAADGuest -pv guest | where {!($_.onPremisesSyncEnabled -eq $true)} | `
         -or ((New-TimeSpan -Start $_.signInActivity.lastSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
     where {($guest.signInActivity.lastNonInteractiveSignInDateTime -eq $null) `
         -or ((New-TimeSpan -Start $guest.signInActivity.lastNonInteractiveSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
+    where {$guest.externalUserState -ne 'PendingAcceptance'} | `
     select * -first $removalthreshold | foreach{
     write-host "Removing $($guest.userPrincipalName) - $($guest.onPremisesSyncEnabled) - $($_.signInActivity.lastSignInDateTime) - $($_.signInActivity.lastNonInteractiveSignInDateTime)"
     "Removing $($guest.userPrincipalName) - $($guest.onPremisesSyncEnabled) - $($_.signInActivity.lastSignInDateTime) - $($_.signInActivity.lastNonInteractiveSignInDateTime)" | add-content ".\removeaadguest.log"
