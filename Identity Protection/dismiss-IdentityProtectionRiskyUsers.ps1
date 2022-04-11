@@ -69,7 +69,7 @@ function dismissRiskyUsers{
 write-host "Going to dismiss on any risky user older than $riskolderthanindays"
 
 
-getAADRiskyUsers -pv riskyuser | where {((New-TimeSpan -Start $_.riskLastUpdatedDateTime -end $(get-date)).TotalDays -gt $riskolderthanindays) -and ($_.riskLevel -in $risklevel) -and ($_.riskState -eq "atRisk")} | foreach{
+getAADRiskyUsers -pv riskyuser | where {if($_.riskLastUpdatedDateTime){((New-TimeSpan -Start $_.riskLastUpdatedDateTime -end $(get-date)).TotalDays -gt $riskolderthanindays) -and ($_.riskLevel -in $risklevel) -and ($_.riskState -eq "atRisk")}} | foreach{
     dismissRiskyUsers -user $riskyuser
 }
 
