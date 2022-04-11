@@ -29,7 +29,7 @@ will need to be provided to the account.
 This script will remove guest that have not logged on in x number of days.
 !!!This will only work with premier license
 #> 
-#this is the number of days a guest account has to accept before, they are considered to be deleted.
+#this is the number of days a guest account has to sign in before, they are considered to be deleted.
 $notsignedonindays = 120
 #this is a standard theshold, only the number provided below will be returned and deleted.
 $removalthreshold = 250
