@@ -28,8 +28,10 @@ Get-MgUser -Filter "userType eq 'Guest' and ExternalUserState eq 'PendingAccepta
 #does not work
 $id = "5abfde79-5c18-42f9-acd8-fcc4c1ef393c" #put the guid of the user needing deleted
 Get-MgUser -UserId $id | Remove-MgUser
+  
 #have to run a foreach :( but the pipeline variable doesnt work
 Get-MgUser -UserId $id -pipelinevariable g | foreach{Remove-MgUser -userid $g.id}
+  
 #so have to do it this way
 Get-MgUser -UserId $id | foreach{Remove-MgUser -userid $_.id}
 
@@ -47,6 +49,7 @@ Get-MgUser -Filter "userType eq 'Guest' and ExternalUserState eq 'PendingAccepta
 
 ##validate it is deleted
 Get-MgDirectoryDeletedItem -DirectoryObjectId $id
+  
 DeletedDateTime       Id                                   AdditionalProperties
 ---------------       --                                   --------------------
 4/14/2022 10:48:12 PM 5abfde79-5c18-42f9-acd8-fcc4c1ef393c {[@odata.context, https://graph.microsoft.com/beta/$metadata#directoryObjects/$entity], [@odata.type, #microsoft.graph....
