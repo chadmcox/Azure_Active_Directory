@@ -76,7 +76,7 @@ This should be all that is neeeded
 
 ## Create job that automatically puts the breakglass / emergency accounts as a exclusion in condition access policies
 * The script is runbook-addAADBreakGlasstoConditionalAccessPolicy.ps1 [(click here)](https://github.com/chadmcox/Azure_Active_Directory/blob/master/Maintenance%20Task/runbook-addAADBreakGlasstoConditionalAccessPolicy.ps1) and copy code into playbook.
-* Update the script to have the correct guids of the breakglass accounts, update line 36 with the proper guids. if only one breakglass is used, then remove the , and remaining guid.
+* Update the script / runbook to have the correct guids of the breakglass accounts, update line 36 with the proper guids. if only one breakglass is used, then remove the , and remaining guid.
 ```
 35 #these must be updated with the breakglass account guids.
 36 $breakglass_accounts = "948b11fc-5fc4-45dd-91ac-97e38a16372a","d18d12aa-9a08-4d9d-9ffc-67995670d0c0"
