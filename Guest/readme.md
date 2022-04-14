@@ -36,7 +36,7 @@ Get-MgUser -UserId "5abfde79-5c18-42f9-acd8-fcc4c1ef393c" | foreach{Remove-MgUse
 
 ## How to restore deleted guest
 
-  * do we use restore-mguser or Restore-MgDirectoryObject (neiter seem to work)
+  * do we use restore-mguser or Restore-MgDirectoryObject (neither seem to work)
 ```
 
 ##validate it is deleted
