@@ -39,8 +39,8 @@ Get-MgUser -UserId $id | foreach{Remove-MgUser -userid $_.id}
 
 ## How to remove guest that have not accepted after 30 days
 ```
-Get-MgUser -Filter "userType eq 'Guest' and ExternalUserState eq 'PendingAcceptance'" -All -Select id, displayName, userPrincipalName, userType, externalUserState, externalUserStateChangeDateTime | `
-  where {(New-TimeSpan -start $_.externalUserStateChangeDateTime -end (get-date)).days -gt 30} | foreach{Remove-MgUser -userid $_.id}
+Get-MgUser -Filter "userType eq 'Guest' and ExternalUserState eq 'PendingAcceptance' and CreationType eq 'Invitation'" -All -Select id, displayName, userPrincipalName, userType, externalUserState, externalUserStateChangeDateTime | `
+    where {(New-TimeSpan -start $_.externalUserStateChangeDateTime -end (get-date)).days -gt 30} | foreach{Remove-MgUser -userid $_.id}
 ```
 
 ## How to restore deleted guest
