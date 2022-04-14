@@ -23,7 +23,7 @@ Get-MgUser -Filter "userType eq 'Guest' and ExternalUserState eq 'PendingAccepta
   * doesnt actually accept an object, it is looking for Remove-MgUser -InputObject <IUsersIdentity> this tells me no passing object in pipeline
   * powershell also supports attribute to parameter mapping but id doesnt map to userid, so this is another dumb failure
   * pipeline variable for what ever reason doesnt work either no common params
-
+* 
  ```
 #does not work
 $id = "5abfde79-5c18-42f9-acd8-fcc4c1ef393c" #put the guid of the user needing deleted
@@ -35,9 +35,14 @@ Get-MgUser -UserId $id | foreach{Remove-MgUser -userid $_.id}
 
 ```
 
-## How to restore deleted guest
+## How to remove guest that have not accepted after 30 days
+```
+Get-MgUser -Filter "userType eq 'Guest' and ExternalUserState eq 'PendingAcceptance'" -All -Select id, displayName, userPrincipalName, userType, externalUserState, externalUserStateChangeDateTime | `
+  where {(New-TimeSpan -start $_.externalUserStateChangeDateTime -end (get-date)).days -gt 30} | foreach{Remove-MgUser -userid $_.id}
+```
 
-  * do we use restore-mguser or Restore-MgDirectoryObject (neither seem to work)
+## How to restore deleted guest
+* do we use restore-mguser or Restore-MgDirectoryObject (neither seem to work)
 ```
 
 ##validate it is deleted
