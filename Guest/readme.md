@@ -33,3 +33,22 @@ Get-MgUser -UserId "5abfde79-5c18-42f9-acd8-fcc4c1ef393c" -pipelinevariable g | 
 Get-MgUser -UserId "5abfde79-5c18-42f9-acd8-fcc4c1ef393c" | foreach{Remove-MgUser -userid $_.id}
 
 ```
+
+## How to restore deleted guest
+
+  * do we use restore-mguser or Restore-MgDirectoryObject (neiter seem to work)
+```
+
+##validate it is deleted
+Get-MgDirectoryDeletedItem -DirectoryObjectId "5abfde79-5c18-42f9-acd8-fcc4c1ef393c"
+DeletedDateTime       Id                                   AdditionalProperties
+---------------       --                                   --------------------
+4/14/2022 10:48:12 PM 5abfde79-5c18-42f9-acd8-fcc4c1ef393c {[@odata.context, https://graph.microsoft.com/beta/$metadata#directoryObjects/$entity], [@odata.type, #microsoft.graph....
+
+#see more info about it
+Get-MgDirectoryDeletedItem -DirectoryObjectId "b07baa31-2563-490b-97bf-68c1a320e7aa" | select -ExpandProperty AdditionalProperties
+
+#Completely remove the object
+Remove-MgDirectoryDeletedItem -DirectoryObjectId "5abfde79-5c18-42f9-acd8-fcc4c1ef393c"
+  
+```
