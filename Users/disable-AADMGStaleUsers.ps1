@@ -3,7 +3,7 @@ cd $defaultpath
 Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All"
 Select-MgProfile -Name beta
 
-write-host "this will remove the first $removalthreshold stale users"
+write-host "this will disable the first $removalthreshold stale users"
 
 Get-MgUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Property id, displayName, signInActivity, userPrincipalName, userType, `
     onPremisesSyncEnabled, createdDateTime, accountEnabled, passwordPolicies, mail, lastPasswordChangeDateTime | `
