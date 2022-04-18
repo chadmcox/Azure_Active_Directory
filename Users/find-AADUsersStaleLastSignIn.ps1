@@ -8,3 +8,4 @@ Get-MgUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Prop
         @{N='LastSignInDateTime';E={$_.signInActivity.LastSignInDateTime}}, @{N='LastNonInteractiveSignInDateTime';E={$_.signInActivity.LastNonInteractiveSignInDateTime}} | `
             where {($_.LastSignInDateTime -eq $null)  -or ((New-TimeSpan -Start $_.LastSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
             where {($_.LastNonInteractiveSignInDateTime -eq $null) -or ((New-TimeSpan -Start $_.LastNonInteractiveSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | export-csv .\aad_users_stalelogin.csv -notypeinformation
+write-host "Report can be found here cd $defaultpath"
