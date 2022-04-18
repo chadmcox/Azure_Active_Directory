@@ -24,7 +24,7 @@ Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All",
 Select-MgProfile -Name beta
 
 #this cmdlet pulls in the list, but the methods registered is a multivalue property so the data doesnt look good
-Get-MgReportAuthenticationMethodUserRegistrationDetail -all
+Get-MgReportAuthenticationMethodUserRegistrationDetail -all | select *
 
 #this will write each method to a new line to make it easier to pivot off of.
 
