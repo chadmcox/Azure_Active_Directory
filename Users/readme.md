@@ -33,6 +33,19 @@ Get-MgReportAuthenticationMethodUserRegistrationDetail -all | select * | foreach
         IsPasswordlessCapable,IsSsprCapable,IsSsprEnabled,IsSsprRegistered,@{N='MethodsRegistered';E={$_}}
 }
 ```
+
+## How to disable a user
+* This cmdlet is not very clear on how to do it. 
+### Using PowerShell
+```
+PS C:\> Update-MgUser -UserId 2d192670-c993-4301-bd4a-ea9727ab6546 -AccountEnabled:$false
+PS C:\> get-MgUser -UserId 2d192670-c993-4301-bd4a-ea9727ab6546 | select AccountEnabled
+
+AccountEnabled
+--------------
+         False
+  
+```
 ## create-AADMGUserReport.ps1
 Get a list of all member users, includes last time password was changed and last time the user logged in.
 
