@@ -1,6 +1,6 @@
 # AAD User Scripts
 
-## get a list of users with basic information
+## get a list of users with basic sign-in and pwd information
 ```
 #make sure the microsoft graph modules are available
 get-module microsoft.graph* -list available
