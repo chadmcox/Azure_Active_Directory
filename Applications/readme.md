@@ -17,8 +17,9 @@ Get-MgServicePrincipal -filter "servicePrincipalType eq 'Application' and Accoun
 
 ## Find Applications where all Creds are expired
 ```
-Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All"
+Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","Application.Read.All"
 Select-MgProfile -Name beta
+
 Get-MgApplication -all -ExpandProperty owners | `
     where {($_.PasswordCredentials.EndDateTime) -or ($_.KeyCredentials.EndDateTime)} | `
     where {!($_.PasswordCredentials.endDateTime -gt $now) -and !($_.KeyCredentials.EndDateTime -gt $now)} | select `
