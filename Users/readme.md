@@ -28,8 +28,9 @@ Get-MgReportAuthenticationMethodUserRegistrationDetail -all
 
 #this will write each method to a new line to make it easier to pivot off of.
 
-Get-MgReportAuthenticationMethodUserRegistrationDetail -all | foreach{$users="";$user=$_
-    $_.MethodsRegistered | select Id,IsMfaCapable,IsMfaRegistered,IsPasswordlessCapable,IsSsprCapable,IsSsprEnabled,IsSsprRegistered,@{N='MethodsRegistered';E={$_}}
+Get-MgReportAuthenticationMethodUserRegistrationDetail -all | select * | foreach{$users="";$user=$_
+    $_.MethodsRegistered | select Id,UserDisplayName,UserPrincipalName,IsMfaCapable,IsMfaRegistered, `
+        IsPasswordlessCapable,IsSsprCapable,IsSsprEnabled,IsSsprRegistered,@{N='MethodsRegistered';E={$_}}
 }
 ```
 ## create-AADMGUserReport.ps1
