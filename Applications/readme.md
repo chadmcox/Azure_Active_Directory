@@ -5,7 +5,7 @@ install-module microsoft.graph.users
 install-module microsoft.graph.applications
 
 
-Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All"
+Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","Application.Read.All"
 Select-MgProfile -Name beta
 
 Get-MgServicePrincipal -filter "servicePrincipalType eq 'Application' and AccountEnabled eq true" -all -ExpandProperty owners | `
