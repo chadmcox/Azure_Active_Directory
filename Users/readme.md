@@ -2,6 +2,14 @@
 
 ## get a list of users with basic information
 ```
+#make sure the microsoft graph modules are available
+get-module microsoft.graph* -list available
+#if not install them
+install-module microsoft.graph
+
+#connect to mggraph
+Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All"
+Select-MgProfile -Name beta
 Get-MgUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Property id, displayName, signInActivity, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, passwordPolicies, mail, lastPasswordChangeDateTime | `
     select id, displayName, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, mail, lastPasswordChangeDateTime, passwordPolicies, `
         @{N='LastSignInDateTime';E={$_.signInActivity.LastSignInDateTime}}, `
@@ -11,11 +19,6 @@ Get-MgUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Prop
 ## Get a list of all Users MFA Status / Registration
 ### Using Powershell 
 ```
-#make sure the microsoft graph modules are available
-get-module microsoft.graph* -list available
-#if not install them
-install-module microsoft.graph
-
 #connect to mggraph
 Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All","UserAuthenticationMethod.Read.All"
 Select-MgProfile -Name beta
