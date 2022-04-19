@@ -1,5 +1,5 @@
 <#
-.VERSION 2022.4.6
+.VERSION 2022.4.19
 .GUID 18bf582a-f85b-4a87-8f60-e52845ca1c08
 .AUTHOR Chad.Cox@microsoft.com
     https://blogs.technet.microsoft.com/chadcox/ (retired)
@@ -22,6 +22,15 @@ from the use or distribution of the Sample Code..
 This script retrieves a list of policies from my github and gives the user the option to enter them into the tenant.
 #>
 
+Get-MgEnvironment | select name | out-host
+$selection = Read-Host "Type the name of the azure environment that you would like to connect to:  (example Global)"
+if($selection -notin "Global","China","USGov","Germany","USGovDoD"){$selection = "Global"}
+$mg_env = Get-MgEnvironment | where {$_.name -eq $selection}
+
+$graphendpoint = $mg_env.GraphEndpoint
+
+
+$exit = $false
 function add-AADCAP{
     [CmdletBinding()]
     param($objnewcap)
@@ -31,15 +40,16 @@ function add-AADCAP{
         write-host "adding tor exit not locations to policy"
         $objnewcap.conditions.locations.includeLocations = $locations
     }
-    try{Invoke-MgGraphRequest -Method POST -uri "https://graph.microsoft.com/v1.0/identity/conditionalAccess/policies" `
+    try{Invoke-MgGraphRequest -Method POST -uri "$graphendpoint/v1.0/identity/conditionalAccess/policies" `
             -ContentType "application/json" -Body ($objnewcap | convertto-json -Depth 99)}
-        catch{Write-host "Error"}
+        catch{$_
+        Write-host "Error"}
 }
 function add-TorExitNodes{
     write-host "importing tor exit node list"
     #retrieve trusted location
     $body = (invoke-webrequest -uri "https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Conditional%20Access%20Policy/JSON/Tor_Exit_Notes.json").content | convertfrom-json
-    $results = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/v1.0/identity/conditionalAccess/namedLocations" -Body ($body | convertto-json -Depth 99)
+    $results = Invoke-MgGraphRequest -Method POST -Uri "$graphendpoint/v1.0/identity/conditionalAccess/namedLocations" -Body ($body | convertto-json -Depth 99)
     return $results.id
 }
 
@@ -48,41 +58,47 @@ $policy = $null
 $caps = ((Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Conditional%20Access%20Policy/JSON/recommended_conditional_access_policies.json").content  | convertfrom-json).value | `
     select displayName, state, sessionControls, conditions, grantControls
 
-Connect-MgGraph -Scopes "Policy.Read.All", "Policy.ReadWrite.ConditionalAccess", "Directory.ReadWrite.All", "Directory.AccessAsUser.All"
+Connect-MgGraph -Scopes "Policy.Read.All", "Policy.ReadWrite.ConditionalAccess", "Directory.ReadWrite.All", "Directory.AccessAsUser.All" -Environment $mg_env.name
 
-if($caps){
-cls
-write-host "---Menu: Which Conditional Access policy would you like to Import-------"
-Write-host ""
-$menu_option = 0
-foreach($cap in $caps){
-    write-host "$menu_option - $($cap.displayname)"
-    $menu_option++
-}
-Write-host "$menu_option - To Import All Policies" -ForegroundColor Yellow
-Write-host ""
-write-host "-----------------------------------------------------------------------"
-Write-host ""
-$selection = Read-Host "Type 0 - $menu_option to import to conditional access policy or type 'exit' to exit"
+do{
 
-if($selection -eq "exit"){
-    write-host "exit"
-}elseif($selection -eq $menu_option){
-    write-host "Importing All"
-    foreach($cap in $caps){
-        $policy = "";$policy=$cap
-        $policy.displayName = "Report Only - $($policy.displayName)"
-        add-AADCAP -objnewcap $policy
-    }
-}else{
+    if($caps){
+        cls
+        write-host "---Menu: Which Conditional Access policy would you like to Import-------"
+        Write-host ""
+        $menu_option = 0
+        foreach($cap in $caps){
+            write-host "$menu_option - $($cap.displayname)"
+            $menu_option++
+        }
+        Write-host "$menu_option - To Import All Policies" -ForegroundColor Yellow
+        Write-host ""
+        write-host "-----------------------------------------------------------------------"
+        Write-host ""
+        $selection = Read-Host "Type 0 - $menu_option to import to conditional access policy or type 'exit' to exit"
+
+        if($selection -eq "exit"){
+            write-host "exit"
+            $exit = $true
+        }elseif($selection -eq $menu_option){
+            write-host "Importing All"
+            foreach($cap in $caps){
+                $policy = "";$policy=$cap
+                $policy.displayName = "Report Only - $($policy.displayName)"
+                add-AADCAP -objnewcap $policy
+            }
+        }else{
     
-    $policy = "";$policy = $caps[$selection]
-    $policy.displayName = "Report Only - $($policy.displayName)"
-    add-AADCAP -objnewcap $policy
-}
-}else{
- write-host "Unable to retrive list of Conditional access policies from https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Conditional Access Policy/JSON/recommended_conditional_access_policies.json"
-}
+            $policy = "";$policy = $caps[$selection]
+            $policy.displayName = "Report Only - $($policy.displayName)"
+            add-AADCAP -objnewcap $policy
+        }
+    }else{
+     write-host "Unable to retrive list of Conditional access policies from https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Conditional Access Policy/JSON/recommended_conditional_access_policies.json"
 
-Write-host "Finished Importing, Make sure to add breakglass exclusions"
+    }
+    Write-host "Finished Importing, Make sure to add breakglass exclusions"
+    pause
+}until($exit -eq $true)
+
 
