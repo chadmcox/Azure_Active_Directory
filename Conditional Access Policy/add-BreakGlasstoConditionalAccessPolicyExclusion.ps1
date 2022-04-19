@@ -13,6 +13,7 @@ if($bgid){
 Get-MgIdentityConditionalAccessPolicy -all | foreach{$policy="";$policy=$_
     write-host "Reviewing $($policy.DisplayName)"
     if($bgid -notin $policy.conditions.users.excludeUsers){
+    write-host "Reviewing $($policy.DisplayName)"
 $body = @"
 {
     "conditions": {
