@@ -116,7 +116,7 @@ $graphApiHeader = @{ Authorization = "Bearer $graphApiToken" }
 getAADRiskyUsers -pv riskyuser | where {$_.riskState -eq "atRisk"} | `
 	where {if($_.riskLastUpdatedDateTime){
 		((New-TimeSpan -Start $_.riskLastUpdatedDateTime -end $(get-date)).TotalDays -gt $riskolderthanindays) -and ($_.riskLevel -in $risklevel)
-			}} | foreach{
+			}} | select * -first $removalthreshold | foreach{
     Write-Output "Dismissing: $($_.userPrincipalName)"
     #dismissRiskyUsers -user $riskyuser
 }
