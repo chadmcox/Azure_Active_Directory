@@ -82,6 +82,18 @@ This should be all that is neeeded
 36 $breakglass_accounts = "948b11fc-5fc4-45dd-91ac-97e38a16372a","d18d12aa-9a08-4d9d-9ffc-67995670d0c0"
 
 ```
+## Create job that will automatically dismiss at risk users after a specific time frame
+* The script is runbook-dismissAIPRiskyUsers.ps1 [Click here](https://github.com/chadmcox/Azure_Active_Directory/blob/master/Maintenance%20Task/runbook-dismissAIPRiskyUsers.ps1)
+* Consider updating the following lines in the script, default is it will not dismiss anything (medium or low) newer than 120 days and will only do 100 at each run
+```
+34 #this is the number of days a guest account has to accept before, they are considered to be deleted.
+35 $riskolderthanindays = 120 #in days
+36 #This is the levels you want to allowed to be cleared
+37 $risklevel = @("low","medium") #low, medium, high
+38 #this is a standard theshold, only the number provided below will be returned and deleted.
+39 $removalthreshold = 100
+```
+* I recommend running this daily or weekly and increase the threshold.
 
 ## References
 [Tutorial: Create a PowerShell Workflow runbook in Automation](https://docs.microsoft.com/en-us/azure/automation/learn/automation-tutorial-runbook-textual)
