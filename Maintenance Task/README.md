@@ -75,7 +75,7 @@ Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId $managedspid
 This should be all that is neeeded
 
 ## Create job that automatically puts the breakglass / emergency accounts as a exclusion in condition access policies
-* The script is runbook-addAADBreakGlasstoConditionalAccessPolicy.ps1 [(click here)](https://github.com/chadmcox/Azure_Active_Directory/blob/master/Maintenance%20Task/runbook-addAADBreakGlasstoConditionalAccessPolicy.ps1) and copy code into playbook.
+* The script is runbook-addAADBreakGlasstoConditionalAccessPolicy.ps1 [(click here)](https://github.com/chadmcox/Azure_Active_Directory/blob/master/Maintenance%20Task/runbook-addAADBreakGlasstoConditionalAccessPolicy.ps1) and copy code into runbook.
 * Update the script / runbook to have the correct guids of the breakglass accounts, update line 36 with the proper guids. if only one breakglass is used, then remove the , and remaining guid.
 ```
 35 #these must be updated with the breakglass account guids.
@@ -83,7 +83,7 @@ This should be all that is neeeded
 
 ```
 ## Create job that will automatically dismiss at risk users after a specific time frame
-* The script is runbook-dismissAIPRiskyUsers.ps1 [Click here](https://github.com/chadmcox/Azure_Active_Directory/blob/master/Maintenance%20Task/runbook-dismissAIPRiskyUsers.ps1)
+* The script is runbook-dismissAIPRiskyUsers.ps1 [Click here](https://github.com/chadmcox/Azure_Active_Directory/blob/master/Maintenance%20Task/runbook-dismissAIPRiskyUsers.ps1) and copy code into runbook
 * Consider updating the following lines in the script, default is it will not dismiss anything (medium or low) newer than 120 days and will only do 100 at each run
 ```
 34 #this is the number of days a guest account has to accept before, they are considered to be deleted.
