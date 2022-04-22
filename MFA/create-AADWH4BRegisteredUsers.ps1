@@ -24,4 +24,4 @@ $uri = "https://graph.microsoft.com/beta/reports/authenticationMethods/userRegis
     }until ($uri -eq $null)
 }
 
-get-AADuserRegistrationDetails
+get-AADuserRegistrationDetails | where {$_} | Export-Csv .\wh4bregistered.csv -NoTypeInformation -ErrorAction Continue
