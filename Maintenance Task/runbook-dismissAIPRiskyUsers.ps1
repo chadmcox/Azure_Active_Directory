@@ -19,17 +19,7 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .DESCRIPTION
-This script will remove guest that have not accepted an invite after 15 days.
-
-Important its designed to work in Azure AutomationAccounts. To set up the Azure Automation Account
-Review this url: https://github.com/chadmcox/Azure_Active_Directory_Scripts/blob/master/Maintenance%20Task/README.md
-
-This is using oauth2 to authenticate, from the managedid created as part of 
-the azure automation account.  Once the accounts is create appropriate permissions
-will need to be provided to the account.
-
-.Instructions
-This script will remove guest that have not accepted an invite after 30 days.
+this script will dismiss users risk after xx number of days
 #> 
 #this is the number of days a guest account has to accept before, they are considered to be deleted.
 $riskolderthanindays = 120 #in days
