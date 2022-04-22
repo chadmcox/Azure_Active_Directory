@@ -4,6 +4,19 @@ SigninLogs
 | project UserId,UserPrincipalName, Location, SourceSystem, TimeGenerated, IPAddress
 | where UserPrincipalName in ('breakglass@contoso.com','breakglass2@contoso.com')
 
+//if break glass is being used
+AuditLogs
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| where Actor in ('breakglass@contoso.com','breakglass2@contoso.com')
+| distinct TimeGenerated, OperationName, Actor
+
+//if changes are made against the breakglass
+AuditLogs
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| where Target in ('breakglass@m365x437870.onmicrosoft.com','breakglass2@contoso.com')
+| distinct TimeGenerated, OperationName, Actor, Target
+
 //Audit logs
 //ActivityDisplayName eq 'Enable passthrough authentication'
 AuditLogs
