@@ -47,6 +47,8 @@ securityQuestion                           0
 ```
 
 ## get usersRegisteredByFeature
+
+```
 $uri = "https://graph.microsoft.com/beta/reports/authenticationMethods/usersRegisteredByFeature"
 Invoke-MgGraphRequest -Uri $uri -Method GET -OutputType PSObject  |  select -ExpandProperty userRegistrationFeatureCounts
 
