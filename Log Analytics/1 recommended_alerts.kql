@@ -14,7 +14,7 @@ AuditLogs
 AuditLogs
 | extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
 | extend Target =  tostring(TargetResources[0].userPrincipalName)
-| where Target in ('breakglass@m365x437870.onmicrosoft.com','breakglass2@contoso.com')
+| where Target in ('breakglass@contoso.com','breakglass2@contoso.com')
 | distinct TimeGenerated, OperationName, Actor, Target
 
 //Audit logs
