@@ -44,3 +44,11 @@ Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application'" -all  | `
         @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}} |
         where {$_.ReplyUrls -like "*https://*"} | where {!($_| select -ExpandProperty ReplyUrls | where {$_ -like "http*"} | foreach{try{invoke-webrequest -Uri $_}catch{}})}
 ```
+
+## Find Enterprise Apps with SAML Signing Cert
+```
+Get-MgServicePrincipal -filter "servicePrincipalType eq 'Application' and AccountEnabled eq true" -all -ExpandProperty owners | `
+    where {$_.KeyCredentials.Usage -eq 'Sign'} | select  appid, PublisherName, displayname, servicePrincipalType, accountEnabled, `
+        disabledByMicrosoftStatus, @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}}, `
+        @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}
+```
