@@ -26,3 +26,11 @@ Get-MgApplication -all -ExpandProperty owners | `
         id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname, `
             @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}
 ```
+
+## Find Applications that do not have https in the replyurl
+```
+Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application'" -all  | `
+    where {($_.accountenabled -eq $true) -and ($_.tags -like "*WindowsAzureActiveDirectoryIntegratedApp*")} | `
+        select PublisherName, AppId, DisplayName, preferredSingleSignOnMode, signInAudience, ReplyUrls, @{N="tags";E={[string]$($_ | select -expandproperty tags)}} |
+        where {$_.ReplyUrls -notlike "*https://*"}
+```
