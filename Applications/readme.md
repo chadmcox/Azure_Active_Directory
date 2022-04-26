@@ -28,7 +28,7 @@ Get-MgApplication -all -ExpandProperty owners | `
             @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}
 ```
 
-## Find Applications that do not have https in the replyurl
+## Find Enterprise Applications that do not have https in the replyurl
 ```
 Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application'" -all  | `
     where {($_.accountenabled -eq $true) -and ($_.tags -like "*WindowsAzureActiveDirectoryIntegratedApp*")} | `
