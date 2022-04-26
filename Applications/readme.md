@@ -35,3 +35,12 @@ Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application'" -all  | `
         select PublisherName, AppId, DisplayName, preferredSingleSignOnMode, signInAudience, ReplyUrls, @{N="tags";E={[string]$($_ | select -expandproperty tags)}} |
         where {$_.ReplyUrls -notlike "*https://*"}
 ```
+
+## Find Enterprise Applications with no valid reply urls
+```
+Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application'" -all  | `
+    where {($_.accountenabled -eq $true) -and ($_.tags -like "*WindowsAzureActiveDirectoryIntegratedApp*")} | `
+        select PublisherName, AppId, DisplayName, preferredSingleSignOnMode, signInAudience, ReplyUrls, @{N="tags";E={[string]$($_ | select -expandproperty tags)}}, `
+        @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}} |
+        where {$_.ReplyUrls -like "*https://*"} | where {!($_| select -ExpandProperty ReplyUrls | where {$_ -like "http*"} | foreach{try{invoke-webrequest -Uri $_}catch{}})}
+```
