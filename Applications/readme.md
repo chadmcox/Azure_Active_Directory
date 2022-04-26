@@ -12,6 +12,7 @@ Get-MgServicePrincipal -filter "servicePrincipalType eq 'Application' and Accoun
     where {($_.PasswordCredentials.EndDateTime) -or ($_.KeyCredentials.EndDateTime)} | `
     where {!($_.PasswordCredentials.endDateTime -gt $now) -and !($_.KeyCredentials.EndDateTime -gt $now)} | select `
         id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname, `
+            @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}}, `
             @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}
 ```
 
