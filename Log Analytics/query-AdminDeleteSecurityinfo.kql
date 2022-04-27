@@ -1,0 +1,17 @@
+//
+AuditLogs
+| where TimeGenerated > ago (180d)
+| where OperationName == "Admin deleted security info"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Target = tostring(TargetResources[0].userPrincipalName)
+| project TimeGenerated, Actor, Target, OperationName, ResultDescription
+
+
+//
+AuditLogs
+| where TimeGenerated > ago (180d)
+| where OperationName == "Admin deleted security info"
+| where ResultDescription == 'Admin deleted Windows Hello for Business Authentication Method for user'
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Target = tostring(TargetResources[0].userPrincipalName)
+| project TimeGenerated, Actor, Target, OperationName, ResultDescription
