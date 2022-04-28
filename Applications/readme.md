@@ -52,3 +52,9 @@ Get-MgServicePrincipal -filter "servicePrincipalType eq 'Application' and Accoun
         disabledByMicrosoftStatus, @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}}, `
         @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}
 ```
+
+## Find all SAML Apps
+```
+Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","Application.Read.All"
+Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and preferredSingleSignOnMode eq 'saml'" -all
+```
