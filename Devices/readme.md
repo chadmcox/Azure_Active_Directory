@@ -5,3 +5,13 @@ Get-MgDevice -all | Select displayname, operatingsystem, accountenabled, profile
   @{N="enrollmentType";Expression={$_.AdditionalProperties.enrollmentType}}, `
   @{N="createdDateTime";Expression={(get-date $_.AdditionalProperties.createdDateTime).tostring('yyyy-MM-dd')}} | export-csv .\aaddevices.csv -NoTypeInformation
 ```
+
+#Get a list and filter on windows that are Azure AD Joined
+```
+Get-MgDevice -filter "operatingSystem eq 'Windows' and trustType eq 'AzureAd'" -all | Select `
+    displayname, operatingsystem, accountenabled, profiletype, trusttype, `
+    @{N="enrollmentType";Expression={$_.AdditionalProperties.enrollmentType}}, `
+    @{N="enrollmentProfileName";Expression={$_.AdditionalProperties.enrollmentProfileName}}, `
+    @{N="createdDateTime";Expression={(get-date $_.AdditionalProperties.createdDateTime).tostring('yyyy-MM-dd')}} | `
+        export-csv .\aaddevices.csv -NoTypeInformation
+```
