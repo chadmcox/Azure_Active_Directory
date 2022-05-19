@@ -6,7 +6,7 @@ Get-MgDevice -all | Select displayname, operatingsystem, accountenabled, profile
   @{N="createdDateTime";Expression={(get-date $_.AdditionalProperties.createdDateTime).tostring('yyyy-MM-dd')}} | export-csv .\aaddevices.csv -NoTypeInformation
 ```
 
-#Get a list and filter on windows that are Azure AD Joined
+# Get a list and filter on windows that are Azure AD Joined
 ```
 Get-MgDevice -filter "operatingSystem eq 'Windows' and trustType eq 'AzureAd'" -all | Select `
     displayname, operatingsystem, accountenabled, profiletype, trusttype, `
