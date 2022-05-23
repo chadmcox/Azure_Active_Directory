@@ -31,3 +31,12 @@ Get-MgDevice -filter "operatingSystem eq 'Windows' and trustType eq 'AzureAd'" -
     @{N="createdDateTime";Expression={(get-date $_.AdditionalProperties.createdDateTime).tostring('yyyy-MM-dd')}} | `
         export-csv .\windowsaadjdevices.csv -NoTypeInformation
 ```
+# Get a list Windows devices with the last time they reported a sign in
+```
+Get-MgDevice -filter "operatingSystem eq 'Windows'" -all | Select `
+    displayname, operatingsystem, OperatingSystemVersion, accountenabled, profiletype, trusttype, `
+    @{N="enrollmentType";Expression={$_.AdditionalProperties.enrollmentType}}, `
+    @{N="enrollmentProfileName";Expression={$_.AdditionalProperties.enrollmentProfileName}}, `
+    @{N="createdDateTime";Expression={(get-date $_.AdditionalProperties.createdDateTime).tostring('yyyy-MM-dd')}}, `
+    @{N="ApproximateLastSignInDateTime";Expression={(get-date $_.ApproximateLastSignInDateTime).tostring('yyyy-MM-dd')}} | `
+        export-csv .\windowsdevices.csv -NoTypeInformation
