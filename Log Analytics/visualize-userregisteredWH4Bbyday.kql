@@ -3,3 +3,13 @@ AuditLogs
 | where ActivityDisplayName == "Add Windows Hello for Business credential"
 | summarize Count=count()by OperationName, startofday(TimeGenerated)
 | render columnchart with (kind=unstacked, title="WH4B Registered", xtitle="day")
+
+
+
+
+//this includes mfa stuff
+AuditLogs
+| where TimeGenerated > ago(30d)
+| where ActivityDisplayName in ("Add Windows Hello for Business credential","User registered all required security info")
+| summarize Count=count()by OperationName, startofday(TimeGenerated)
+| render columnchart with (kind=unstacked, title="Added WH4B Cred / MFA Cred", xtitle="day")
