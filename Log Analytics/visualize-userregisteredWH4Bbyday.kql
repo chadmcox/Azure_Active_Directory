@@ -13,3 +13,13 @@ AuditLogs
 | where ActivityDisplayName in ("Add Windows Hello for Business credential","User registered all required security info")
 | summarize Count=count()by OperationName, startofday(TimeGenerated)
 | render columnchart with (kind=unstacked, title="Added WH4B Cred / MFA Cred", xtitle="day")
+
+
+//this gives list of users that ignored wh4b registration
+SigninLogs
+| where CreatedDateTime >= ago(30d)
+| where AppDisplayName == "Microsoft Device Registration Client"
+| extend errorCode = toint(Status.errorCode)
+| extend reason = tostring(Status.failureReason)
+| where errorCode <> 0
+| distinct CreatedDateTime,UserPrincipalName, errorCode, reason
