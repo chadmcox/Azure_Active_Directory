@@ -101,5 +101,6 @@ Invoke-MgGraphRequest -Uri $uri -Method DELETE -OutputType PSObject
 rerun the the cmdlets to retrive the users stored wh4b creds and notice the cred is now gone.
 
 ## Manually Launch Windows Hello for Business Provisioning
+```
 ms-cxh://nthaad
-
+```
