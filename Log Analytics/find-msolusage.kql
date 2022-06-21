@@ -1,0 +1,2 @@
+SigninLogs
+| where AppDisplayName == "Azure Active Directory PowerShell"
