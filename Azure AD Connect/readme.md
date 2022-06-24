@@ -3,7 +3,7 @@
 https://secure.aadcdn.microsoftonline-p.com
 
 2) TLS must be enabled:
-** This script will check the settings: https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Azure%20AD%20Connect/CheckTLSforAADC.ps1
+- This script will check the settings: https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Azure%20AD%20Connect/CheckTLSforAADC.ps1
 This is what I got from this on a default machine
 ```
 Path                                                                                       Name                     Value    
@@ -18,7 +18,7 @@ HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 
 HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Client DisabledByDefault        Not Found
 ```
 
-** This script will enable the settings: https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Azure%20AD%20Connect/EnableTLS12forAADC.ps1
+- This script will enable the settings: https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Azure%20AD%20Connect/EnableTLS12forAADC.ps1
 
 3) .Net Framework should be at least 4.6.2
 
