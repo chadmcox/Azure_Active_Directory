@@ -30,10 +30,10 @@ from the use or distribution of the Sample Code..
  This script is going to create a relationship csv for all of the management groups and subscriptions
 
 #> 
-Param($path="$env:userprofile\Documents")
+Param($path="$env:userprofile\downloads")
 write-host "Need to connect to Azure and Azure AD"
 Connect-AzAccount
-Connect-AzureAD
+#Connect-AzureAD
 
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
