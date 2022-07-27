@@ -38,7 +38,7 @@ $report = "$reportpath\$((Get-AzureADTenantDetail).DisplayName)_AAD_UserSignons_
 function getaadlastazureadlogon{
 param($upn)
     <#this functions checks to see if the objected has signed in over the last 30 days#>
-    $last_signon_date = (Get-AzureADAuditSignInLogs -Filter "userPrincipalName eq '$upn'" | sort CreatedDateTime -Descending | select CreatedDateTime -first 1).CreatedDateTime
+    $last_signon_date = (Get-AzureADAuditSignInLogs -Filter "UserId eq '$upn'" -all $true | sort CreatedDateTime -Descending | select CreatedDateTime -first 1).CreatedDateTime
     write-host "$upn - $last_signon_date"
     if($last_signon_date){get-date $last_signon_date -Format MM/dd/yyyy}
 }
@@ -47,7 +47,7 @@ param($upn)
 write-host "Retrieving users from AzureAD"
 get-azureaduser -all $true -pv user | foreach {
     $user | select objectid, UserPrincipalName, `
-    @{N='LastSignOn';E={getaadlastazureadlogon -upn $_.userprincipalname}}
+    @{N='LastSignOn';E={getaadlastazureadlogon -upn $_.objectid}}
 } | export-csv $report -NoTypeInformation
 
 write-host "Results can be found here: $report"
