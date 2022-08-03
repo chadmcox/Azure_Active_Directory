@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 2020.11.20
+.VERSION 2022.8.03
 
 .GUID 1be4febf-db79-4b83-9e81-ab88b4dda0c8
 
@@ -33,7 +33,7 @@ from the use or distribution of the Sample Code..
 Param($path="$env:userprofile\downloads")
 write-host "Need to connect to Azure and Azure AD"
 Connect-AzAccount
-#Connect-AzureAD
+Connect-AzureAD
 
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
@@ -107,11 +107,11 @@ expandAzMG -name (Get-AzureADTenantDetail).objectid | export-csv "$path\az_paren
 
 write-host "Building visio"
 
-$hash_relationships = import-csv $path\az_parent_child_relationships.csv |  where {$_.childtype -eq "/providers/Microsoft.Management/managementGroups"} | group parent -AsHashTable -AsString
+$hash_relationships = import-csv "$path\az_parent_child_relationships.csv" |  where {$_.childtype -eq "/providers/Microsoft.Management/managementGroups"} | group parent -AsHashTable -AsString
 
-$hash_mgrelationships = import-csv $path\az_parent_child_relationships.csv | where {$_.childtype -eq "/providers/Microsoft.Management/managementGroups"} | group parent -AsHashTable -AsString
+$hash_mgrelationships = import-csv "$path\az_parent_child_relationships.csv" | where {$_.childtype -eq "/providers/Microsoft.Management/managementGroups"} | group parent -AsHashTable -AsString
 
-$hash_subcount = import-csv $path\az_parent_child_relationships.csv | where {$_.childtype -eq "/subscriptions"} | group parent | select name, @{N="Total";E={$_.count}} | group name -AsHashTable -AsString
+$hash_subcount = import-csv "$path\az_parent_child_relationships.csv" | where {$_.childtype -eq "/subscriptions"} | group parent | select name, @{N="Total";E={$_.count}} | group name -AsHashTable -AsString
 
 drawazrelationships -Parent $shape -hl 2 -vl 9
 
