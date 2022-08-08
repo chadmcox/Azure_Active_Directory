@@ -2,6 +2,7 @@
 SigninLogs
 | where TimeGenerated > ago(30d)
 | where ResultType == 0 and AppDisplayName <> 'Windows Sign In' and UserType <> "Guest"
+| where ResourceTenantId == HomeTenantId and AADTenantId == HomeTenantId
 | extend trustType = tostring(DeviceDetail.trustType)
 | extend isCompliant = tostring(DeviceDetail.isCompliant)
 | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
@@ -30,4 +31,16 @@ SigninLogs
 | sort by MFAPercentage asc 
 
 //this will retrive the user and the app that did not have to provide mfa
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0 and AppDisplayName <> 'Windows Sign In' and UserType <> "Guest"
+| where ResourceTenantId == HomeTenantId and AADTenantId == HomeTenantId
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| where TrustedLocation <> 'trustedNamedLocation' 
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where AuthenticationRequirement == "singleFactorAuthentication"
+| distinct AppDisplayName, UserPrincipalName, trustType, TrustedLocation,isCompliant, AuthenticationRequirement,ConditionalAccessStatus
 
+// filter out AppDisplayName <> "Microsoft Authentication Broker"
