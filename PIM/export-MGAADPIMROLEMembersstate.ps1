@@ -21,7 +21,7 @@ function retrieveactualobject{
     Get-MgDirectoryObject -DirectoryObjectId $objectid | select -ExpandProperty AdditionalProperties | Convertto-Json | ConvertFrom-Json | select `
         "@odata.type", displayName, @{N="roleId";E={$members.roleId}}, @{N="roleName";E={$members.roleName}}, `
             @{N="SubjectId";E={$objectid}}, @{N="AssignmentState";E={$members.AssignmentState}}, `
-            @{N="IsMfaRegistered";E={(Get-MgReportAuthenticationMethodUserRegistrationDetail -UserRegistrationDetailsId 0042cc77-efb5-4d94-87ff-78328e2fd489).IsMfaRegistered}}, `
+            @{N="IsMfaRegistered";E={(Get-MgReportAuthenticationMethodUserRegistrationDetail -UserRegistrationDetailsId $objecid).IsMfaRegistered}}, `
             @{N="Permanant";E={$members.Permanant}}
 }
 
