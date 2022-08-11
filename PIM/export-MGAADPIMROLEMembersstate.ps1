@@ -41,7 +41,6 @@ function expandgroup{
     }
 }
 
-
 retrieveaadrolemembers -PipelineVariable members | foreach{
     retrieveactualobject -objectid $members.subjectid -members $members -PipelineVariable cleanmem | foreach {
         $cleanmem | select *, nestedgroup
@@ -50,3 +49,4 @@ retrieveaadrolemembers -PipelineVariable members | foreach{
         }
     }
 } | export-csv .\aadrolemembdershipmfastatus.csv -notypeinformation
+write-host "Results found here: $env:USERPROFILE\Downloads"
