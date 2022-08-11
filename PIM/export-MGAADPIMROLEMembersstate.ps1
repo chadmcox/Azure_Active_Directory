@@ -1,7 +1,7 @@
 Connect-MgGraph
 Select-MgProfile -Name "beta"
 Import-Module Microsoft.Graph.Identity.Governance
-
+cd "$env:USERPROFILE\Downloads"
 $context = get-mgcontext
 
 function retrieveaadrolemembers{
@@ -40,6 +40,7 @@ function expandgroup{
         $groupmems
     }
 }
+
 
 retrieveaadrolemembers -PipelineVariable members | foreach{
     retrieveactualobject -objectid $members.subjectid -members $members -PipelineVariable cleanmem | foreach {
