@@ -4,7 +4,7 @@ Import-Module Microsoft.Graph.Identity.Governance
 cd "$env:USERPROFILE\Downloads"
 $context = get-mgcontext
 
-function retrieveaadrolemembers{
+function retrieveaadpimrolemembers{
     [cmdletbinding()] 
     param()
     Get-MgPrivilegedAccessRoleDefinition -PrivilegedAccessId AADRoles -Filter "resourceId eq '$($context.TenantId)'" | foreach{
@@ -14,12 +14,23 @@ function retrieveaadrolemembers{
             select @{N="roleId";E={$role.Id}}, @{N="roleName";E={$role.DisplayName}}, SubjectId, AssignmentState, `
                 @{N="Permanant";E={if($_.AssignmentState -eq "Active" -and $_.EndDateTime -eq $null){$true}else{$false}}}
     }
+    
 }
+function retrieveaaddirrolemembers{
+    [cmdletbinding()] 
+    param()
+    Get-MgDirectoryRole -all | foreach{$role=$null;$role=$_
+    Get-MgDirectoryRoleMember -DirectoryRoleId $_.id -All | select @{N="roleId";E={$role.Id}}, `
+        @{N="roleName";E={$role.DisplayName}}, @{N="SubjectId";E={$_.ID}}, AssignmentState,Permanant 
+    }
+}
+
+
 function retrieveactualobject{
     [cmdletbinding()] 
     param($objectid,$members)
     Get-MgDirectoryObject -DirectoryObjectId $objectid | select -ExpandProperty AdditionalProperties | Convertto-Json | ConvertFrom-Json | select `
-        "@odata.type", displayName, @{N="roleId";E={$members.roleId}}, @{N="roleName";E={$members.roleName}}, `
+        "@odata.type", displayName,userprincipalname, @{N="roleId";E={$members.roleId}}, @{N="roleName";E={$members.roleName}}, `
             @{N="SubjectId";E={$objectid}}, @{N="AssignmentState";E={$members.AssignmentState}}, `
             @{N="IsMfaRegistered";E={(Get-MgReportAuthenticationMethodUserRegistrationDetail -UserRegistrationDetailsId $objectid).IsMfaRegistered}}, `
             @{N="Permanant";E={$members.Permanant}}
@@ -41,12 +52,20 @@ function expandgroup{
     }
 }
 
-retrieveaadrolemembers -PipelineVariable members | foreach{
+retrieveaadpimrolemembers -PipelineVariable members | foreach{
     retrieveactualobject -objectid $members.subjectid -members $members -PipelineVariable cleanmem | foreach {
         $cleanmem | select *, nestedgroup
         if($_."@odata.type" -eq "#microsoft.graph.group"){
             expandgroup -objectid $cleanmem.SubjectId -member $members -group $cleanmem.displayName
         }
     }
-} | export-csv .\aadrolemembdershipmfastatus.csv -notypeinformation
-write-host "Results found here: $env:USERPROFILE\Downloads"
+} | export-csv .\aadpimrolemembershipmfastatus.csv -notypeinformation
+
+retrieveaaddirrolemembers  -PipelineVariable members | foreach{
+    retrieveactualobject -objectid $members.subjectid -members $members -PipelineVariable cleanmem | foreach {
+        $cleanmem | select *, nestedgroup
+        if($_."@odata.type" -eq "#microsoft.graph.group"){
+            expandgroup -objectid $cleanmem.SubjectId -member $members -group $cleanmem.displayName
+        }
+    }
+} | export-csv .\aaddirectoryrolemembershipmfastatus.csv -notypeinformation
