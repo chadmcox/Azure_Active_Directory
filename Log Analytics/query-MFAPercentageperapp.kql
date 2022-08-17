@@ -4,6 +4,7 @@
 SigninLogs
 | where TimeGenerated > ago(30d)
 | where ResultType == 0
+| where UserType == "Member"
 | summarize
     ['Total Signin Count']=count(),
     ['Total MFA Count']=countif(AuthenticationRequirement == "multiFactorAuthentication"),
