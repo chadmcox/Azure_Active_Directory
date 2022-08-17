@@ -39,7 +39,10 @@ function expandgroup{
     [cmdletbinding()] 
     param($objectid,$members,$group)
     write-host "Exporting $($cleanmem.DisplayName) $($cleanmem.id)"
-    $groupmems = Get-MgPrivilegedAccessRoleAssignment -PrivilegedAccessId aadGroups -Filter "resourceId eq '$objectid'" | foreach{
+    $groupmems = Get-MgPrivilegedAccessRoleAssignment -PrivilegedAccessId aadGroups -Filter "resourceId eq '$objectid'" | foreach{$pag=$null;$pag=$_
+        #originally this was taking the pim values from the group, now it is taking from the user.
+        $members.Permanant = $(if($pag.AssignmentState -eq "Active" -and $pag.EndDateTime -eq $null){$true}else{$false})
+        $members.AssignmentState = $pag.AssignmentState
         retrieveactualobject -objectid $_.subjectid -members $members | select *, @{N="nestedgroup";E={$group}}            
     }
     if(!($groupmems)){
