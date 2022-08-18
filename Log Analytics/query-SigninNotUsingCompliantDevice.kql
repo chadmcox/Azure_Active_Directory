@@ -1,0 +1,29 @@
+//this first query looks for signin's that do not have a compliant device.
+SigninLogs
+| where TimeGenerated > ago(7d)
+| where ResultType == 0 and AppDisplayName <> 'Windows Sign In' and UserType <> "Guest"
+| where ResourceTenantId == HomeTenantId and AADTenantId == HomeTenantId
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend deviceName = tostring(DeviceDetail.displayName)
+| extend os = tostring(DeviceDetail.operatingSystem)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| where isCompliant <> 'true'
+| distinct UserPrincipalName, os, deviceName, trustType, isCompliant, AuthenticationRequirement, ConditionalAccessStatus, TrustedLocation
+
+
+
+
+//--------------------------------------------------------
+//this kql one includes a filter for hybrid devices
+SigninLogs
+| where TimeGenerated > ago(7d)
+| where ResultType == 0 and AppDisplayName <> 'Windows Sign In' and UserType <> "Guest"
+| where ResourceTenantId == HomeTenantId and AADTenantId == HomeTenantId
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend deviceName = tostring(DeviceDetail.displayName)
+| extend os = tostring(DeviceDetail.operatingSystem)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| distinct UserPrincipalName, os, deviceName, trustType, isCompliant, AuthenticationRequirement, ConditionalAccessStatus, TrustedLocation
