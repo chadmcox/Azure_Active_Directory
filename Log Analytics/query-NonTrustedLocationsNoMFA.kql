@@ -1,0 +1,8 @@
+let timerange=30d;
+SigninLogs
+| where TimeGenerated > ago(timerange)
+| where NetworkLocationDetails !contains "trustedNamedLocation" and UserType <> "Guest"
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication"
+| where AppDisplayName  <> "Windows Sign In" and AppDisplayName <> "Microsoft Authentication Broker"
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement
