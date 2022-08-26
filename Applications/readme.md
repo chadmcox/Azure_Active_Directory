@@ -63,8 +63,7 @@ Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and prefer
 ```
 Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","Application.Read.All"
 Select-MgProfile -Name beta
-
 Get-MgServicePrincipal -all -ExpandProperty owners | select `
     id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname, `
     @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}
-'''
+```
