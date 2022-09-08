@@ -178,9 +178,9 @@ if(check-file -file $azure_rbac_file){
 }
 
 
-$azure_pimrole_file = ".\azurePimRoleMembers.tmp"
-write-host "Getting all Azure Roles in PIM"
-gatherPIMRoleMembers | export-csv $azure_pimrole_file -NoTypeInformation
+#$azure_pimrole_file = ".\azurePimRoleMembers.tmp"
+#write-host "Getting all Azure Roles in PIM"
+#gatherPIMRoleMembers | export-csv $azure_pimrole_file -NoTypeInformation
 
 @(import-csv $azure_rbac_file; import-csv $azure_pimrole_file) | export-csv ".\AzureRoleAssignmentsReport.csv" -NoTypeInformation
 write-host "Completed after $("{0:N2}" -f (New-TimeSpan -start $startTime -end (get-date)).TotalHours) hours"
