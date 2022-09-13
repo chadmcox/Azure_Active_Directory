@@ -1,0 +1,6 @@
+ADFSSignInLogs
+| extend Network = tostring(iff(NetworkLocationDetails contains "extranet", 'extranet','intranet'))
+| extend authenticationMethod = tostring(iff(AuthenticationDetails contains "Password", 'Password','Integrated Windows Authentication'))
+| where AuthenticationDetails !contains "Requirement satisfied by claim in the token"
+| where ResultType == 0
+| distinct UserPrincipalName, Network, ResourceIdentity, authenticationMethod, Requirement
