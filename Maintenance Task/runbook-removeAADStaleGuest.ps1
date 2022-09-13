@@ -105,7 +105,7 @@ $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest' and 
 return-AADMSGraph -Uri $uri -pv user | where {!($_.onPremisesSyncEnabled -eq $true)} | where {($_.signInActivity.lastSignInDateTime -eq $null) -or ((New-TimeSpan -Start $_.signInActivity.lastSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
     where {($user.signInActivity.lastNonInteractiveSignInDateTime -eq $null) -or ((New-TimeSpan -Start $user.signInActivity.lastNonInteractiveSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
         select id,displayName,signInActivity,userPrincipalName -first $removalthreshold | foreach{
-            Write-Output "Deleting - $($user.userPrincipalName) : noninteractive $($user.signInActivity.lastSignInDateTime)"
+            Write-Output "Deleting - $($user.userPrincipalName) : lastSignInDateTime $($user.signInActivity.lastSignInDateTime)"
             remove-AADGuestUser -guestid $user.id
             #Write-Output "Restoring - $($user.userPrincipalName)"
             #restore-AADGuestUser -guestid $user.id
