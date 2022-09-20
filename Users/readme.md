@@ -1,4 +1,4 @@
-# AAD User Scripts
+# AAD User Scripts / CMDlets
 
 ## get a list of users with basic sign-in and pwd information
 ```
@@ -49,4 +49,14 @@ AccountEnabled
 ## create-AADMGUserReport.ps1
 Get a list of all member users, includes last time password was changed and last time the user logged in.
 
-## 
+## Get a list of Users that are more than likely enabled shared mailboxes. 
+### Using Powershell 
+```
+#connect to mggraph
+Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All","UserAuthenticationMethod.Read.All"
+Select-MgProfile -Name beta
+
+Get-MgUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Property id, displayName, signInActivity, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, mail, lastPasswordChangeDateTime, AssignedLicenses,proxyAddresses | `
+    where {$_.onPremisesSyncEnabled -ne $true -and $_.mail -like "*@*" -and !($_.AssignedLicenses -ne $null)} | `
+        select id, displayName, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, mail, lastPasswordChangeDateTime
+```
