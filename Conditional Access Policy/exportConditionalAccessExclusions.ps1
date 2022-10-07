@@ -78,4 +78,4 @@ function getcaopexclusions{
     }
 }
 
-getcaopexclusions | select cap, id, displayName, userPrincipalName -Unique | export.csv .\conditional_access_policy_user_exclusions.csv -notypeinformation
+getcaopexclusions | select cap, id, displayName, userPrincipalName -Unique | export-csv .\conditional_access_policy_user_exclusions.csv -notypeinformation
