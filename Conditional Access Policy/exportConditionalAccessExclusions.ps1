@@ -46,13 +46,18 @@ function expandGroupMembership{
     }
 }
 
-function getcaopexclusions{
+function getcapexclusions{
     [cmdletbinding()]
     param()
-    Get-MgIdentityConditionalAccessPolicy <#| where {$_.state -eq "enabled"}#> | foreach{$cap=$null;$cap=$_
+    Get-MgIdentityConditionalAccessPolicy | where {$_.state -eq "enabled"} | foreach{$cap=$null;$cap=$_
         $script:alreadyenumerated = @{}
         $cap.conditions.users.excludeUsers | foreach{
-            Get-MgUser -userid $_ | select @{N="CAP";E={$cap.displayname}},id, displayName, userPrincipalName
+            if($_ -ne "GuestsOrExternalUsers"){
+                try{Get-MgUser -userid $_ | select @{N="CAP";E={$cap.displayname}},id, displayName, userPrincipalName}
+                    catch{$_ | select @{N="CAP";E={$cap.displayname}},@{N="id";E={$_}}, @{N="displayName";E={"not resolving"}}, userPrincipalName}
+            }else{
+                $_ | select @{N="CAP";E={$cap.displayname}},@{N="id";E={$_}}, displayName, userPrincipalName
+            }
         }
         $cap.conditions.users.excludeGroups | foreach{
             $script:alreadyenumerated = @{}
@@ -78,4 +83,4 @@ function getcaopexclusions{
     }
 }
 
-getcaopexclusions | select cap, id, displayName, userPrincipalName -Unique | export-csv .\conditional_access_policy_user_exclusions.csv -notypeinformation
+getcapexclusions | select cap, id, displayName, userPrincipalName -Unique | export-csv .\conditional_access_policy_user_exclusions.csv -notypeinformation
