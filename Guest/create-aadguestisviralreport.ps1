@@ -20,7 +20,7 @@ you can remove the guest user account from your directory and resend an invitati
 https://docs.microsoft.com/en-us/azure/active-directory/external-identities/reset-redemption-status
 #>
 param($resultslocation = "$env:USERPROFILE\Downloads")
-
+Add-Type -AssemblyName System.Web
 Connect-MgGraph -Scopes "User.ReadBasic.All", "User.Read.All","Directory.Read.All","Directory.AccessAsUser.All"
 
 function getAADGuest{
