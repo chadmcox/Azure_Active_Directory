@@ -54,7 +54,7 @@ function returnSPDelegatedPerms{
     foreach($aadsp in $aadsps){
         write-host "$($aadsp.displayname)"
         $spra_uri = "https://graph.microsoft.com/beta/servicePrincipals/$($aadsp.id)/appRoleAssignments"
-        getFromMSGraph -uri $spra_uri | foreach{$approle=$null;$approle=$_
+        $aadsp | select -ExpandProperty appRoleAssignments -pv approle | foreach{
             $hash_approles[$_.appRoleId] | select `
             @{Name="Principal";Expression={$aadsp.displayname}}, `
             @{Name="PrincipalID";Expression={$aadsp.ID}}, `
@@ -65,14 +65,14 @@ function returnSPDelegatedPerms{
             @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}}, `
             @{Name="PrincipalValidCred";Expression={$cred_hash.containskey($aadsp.Appid)}}, `
             @{Name="Scope";Expression={$_.value}}, `
-            @{Name="API";Expression={$_.ResourceDisplayName}}, `
+            @{Name="API";Expression={$approle.ResourceDisplayName}}, `
             @{Name="Description";Expression={$_.Description -replace "`n|`r"," " }}
         }
     }
 }
 
 write-host "Retrieving every Service Principal"
-$sp_uri = "https://graph.microsoft.com/beta/servicePrincipals?`$expand=owners"
+$sp_uri = "https://graph.microsoft.com/beta/servicePrincipals?`$expand=appRoleAssignments"
 $aadsps = getFromMSGraph -uri $sp_uri
 write-host "Retrieving every App"
 $app_uri = "https://graph.microsoft.com/beta/applications"
