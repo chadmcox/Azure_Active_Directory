@@ -82,4 +82,4 @@ $cred_hash = createcredhash | group appid -AsHashTable -AsString
 write-host "Building Report"
 returnSPDelegatedPerms | export-csv .\aad_appperms.csv -NoTypeInformation
 
-write-host "Results found here"
+write-host "Results found here $defaultpath"
