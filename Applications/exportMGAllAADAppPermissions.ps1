@@ -44,11 +44,11 @@ function createcredhash{
             $_.PasswordCredentials | where {(get-date ($_.EndDateTime)) -gt (get-date).DateTime} | select @{Name="appId";Expression={$appid}},EndDateTime
         }
 }
-function returnSPDelegatedPerms{
+function returnSPPerms{
     [cmdletbinding()]
         param()
 
-    $hash_approles = $allSPs | where {$_.approles.AllowedMemberTypes -like "Application"} | `
+    $hash_approles = $aadsps | where {$_.approles.AllowedMemberTypes -like "Application"} | `
             select -ExpandProperty AppRoles | group id -AsHashTable -AsString
 
     foreach($aadsp in $aadsps){
@@ -80,6 +80,6 @@ $aadApps = getFromMSGraph -uri $app_uri | select appid, KeyCredentials, Password
 write-host "Building credential hash"
 $cred_hash = createcredhash | group appid -AsHashTable -AsString
 write-host "Building Report"
-returnSPDelegatedPerms | export-csv .\aad_appperms.csv -NoTypeInformation
+returnSPPerms | export-csv .\aad_appperms.csv -NoTypeInformation
 
 write-host "Results found here $defaultpath"
