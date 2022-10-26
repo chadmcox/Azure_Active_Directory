@@ -66,6 +66,6 @@ getFromMSGraph -uri $uri | where {$_.appDisplayName -notlike "*sharepoint*"} | s
     $uri_t = "https://graph.microsoft.com/beta/tenantRelationships/findTenantInformationByTenantId(tenantId='$($event.ResourceTenantId)')"
     getFromMSGraph -uri $uri_t
     }
-} | select tenantId, defaultDomainName, @{Name="appDisplayName";Expression={$event.appDisplayName}} | export-csv .\azuread_resource_tenants.csv -NoTypeInformation
+} | select tenantId, displayName, defaultDomainName, @{Name="appDisplayName";Expression={$event.appDisplayName}} | export-csv .\azuread_resource_tenants.csv -NoTypeInformation
 
 write-host "file can be found here $env:USERPROFILE\Downloads" 
