@@ -50,7 +50,7 @@ ScopedMembers        :
 AdditionalProperties : {}
 ```
 # List Directory Role Members
-*This is tricky as the items are stored in the additional properties.  because the formatting is wrong have to run it through a foreach in order for it to format to an object.
+* This is tricky as the items are stored in the additional properties.  because the formatting is wrong have to run it through a foreach in order for it to format to an object.
 ```
 PS C:\WINDOWS\system32> $gaID = Get-MgDirectoryRole -filter "RoleTemplateId eq '62e90394-69f5-4237-9190-012177145e10'"
 Get-MgDirectoryRoleMember -DirectoryRoleId $gaID.id | select -ExpandProperty AdditionalProperties | foreach{
