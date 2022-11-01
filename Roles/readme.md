@@ -22,7 +22,7 @@ ScopedMembers        :
 AdditionalProperties : {}
 ```
 # List role member by roletemplateid
-``
+```
 PS C:\WINDOWS\system32> Get-MgDirectoryRole -filter "RoleTemplateId eq '62e90394-69f5-4237-9190-012177145e10'" | select *
 
 
@@ -34,7 +34,7 @@ Members              :
 RoleTemplateId       : 62e90394-69f5-4237-9190-012177145e10
 ScopedMembers        : 
 AdditionalProperties : {}
-``
+```
 # List by displayname
 ```
 PS C:\WINDOWS\system32> Get-MgDirectoryRole -filter "displayName eq 'Global Administrator'" | select *
