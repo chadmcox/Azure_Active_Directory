@@ -1,4 +1,4 @@
-# list roles
+# List Azure AD Directory Roles
 ```
 PS C:\WINDOWS\system32> Get-MgDirectoryRole | select *
 
@@ -21,7 +21,7 @@ RoleTemplateId       : 7698a772-787b-4ac8-901f-60d6b08affd2
 ScopedMembers        : 
 AdditionalProperties : {}
 ```
-# List role member by roletemplateid
+# Get Azure AD Directory Role by roletemplateid
 ```
 PS C:\WINDOWS\system32> Get-MgDirectoryRole -filter "RoleTemplateId eq '62e90394-69f5-4237-9190-012177145e10'" | select *
 
@@ -35,7 +35,7 @@ RoleTemplateId       : 62e90394-69f5-4237-9190-012177145e10
 ScopedMembers        : 
 AdditionalProperties : {}
 ```
-# List by displayname
+# Get Azure AD Directory Role by displayname
 ```
 PS C:\WINDOWS\system32> Get-MgDirectoryRole -filter "displayName eq 'Global Administrator'" | select *
 
@@ -49,7 +49,7 @@ RoleTemplateId       : 62e90394-69f5-4237-9190-012177145e10
 ScopedMembers        : 
 AdditionalProperties : {}
 ```
-# List Directory Role Members
+# Get Global Administrator Members by RoleTemplateId
 * This is tricky as the items are stored in the additional properties.  because the formatting is wrong have to run it through a foreach in order for it to format to an object.
 ```
 PS C:\WINDOWS\system32> $gaID = Get-MgDirectoryRole -filter "RoleTemplateId eq '62e90394-69f5-4237-9190-012177145e10'"
