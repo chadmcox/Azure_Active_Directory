@@ -1,4 +1,28 @@
-cd "$env:USERPROFILE\downloads"
+<#PSScriptInfo
+.VERSION 2022.12.7
+.GUID 65460b6b-943b-4ac7-980c-91e57d9db760
+.AUTHOR Chad.Cox@microsoft.com
+    https://github.com/chadmcox
+.COMPANYNAME 
+.COPYRIGHT This Sample Code is provided for the purpose of illustration only and is not
+intended to be used in a production environment.  THIS SAMPLE CODE AND ANY
+RELATED INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.  We grant You a
+nonexclusive, royalty-free right to use and modify the Sample Code and to
+reproduce and distribute the object code form of the Sample Code, provided
+that You agree: (i) to not use Our name, logo, or trademarks to market Your
+software product in which the Sample Code is embedded; (ii) to include a valid
+copyright notice on Your software product in which the Sample Code is embedded;
+and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
+against any claims or lawsuits, including attorneys` fees, that arise or result
+from the use or distribution of the Sample Code..
+.TAGS 
+.DETAILS
+.EXAMPLE
+#>
+param($path="$env:USERPROFILE\downloads")
+cd $path
 
 function login-MSGraph{
     Get-MgEnvironment | select name | out-host
@@ -58,9 +82,7 @@ $critical_role_template_guids = @("62e90394-69f5-4237-9190-012177145e10", ` #Com
     "fe930be7-5e62-47db-91af-98c3a49a38b1", ` #User Administrator
     "729827e3-9c14-49f7-bb1b-9608f156bbb8") #Helpdesk Administrator
 
-#export all enabled conditional access policies
-$uri = "$script:graphendpoint/beta/identity/conditionalAccess/policies"
-$all_conditional_access_policies = get-MSGraphRequest -uri $uri | where {$_.state -eq "enabled"}
+
 
 function get-commoncapolicies{
     [cmdletbinding()] 
@@ -85,8 +107,10 @@ function get-commoncapolicies{
     $Policy = "Always require MFA from untrusted networks"
     $found = $null;$found = $all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | `
         where {$_.conditions.applications.includeApplications -eq 'All'} | `
-        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa")} | `
+        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
         where {!($_.conditions.signInRiskLevels -like "*")} | `
+        where {!($_.conditions.userRiskLevels -like "*")} | `
+        where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -gt 0}
     $Protection_Level | select @{n='Section';e={"Common Identity Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
@@ -167,8 +191,9 @@ function get-commoncapolicies{
     $Policy = "Always require MFA"
     $found = $null;$found = $all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | `
         where {$_.conditions.applications.includeApplications -eq 'All'} | `
-        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa")} | `
+        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
         where {!($_.conditions.signInRiskLevels -like "*")} | `
+        where {!($_.conditions.userRiskLevels -like "*")} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     $Protection_Level | select @{n='Section';e={"Common Identity Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
@@ -229,8 +254,9 @@ function get-privcapolicies{
     $found = $null;$found = $all_conditional_access_policies  | `
         where {($_.conditions.users.includeRoles -like "*") -or ($_.conditions.users.includeUsers -eq "All")} | `
         where {$_.conditions.applications.includeApplications -eq 'All'} | `
-        where {($_.grantControls.builtInControls -like "*mfa*") -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa")} | `
+        where {($_.grantControls.builtInControls -like "*mfa*") -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
         where {!($_.conditions.signInRiskLevels -like "*")} | `
+        where {!($_.conditions.userRiskLevels -like "*")} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     #is all user defined?
     $priv_found = @()
@@ -402,12 +428,28 @@ function get-md4cacapolicies{
 
 function export-capscenerio{
     cls
+    write-host "Finding Common Policies"
     get-commoncapolicies
+    write-host "Finding Privileged User Policies"
     get-privcapolicies
+    write-host "Finding External User Policies"
     get-guestcapolicies
+    write-host "Finding SharePoint Online Policies"
     get-sharepointcapolicies
+    write-host "Finding Exchange Online Policies"
     get-exchangecapolicies
+    write-host "Finding Defender for Cloud App Policies"
     get-md4cacapolicies
 }
+
+#login
 login-MSGraph
-export-capscenerio  | export-csv .\zero_trust_policies.csv -NoTypeInformation
+#export all enabled conditional access policies
+$uri = "$script:graphendpoint/beta/identity/conditionalAccess/policies"
+$all_conditional_access_policies = get-MSGraphRequest -uri $uri | where {$_.state -eq "enabled"}
+
+#this is used to add prefix to file name
+$tenant = (get-mgdomain  | where isdefault -eq $true).id
+#run the function that runes each individual functions
+export-capscenerio  | export-csv ".\$($tenant)_zero_trust_policies.csv" -NoTypeInformation
+write-host "Results found here: $path" -ForegroundColor Yellow
