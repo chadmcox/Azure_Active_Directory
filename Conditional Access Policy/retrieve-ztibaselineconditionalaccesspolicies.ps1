@@ -194,6 +194,7 @@ function get-commoncapolicies{
         where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
         where {!($_.conditions.signInRiskLevels -like "*")} | `
         where {!($_.conditions.userRiskLevels -like "*")} | `
+        where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     $Protection_Level | select @{n='Section';e={"Common Identity Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
