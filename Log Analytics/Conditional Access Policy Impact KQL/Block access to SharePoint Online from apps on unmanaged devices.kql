@@ -1,3 +1,4 @@
+//query shows users that use non browser apps to access sharepoint online from untrusted devices.
 SigninLogs | where TimeGenerated > ago(14d) and ResultType == 0 and UserType <> "Guest" and AppDisplayName == "Office 365 SharePoint Online" 
 | extend trustType = tostring(DeviceDetail.trustType) | extend isCompliant = tostring(DeviceDetail.isCompliant) 
 | extend deviceName = tostring(DeviceDetail.displayName) | extend os = tostring(DeviceDetail.operatingSystem) 
