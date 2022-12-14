@@ -1,4 +1,5 @@
 //https://github.com/reprise99/Sentinel-Queries/blob/main/Azure%20Active%20Directory/Identity-Top20AppswithnoCA.kql
+//This query shows applications that are not protected by conditional access policies.
 let apps=
     SigninLogs
     | where TimeGenerated > ago (30d)
