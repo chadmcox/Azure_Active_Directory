@@ -1,3 +1,7 @@
+//the idea of the query is to look for privilaged accounts and see how many of them would experience a block
+//This is actually hard to do since there is no native table that list out the users.
+//I have tried solving this by using the pim activation logs.
+
 //This query requires Azure AD Privileged Identity Management is being used to elevate users into roles
 let privroles = pack_array("Application Administrator","Authentication Administrator","Cloud Application Administrator","Conditional Access Administrator","Exchange Administrator","Global Administrator","Helpdesk Administrator","Hybrid Identity Administrator","Password Administrator","Privileged Authentication Administrator","Privileged Role Administrator","Security Administrator","SharePoint Administrator","User Administrator");
 let privusers = AuditLogs 
