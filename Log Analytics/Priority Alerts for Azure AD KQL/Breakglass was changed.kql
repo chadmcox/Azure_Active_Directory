@@ -1,0 +1,6 @@
+//if changes are made against the breakglass
+AuditLogs
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| where Target in ('breakglass@contoso.com','breakglass2@contoso.com')
+| distinct TimeGenerated, OperationName, Actor, Target
