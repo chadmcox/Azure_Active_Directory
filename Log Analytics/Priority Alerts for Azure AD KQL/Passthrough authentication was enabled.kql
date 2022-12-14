@@ -1,0 +1,5 @@
+//ActivityDisplayName eq 'Enable passthrough authentication'
+AuditLogs
+| where OperationName == "Enable passthrough authentication"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| distinct TimeGenerated, OperationName, Actor
