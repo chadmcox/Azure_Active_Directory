@@ -1,0 +1,12 @@
+let office = (externaldata(defaultappid:string)[@"https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Applications/o365list.txt"]
+with(format="txt"));
+AADNonInteractiveUserSignInLogs 
+| union SigninLogs 
+| where TimeGenerated > ago(14d) and ResultType == 0 and AppId in (office) and UserType <> "Guest"
+| extend trustType = tostring(DeviceDetail_dynamic.trustType) 
+| extend isCompliant = tostring(DeviceDetail_dynamic.isCompliant) 
+| extend deviceName = tostring(DeviceDetail_dynamic.displayName) 
+| extend os = tostring(DeviceDetail_dynamic.operatingSystem) 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined" 
+| distinct UserPrincipalName, os, deviceName, trustType, isCompliant, ConditionalAccessStatus, TrustedLocation, AppDisplayName
