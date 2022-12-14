@@ -1,1 +1,16 @@
+//https://learn.microsoft.com/en-us/azure/active-directory/conditional-access/concept-conditional-access-report-only#policy-results
+//change the name of the conditional access policy in the double quotes to the name of the policy
+//you want to review
+let capname = "All Users - Sign-in Risk Block Microsoft Azure Management (low,medium,high)";
+SigninLogs
+| where CreatedDateTime >= ago(1d)  
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies["displayName"] == capname
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result <> "reportOnlyNotApplied"
+| project-away ConditionalAccessPolicies
+| distinct AppDisplayName, ResourceDisplayName, result, UserPrincipalName
 
+
+
+//working on the non interactive log aspect to this one
