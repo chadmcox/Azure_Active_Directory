@@ -1,0 +1,9 @@
+//ActivityDisplayName eq 'Add user'
+AuditLogs
+| where OperationName == "Add user"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| where Actor !contains "Sync_"
+| where Actor <> "Microsoft Substrate Management"
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| where Target !contains "#EXT#"
+| project TimeGenerated, OperationName, Actor, Target
