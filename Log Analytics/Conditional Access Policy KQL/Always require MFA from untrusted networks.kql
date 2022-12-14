@@ -1,0 +1,9 @@
+AADNonInteractiveUserSignInLogs 
+| union SigninLogs 
+| where TimeGenerated > ago(14d) 
+| where NetworkLocationDetails !contains "trustedNamedLocation" and UserType <> "Guest" 
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| where AppDisplayName  <> "Windows Sign In" and AppDisplayName <> "Microsoft Authentication Broker" and AppDisplayName <> 'Microsoft Account Controls V2' 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
+| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, TrustedLocation, Category 
+| summarize apps=make_list(AppDisplayName) by UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, TrustedLocation, Category
