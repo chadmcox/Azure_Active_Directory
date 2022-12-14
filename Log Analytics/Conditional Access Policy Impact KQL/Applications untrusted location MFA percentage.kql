@@ -1,4 +1,5 @@
 //https://github.com/reprise99/Sentinel-Queries/tree/main/Azure%20Active%20Directory
+//this query shows application and the percentage of authentications that require mfa from untrusted locations
 SigninLogs
 | where TimeGenerated > ago(30d)
 | where ResultType == 0
