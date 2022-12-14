@@ -1,3 +1,4 @@
+//this query will show users that login from untrusted networks and only provide singlefactor authentication
 AADNonInteractiveUserSignInLogs 
 | union SigninLogs 
 | where TimeGenerated > ago(14d) 
