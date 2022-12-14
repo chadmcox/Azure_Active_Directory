@@ -12,5 +12,14 @@ SigninLogs
 | distinct AppDisplayName, ResourceDisplayName, result, UserPrincipalName
 
 
-
-//working on the non interactive log aspect to this one
+// I wanted to union the noninteractive logs, but it was crazy slow
+//In order to get this to return anything I have the default set to 1h, may have to keep it shor to run
+let capname = "All Users - Sign-in Risk Block Microsoft Azure Management (low,medium,high)";
+AADNonInteractiveUserSignInLogs
+| where CreatedDateTime >= ago(1h) and ResultType == 0  
+| mv-expand parse_json(ConditionalAccessPolicies)
+| where ConditionalAccessPolicies["displayName"] == capname
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result <> "reportOnlyNotApplied"
+| project-away ConditionalAccessPolicies
+| project AppDisplayName, ResourceDisplayName, result, UserPrincipalName, Category
