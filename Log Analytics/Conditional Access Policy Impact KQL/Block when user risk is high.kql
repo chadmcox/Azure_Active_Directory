@@ -1,4 +1,3 @@
-
 SigninLogs 
 | where TimeGenerated > ago(14d) 
 | where RiskState == "atRisk" and RiskLevelAggregated == "high"
