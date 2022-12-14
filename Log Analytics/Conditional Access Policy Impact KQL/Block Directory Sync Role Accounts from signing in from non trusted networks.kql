@@ -1,3 +1,4 @@
+//this query shows if the aad connect account is signing in from untrusted locations
 AADNonInteractiveUserSignInLogs 
 | union SigninLogs 
 | where TimeGenerated > ago(14d) 
