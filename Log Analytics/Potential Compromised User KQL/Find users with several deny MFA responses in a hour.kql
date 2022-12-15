@@ -1,0 +1,16 @@
+//https://github.com/reprise99/Sentinel-Queries/blob/main/Azure%20Active%20Directory/Identity-PotentialMFASpam.kql
+
+//Simple query to count users being spammed with denies or not responding in one hour time windows
+SigninLogs
+| project
+    TimeGenerated,
+    AuthenticationRequirement,
+    AuthenticationDetails,
+    UserPrincipalName,
+    CorrelationId
+| where AuthenticationRequirement == "multiFactorAuthentication"
+| extend AuthResult = tostring(parse_json(AuthenticationDetails)[1].authenticationStepResultDetail)
+| where AuthResult in ("MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
+| summarize ['Result Types']=make_list(AuthResult), ['Result Count']=count() by UserPrincipalName, bin(TimeGenerated, 60m)
+//Find hits with greater than 3 failures in an hour
+| where ['Result Count'] > 3
