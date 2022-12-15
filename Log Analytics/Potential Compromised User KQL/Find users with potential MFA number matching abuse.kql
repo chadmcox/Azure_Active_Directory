@@ -1,0 +1,19 @@
+//https://github.com/reprise99/Sentinel-Queries/blob/main/Azure%20Active%20Directory/Identity-PotentialMFANumberMatchingAbuse.kql
+
+//This query finds any time a user denies an authentication, enters the wrong number or just doesn't respond three or more times in a single sign in event
+SigninLogs
+| project
+    TimeGenerated,
+    AuthenticationRequirement,
+    AuthenticationDetails,
+    UserPrincipalName,
+    CorrelationId,
+    ResultType
+| where ResultType == 500121
+| mv-expand todynamic(AuthenticationDetails)
+| extend AuthResult = tostring(parse_json(AuthenticationDetails).authenticationStepResultDetail)
+| where AuthResult in ("MFA denied; user did not select the correct number")
+//Create a list of denied MFA challenges by sign in attempt (single CorrelationId)
+| summarize ['Result Types']=make_list(AuthResult) by CorrelationId, UserPrincipalName
+//Find results where there are at least 3 failures within the same sign in, i.e three denies, three did not respond events or three did not select the correct number
+| where array_length( ['Result Types']) > 2
