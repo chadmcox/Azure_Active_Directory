@@ -1,5 +1,6 @@
 SigninLogs 
 | where TimeGenerated > ago(14d) and UserType == "Guest" 
 | where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| where AADTenantId == ResourceTenantId
 | distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,Category 
 | summarize apps=make_list(AppDisplayName) by UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, Category
