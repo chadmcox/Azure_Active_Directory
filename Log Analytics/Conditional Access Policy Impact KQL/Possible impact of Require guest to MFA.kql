@@ -1,3 +1,4 @@
+// URL: https://learn.microsoft.com/en-us/azure/active-directory/external-identities/b2b-tutorial-require-mfa
 SigninLogs 
 | where TimeGenerated > ago(14d) and UserType == "Guest" 
 | where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
