@@ -5,5 +5,6 @@ SigninLogs
 | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
 | extend isIPv6 = tostring(iff(IPAddress matches regex @"(([\d|\w]{1,4}\:){7}[\d|\w]{1,4})",'Yes','No'))
 | distinct IPAddress, TrustedLocation, UserPrincipalName, isIPv6
-| summarize count = count() by IPAddress, TrustedLocation, isIPv6
-| where count > 1
+| summarize usercountbyip = count() by IPAddress, TrustedLocation, isIPv6
+| where usercountbyip > 1
+| sort by usercountbyip desc 
