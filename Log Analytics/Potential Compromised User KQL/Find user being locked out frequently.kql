@@ -1,7 +1,5 @@
 //this query will list the accounts being disabled frequently
 SigninLogs 
-| where TimeGenerated > ago(5d) 
+| where TimeGenerated > ago(30d) 
 | where ResultType == 50053
-| summarize lockoutcount = count() by UserPrincipalName, startofday(TimeGenerated)
-| where lockoutcount > 5
-| sort by lockoutcount
+| summarize lockoutcount = count() by UserPrincipalName, ResultDescription, AppDisplayName, IPAddress
