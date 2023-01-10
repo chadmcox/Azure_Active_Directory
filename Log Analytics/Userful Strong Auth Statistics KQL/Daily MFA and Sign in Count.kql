@@ -1,0 +1,15 @@
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where UserType == "Member"
+| summarize
+    ['Total Signin Count']=count(),
+    ['Total MFA Count']=countif(AuthenticationRequirement == "multiFactorAuthentication"),
+    ['Total non MFA Count']=countif(AuthenticationRequirement == "singleFactorAuthentication")
+    by startofday(TimeGenerated)
+| project
+    startofday(TimeGenerated),
+    ['Total Signin Count'],
+    ['Total MFA Count'],
+    MFAPercentage=(todouble(['Total MFA Count']) * 100 / todouble(['Total Signin Count']))
+| sort by ['Total Signin Count'] desc, MFAPercentage asc  
