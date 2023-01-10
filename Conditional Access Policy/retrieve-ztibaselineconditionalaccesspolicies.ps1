@@ -19,6 +19,9 @@ against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .TAGS 
 .DETAILS
+this looks for policy from the following articles
+Zero Trust identity and device access configurations
+https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/microsoft-365-policies-configurations
 .EXAMPLE
 #>
 param($path="$env:USERPROFILE\downloads")
