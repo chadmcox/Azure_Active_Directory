@@ -1,0 +1,10 @@
+let trustedNamedLocations = SigninLogs | where TimeGenerated > ago(30d) | where ResultType == "0" | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) | where TrustedLocation == "trustedNamedLocation" | distinct IPAddress;
+AADServicePrincipalSignInLogs  
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| extend TrustedLocation = tostring(iff(IPAddress in (trustedNamedLocations), 'trustedNamedLocation',''))
+| extend City = tostring(parse_json(LocationDetails).city)
+| extend State = tostring(parse_json(LocationDetails).state)
+| extend Country = tostring(parse_json(LocationDetails).countryOrRegion)
+| distinct IPAddress, ServicePrincipalName, City, State, Country, TrustedLocation
+| summarize spcountbyip = count() by IPAddress, City, State, Country, TrustedLocation
