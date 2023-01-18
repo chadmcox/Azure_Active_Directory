@@ -1,0 +1,10 @@
+//this will provide a list of IP addresses and how many unique service principals are hitting up against it
+
+AADServicePrincipalSignInLogs  
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| extend City = tostring(parse_json(LocationDetails).city)
+| extend State = tostring(parse_json(LocationDetails).state)
+| extend Country = tostring(parse_json(LocationDetails).countryOrRegion)
+| distinct IPAddress, ServicePrincipalName, City, State, Country
+| summarize spcountbyip = count() by IPAddress, City, State, Country
