@@ -1,3 +1,5 @@
+//https://learn.microsoft.com/en-us/schooldatasync/blocking-powershell-for-edu
+//Blocking PowerShell for EDU Tenants
 //list of exclusion applications that seem to always have mfa
 let includeapps = pack_array("Graph Explorer","Microsoft Graph PowerShell");
 AADNonInteractiveUserSignInLogs
