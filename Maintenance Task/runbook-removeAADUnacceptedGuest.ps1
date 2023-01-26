@@ -94,7 +94,7 @@ $graphApiHeader = @{ Authorization = "Bearer $graphApiToken" }
 #https://docs.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-beta
 $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest' and externalUserState eq 'PendingAcceptance' and accountEnabled eq true&`$expand=memberOf"
 return-AADMSGraph -Uri $uri -pv user | where {(NEW-TIMESPAN –Start $_.externalUserStateChangeDateTime –End $today).days -gt $notacceptedindays} | `
-    | where {!($_.memberOf.groupTypes -like "*unified*")} | ` #this line makes sure to not remove guest in teams or distribution list to early.
+    | where {!($_.memberOf.groupTypes -contains "Unified")} | ` #this line makes sure to not remove guest in teams or distribution list to early.
     select id, accountEnabled, creationType, mail, displayName, userPrincipalName, userType, externalUserState, externalUserStateChangeDateTime -First $removalthreshold | foreach{
         Write-Output "Removing $($_.userPrincipalName)"
         remove-AADGuestUser -guestid $_.id
