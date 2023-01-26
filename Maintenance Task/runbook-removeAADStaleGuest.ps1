@@ -101,10 +101,12 @@ $graphApiHeader = @{ Authorization = "Bearer $graphApiToken" }
 
 #this is the graph api to users
 #https://docs.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-beta
-$uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest' and externalUserState eq 'Accepted'&`$select=id,displayName,signInActivity,userPrincipalName,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,onPremisesSyncEnabled"
-return-AADMSGraph -Uri $uri -pv user | where {!($_.onPremisesSyncEnabled -eq $true)} | where {($_.signInActivity.lastSignInDateTime -eq $null) -or ((New-TimeSpan -Start $_.signInActivity.lastSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
+$uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest' and accountEnabled eq true&`$select=id,displayName,signInActivity,userPrincipalName,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,onPremisesSyncEnabled&`$expand=memberOf"
+return-AADMSGraph -Uri $uri -pv user | where {!($_.onPremisesSyncEnabled -eq $true)} | `
+    where {($_.signInActivity.lastSignInDateTime -eq $null) -or ((New-TimeSpan -Start $_.signInActivity.lastSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
     where {($user.signInActivity.lastNonInteractiveSignInDateTime -eq $null) -or ((New-TimeSpan -Start $user.signInActivity.lastNonInteractiveSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
     where {$_.externalUserState -ne 'PendingAcceptance' -and ((New-TimeSpan -Start $user.createdDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
+    where {!($_.memberOf.groupTypes -contains "Unified")} | `
         select id,displayName,signInActivity,userPrincipalName -first $removalthreshold | foreach{
             Write-Output "Deleting - $($user.userPrincipalName) : lastSignInDateTime $($user.signInActivity.lastSignInDateTime)"
             remove-AADGuestUser -guestid $user.id
