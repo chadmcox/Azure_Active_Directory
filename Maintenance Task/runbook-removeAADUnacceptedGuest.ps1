@@ -1,5 +1,5 @@
 <#
-.VERSION 2021.12.1
+.VERSION 2023.1.26
 .GUID be1af58d-ee61-4f7e-a57f-b28712ccd991
 .AUTHOR Chad.Cox@microsoft.com
     https://blogs.technet.microsoft.com/chadcox/ (retired)
@@ -30,6 +30,8 @@ will need to be provided to the account.
 
 .Instructions
 This script will remove guest that have not accepted an invite after 30 days.
+
+This has been updated to exclude guest members of unified groups.
 #> 
 #this is the number of days a guest account has to accept before, they are considered to be deleted.
 $notacceptedindays = 30
