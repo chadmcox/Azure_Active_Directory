@@ -39,4 +39,4 @@ $users | select id, userPrincipalName, userDisplayName -pv user | foreach {$i++
         @{N="userDisplayName";E={$user.userDisplayName}}, `
         displayName, deviceTag, phoneAppVersion, clientAppName, `
         @{N="Status";E={if($_.phoneAppVersion -eq "6.6.8" -or $_.phoneAppVersion -eq "6.2210.6754"){"Current"}}}
-}  | export-csv .\hon_msapp_version_export.csv -NoTypeInformation
+}  | export-csv .\msauth_version_export.csv -NoTypeInformation
