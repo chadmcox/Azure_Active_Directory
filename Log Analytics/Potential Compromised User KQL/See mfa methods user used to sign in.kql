@@ -1,0 +1,7 @@
+//update line 4 with the correct upn for the user. This query will show the methods used by a particular user along with IP and risk info
+SigninLogs
+| where TimeGenerated > ago(14d)
+| where UserPrincipalName =~ "changeme@contoso.com"
+| extend MFAMethod = tostring(parse_json(AuthenticationDetails)[1].authenticationMethod)
+| where MFAMethod <> "Previously satisfied" and MFAMethod <> ""
+| distinct TimeGenerated, MFAMethod, UserPrincipalName, AppDisplayName, IPAddress, RiskLevelAggregated, RiskLevelDuringSignIn
