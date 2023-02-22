@@ -1,5 +1,5 @@
 <#
-.VERSION 2021.4.12
+.VERSION 2023.2.22
 .GUID 18c37c40-e24d-4524-8b78-607d6969cb6e
 .AUTHOR Chad.Cox@microsoft.com
     https://blogs.technet.microsoft.com/chadcox/ (retired)
@@ -33,7 +33,6 @@ Once both are complete it combines both tmp files to one file
 #> 
 
 param([switch]$expandgroupmember,$defaultpath=".\")
-connect-azuread
 connect-azaccount
 
 cd $defaultpath
@@ -122,51 +121,38 @@ function gatherPIMRoleMembers{
     $i=0
     foreach($sc in $hash_scopes.keys){$i++
         write-host "Step 2 of 2 / Scope $i of $pim_count - Exporting PIM Roles from: $sc)"
-        $resource = $null; $resource = Get-AzureADMSPrivilegedResource -ProviderId AzureResources -filter "externalId eq '$sc'" -pv resource
-            if(!($resource)){$pimsc = $null
-                write-host "resolving case: $sc)"
-                $pimsc = findScopeCaseforPIM -scope $sc
-                $resource = Get-AzureADMSPrivilegedResource -ProviderId AzureResources -filter "externalId eq '$pimsc'" -pv resource
+        Get-AzRoleEligibilitySchedule -Scope $sc  | where {$_.membertype -ne "Inherited"} | foreach{$assignment = $null;$assignment = $_
+            write-host "Enumerating PIM: $($assignment.RoleDefinitionDisplayName)"
+                    
+            $hash_scopes[$sc].Subscription | foreach{$sub = $null; $sub = $_
+            if($assignment.PrincipalType -eq "Group" -and $expandgroupmember -eq $true){
+                Get-AzADGroupMember -GroupObjectId $assignment.PrincipalId -pv gm | select `
+                    @{Name="Scope";Expression={$sc}}, `
+                    @{Name="ScopeType";Expression={($sc -split "/")[-2]}}, `
+                    @{Name="RoleDefinitionName";Expression={$assignment.RoleDefinitionDisplayName}}, `
+                    @{Name="RoleDefinitionId";Expression={($assignment.RoleDefinitionId -split "/")[-1]}}, `
+                    @{Name="DisplayName";Expression={$gm.DisplayName}}, `
+                    @{Name="SignInName";Expression={$gm.UserPrincipalName}}, `
+                    @{Name="ObjectID";Expression={$gm.ID}}, `
+                    @{Name="ObjectType";Expression={"MemberOf - $($assignment.PrincipalDisplayName)"}}, `
+                    @{Name="Subscription";Expression={$sub}}, `
+                    @{Name="AssignmentState";Expression={"Eligible"}}, `
+                    @{Name="Source";Expression={"Azure PIM"}}
+            } 
+                $assignment | select `
+                    @{Name="Scope";Expression={$sc}}, `
+                    @{Name="ScopeType";Expression={($sc -split "/")[-2]}}, `
+                    @{Name="RoleDefinitionName";Expression={$assignment.RoleDefinitionDisplayName}}, `
+                    @{Name="RoleDefinitionId";Expression={($assignment.RoleDefinitionId -split "/")[-1]}}, `
+                    @{Name="DisplayName";Expression={$assignment.PrincipalDisplayName}}, `
+                    @{Name="SignInName";Expression={$assignment.PrincipalEmail}}, `
+                    @{Name="ObjectID";Expression={$assignment.PrincipalId}}, `
+                    @{Name="ObjectType";Expression={$assignment.PrincipalType}}, `
+                    @{Name="Subscription";Expression={$sub}}, `
+                    @{Name="AssignmentState";Expression={"Eligible"}}, `
+                    @{Name="Source";Expression={"Azure PIM"}}
             }
-            if($resource){
-                Get-AzureADMSPrivilegedRoleAssignment -ProviderId AzureResources -ResourceId $resource.id `
-                        -pv assignment | where {$_.membertype -ne "Inherited"} | foreach{$pimrole = $null
-                    $pimrole = Get-AzureADMSPrivilegedRoleDefinition -ProviderId AzureResources -ResourceId $resource.id -Id $assignment.RoleDefinitionId -pv pimrole
-                    write-host "Enumerating PIM: $($pimrole.DisplayName)"
-                    Get-AzureADObjectByObjectId -ObjectIds $assignment.SubjectId -pv account | where {$_.displayname -ne "MS-PIM"} | foreach{
-                        $hash_scopes[$sc].Subscription | foreach{$sub = $null; $sub = $_
-                        if($account.objecttype -eq "Group" -and $expandgroupmember -eq $true){
-                                Get-AzADGroupMember -GroupObjectId $account.objectid -pv gm | select `
-                                    @{Name="Scope";Expression={$sc}}, `
-                                    @{Name="ScopeType";Expression={($sc -split "/")[-2]}}, `
-                                    @{Name="RoleDefinitionName";Expression={$pimrole.DisplayName}}, `
-                                    @{Name="RoleDefinitionId";Expression={($pimrole.ExternalId -split "/")[-1]}}, `
-                                    @{Name="DisplayName";Expression={$gm.DisplayName}}, `
-                                    @{Name="SignInName";Expression={$gm.UserPrincipalName}}, `
-                                    @{Name="ObjectID";Expression={$gm.ID}}, `
-                                    @{Name="ObjectType";Expression={"MemberOf - $($account.DisplayName)"}}, `
-                                    @{Name="Subscription";Expression={$sub}}, `
-                                    @{Name="AssignmentState";Expression={if($assignment.AssignmentState -like "Active" -and $assignment.EndDateTime -eq $null) `
-                                        {"$($assignment.AssignmentState) - Permanent"}elseif($assignment.AssignmentState -like "Active" -and $assignment.EndDateTime -like "*") `
-                                        {"$($assignment.AssignmentState) - Elevated"}else{$assignment.AssignmentState}}}, `
-                                    @{Name="Source";Expression={"Azure PIM"}}
-                            } 
-                            $account | select `
-                                @{Name="Scope";Expression={$sc}}, `
-                                @{Name="ScopeType";Expression={($sc -split "/")[-2]}}, `
-                                @{Name="RoleDefinitionName";Expression={$pimrole.DisplayName}}, `
-                                @{Name="RoleDefinitionId";Expression={($pimrole.ExternalId -split "/")[-1]}}, `
-                                @{Name="DisplayName";Expression={$account.DisplayName}}, `
-                                @{Name="SignInName";Expression={$account.UserPrincipalName}}, `
-                                @{Name="ObjectID";Expression={$account.objectID}}, `
-                                @{Name="ObjectType";Expression={$account.objecttype}}, `
-                                @{Name="Subscription";Expression={$sub}}, `
-                                @{Name="AssignmentState";Expression={if($assignment.AssignmentState -like "Active" -and $assignment.EndDateTime -eq $null) `
-                                        {"$($assignment.AssignmentState) - Permanent"}elseif($assignment.AssignmentState -like "Active" -and $assignment.EndDateTime -like "*") `
-                                        {"$($assignment.AssignmentState) - Elevated"}else{$assignment.AssignmentState}}}, `
-                                @{Name="Source";Expression={"Azure PIM"}}
-                        }
-                    }}
+                    
             
         }
     }
@@ -178,9 +164,9 @@ if(check-file -file $azure_rbac_file){
 }
 
 
-#$azure_pimrole_file = ".\azurePimRoleMembers.tmp"
-#write-host "Getting all Azure Roles in PIM"
-#gatherPIMRoleMembers | export-csv $azure_pimrole_file -NoTypeInformation
+$azure_pimrole_file = ".\azurePimRoleMembers.tmp"
+write-host "Getting all Azure Roles in PIM"
+gatherPIMRoleMembers | export-csv $azure_pimrole_file -NoTypeInformation
 
 @(import-csv $azure_rbac_file; import-csv $azure_pimrole_file) | export-csv ".\AzureRoleAssignmentsReport.csv" -NoTypeInformation
 write-host "Completed after $("{0:N2}" -f (New-TimeSpan -start $startTime -end (get-date)).TotalHours) hours"
