@@ -1,0 +1,9 @@
+SigninLogs
+| where TimeGenerated > ago(1d)
+| extend CA = parse_json(ConditionalAccessPolicies)
+| mv-expand bagexpansion=array CA
+| evaluate bag_unpack(CA)
+| extend
+    ['CA Outcome']=tostring(column_ifexists('result', "")),
+    ['CA Policy Name'] = column_ifexists('displayName', "")
+| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'])
