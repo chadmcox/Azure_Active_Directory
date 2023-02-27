@@ -59,7 +59,7 @@ $caps = ((Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chadmcox/Azu
     select displayName, state, sessionControls, conditions, grantControls
 
 Connect-MgGraph -Scopes "Policy.Read.All", "Policy.ReadWrite.ConditionalAccess", "Directory.ReadWrite.All", "Directory.AccessAsUser.All" -Environment $mg_env.name
-
+Select-MgProfile -Name beta
 do{
 
     if($caps){
