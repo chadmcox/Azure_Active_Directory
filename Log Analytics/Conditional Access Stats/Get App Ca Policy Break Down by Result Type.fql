@@ -1,16 +1,16 @@
-let apps=
-    SigninLogs
-    | where TimeGenerated > ago (14d)
+let apps=SigninLogs
+    | where TimeGenerated > ago (30d)
     | project TimeGenerated, ConditionalAccessPolicies, AppDisplayName
 //Exclude native Microsoft apps that you can't enforce policy on or that are covered natively in Office 365
     | where AppDisplayName !in ("Microsoft Office Web Apps Service", "Microsoft App Access Panel", "Office Online Core SSO", "Microsoft Authentication Broker", "Microsoft Account Controls V2", "Microsoft 365 Support Service","Office Online Maker SSO","My Apps","My Profile")
     | mv-expand ConditionalAccessPolicies
     | extend CAResult = tostring(ConditionalAccessPolicies.result)
     | summarize ResultSet=make_set(CAResult) by AppDisplayName
-    | where ResultSet !has "success" or ResultSet !has "failure"
+    | where ResultSet has "success" or ResultSet has "failure"
     | project AppDisplayName;
-SigninLogs
-| where TimeGenerated > ago(30d)
+AADNonInteractiveUserSignInLogs 
+| union SigninLogs
+| where TimeGenerated > ago(14d)
 | where AppDisplayName in (apps)
 | summarize
     ['Total Signin Count']=count(),
