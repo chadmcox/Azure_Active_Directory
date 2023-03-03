@@ -16,7 +16,7 @@ this script will create a list of guest users
 #>
 param($resultslocation = "$env:USERPROFILE\Downloads")
 
-Connect-MgGraph -Scopes "User.ReadBasic.All", "User.Read.All","Directory.Read.All","Directory.AccessAsUser.All"
+Connect-MgGraph -Scopes "User.ReadBasic.All", "User.Read.All","Directory.Read.All","Directory.AccessAsUser.All","Auditlog.Read.all"
 cd $resultslocation
 
 function getAADGuest{
