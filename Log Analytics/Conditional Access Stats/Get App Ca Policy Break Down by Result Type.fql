@@ -11,7 +11,6 @@ let apps=
     | project AppDisplayName;
 SigninLogs
 | where TimeGenerated > ago(30d)
-| where ResultType == 0
 | where AppDisplayName in (apps)
 | summarize
     ['Total Signin Count']=count(),
