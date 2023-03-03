@@ -1,4 +1,4 @@
-
+SigninLogs
 | where TimeGenerated > ago (14d)
 | extend trustType = tostring(DeviceDetail.trustType)
 | extend isCompliant = tostring(DeviceDetail.isCompliant)
