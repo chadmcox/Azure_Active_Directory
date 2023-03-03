@@ -14,7 +14,7 @@ SigninLogs
 | where AppDisplayName in (apps)
 | summarize
     ['Total Signin Count']=count(),
-    ['Total Successful Logins']=countif(ResultType == 53003),
+    ['Total Successful Logins']=countif(ResultType == 0),
     ['Total KMSI']=countif(ResultType == 50140),
     ['Total Device Auth Required']=countif(ResultType == 50097),
     ['Total Risk Block']=countif(ResultType == 530032),
