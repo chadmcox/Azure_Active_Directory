@@ -13,7 +13,7 @@ AADNonInteractiveUserSignInLogs
 | extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
 | extend trustType = tostring(parse_json(DeviceDetail).trustType) 
 | extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
-| where ConditionalAccessStatus <> "success"
+//| where ConditionalAccessStatus <> "success"
 | where AADTenantId == ResourceTenantId
 | where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
 | where os startswith(OperatingSystem)
