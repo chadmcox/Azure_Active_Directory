@@ -13,4 +13,5 @@ AADNonInteractiveUserSignInLogs
 | where AADTenantId == ResourceTenantId
 | where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
 | where os startswith(OperatingSystem)
+| where AppDisplayName <> "Microsoft Authentication Broker"
 | distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, trustType,isCompliant,os,Category;
