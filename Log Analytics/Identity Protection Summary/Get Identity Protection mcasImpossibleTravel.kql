@@ -1,0 +1,5 @@
+AADUserRiskEvents
+| where TimeGenerated > ago(4d)
+| where RiskEventType == "mcasImpossibleTravel" and RiskState == "atRisk"
+| extend iplocation = strcat(Location.countryOrRegion, '|', Location.state, '|',Location.city)
+| project TimeGenerated, UserPrincipalName, IpAddress, iplocation, RiskEventType
