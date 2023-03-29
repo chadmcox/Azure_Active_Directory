@@ -3,7 +3,7 @@ SigninLogs
 | where ResourceTenantId <> HomeTenantId and AADTenantId == HomeTenantId
 | where AppDisplayName == "Azure Portal"
 | distinct UserPrincipalName,ResourceTenantId,AADTenantId,HomeTenantId,AppDisplayName
-| summarize Password=count() by ResourceTenantId
+| summarize signincount=count() by ResourceTenantId
 
 
 
