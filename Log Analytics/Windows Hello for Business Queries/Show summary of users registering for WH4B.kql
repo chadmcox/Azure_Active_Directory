@@ -1,0 +1,5 @@
+AuditLogs
+| where TimeGenerated > ago(90d)
+| where ActivityDisplayName == "Add Windows Hello for Business credential"
+| summarize Count=count()by OperationName, startofday(TimeGenerated)
+| render columnchart with (kind=unstacked, title="WH4B Registered", xtitle="day")
