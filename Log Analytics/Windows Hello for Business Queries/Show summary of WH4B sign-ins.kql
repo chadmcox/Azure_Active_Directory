@@ -1,0 +1,16 @@
+let timerange=60d;
+SigninLogs
+| project TimeGenerated, AuthenticationDetails
+| where TimeGenerated > ago (timerange)
+| extend AuthMethod = tostring(parse_json(AuthenticationDetails)[0].authenticationMethod)
+| where AuthMethod != "Previously satisfied"
+| summarize
+    Password=countif(AuthMethod == "Password"),
+    Passwordless=countif(AuthMethod in ("Windows Hello for Business"))
+    by startofweek(TimeGenerated)
+| render columnchart
+    with (
+    kind=unstacked,
+    xtitle="Week",
+    ytitle="Signin Count",
+    title="Password vs WH4B signins per week")
