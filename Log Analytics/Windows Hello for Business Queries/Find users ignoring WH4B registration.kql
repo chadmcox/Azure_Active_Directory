@@ -1,0 +1,15 @@
+//this gives list of users that ignored wh4b registration
+let alreadyregistered = AuditLogs 
+| where TimeGenerated > ago(30d) and LoggedByService == "Device Registration Service" and Category == "UserManagement" and ActivityDisplayName == "Add Windows Hello for Business credential"
+| extend UserPrincipalName = tolower(tostring(InitiatedBy.user.userPrincipalName))
+| distinct UserPrincipalName;
+SigninLogs
+| where CreatedDateTime >= ago(30d) and AppDisplayName == "Microsoft Device Registration Client"
+| extend errorCode = toint(Status.errorCode)
+| extend reason = tostring(Status.failureReason)
+| where errorCode <> 0
+| extend upn = tolower(UserPrincipalName)
+| extend registered = iif(upn in (alreadyregistered), True,False)
+| where UserPrincipalName contains "@"
+| where registered == false
+| distinct UserPrincipalName,registered, errorCode, reason
