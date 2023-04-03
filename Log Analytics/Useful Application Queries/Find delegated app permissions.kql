@@ -1,0 +1,4 @@
+let operations = pack_array('Add delegated permission grant','Remove delegated permission grant');
+AuditLogs 
+| where TimeGenerated > ago (30d)
+| where OperationName in (operations)
