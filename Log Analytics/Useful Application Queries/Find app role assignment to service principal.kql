@@ -8,3 +8,4 @@ AuditLogs
 | extend ServicePrincipalName = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[6].newValue)
 | extend API = tostring(parse_json(TargetResources)[0].displayName)
 | extend InitiatedBy = tostring(InitiatedBy.user.userPrincipalName)
+| project TimeGenerated, OperationName, InitiatedBy, API, AppRoleValue, AppRoleDisplayName, ServicePrincipalObjectID, ServicePrincipalName
