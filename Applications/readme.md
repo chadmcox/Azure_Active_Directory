@@ -70,7 +70,7 @@ Get-MgServicePrincipal -all -ExpandProperty owners | select `
 
 ## Get a list of Applications that allow any user to log into them.
 ```
-Connect-MgGraph
+Connect-MgGraph -scopes Application.Read.All, Directory.Read.All, Reports.Read.All
 Select-MgProfile -Name beta
 
 #get a list of applications users are signing into
