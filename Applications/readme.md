@@ -67,3 +67,18 @@ Get-MgServicePrincipal -all -ExpandProperty owners | select `
     id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname, `
     @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}
 ```
+
+## Get a list of Applications that allow any user to log into them.
+```
+Connect-MgGraph
+Select-MgProfile -Name beta
+
+#get a list of applications users are signing into
+$appids = (Get-MgReportAzureAdApplicationSignInSummary -Period 'D30' | where {$_.SuccessfulSignInCount -gt 0}).id
+
+#retrieve list of applications that allow any account to sign into it.
+Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and accountEnabled eq true" -all -Property appId,id,displayName,appRoleAssignmentRequired,signInAudience,publisherName, preferredSingleSignOnMode -ExpandProperty owners  | `
+    where {$_.appId -in $appids -and $_.PublisherName -notlike "*Microsoft*"} | select `
+        appId,id,displayName,appRoleAssignmentRequired, publisherName,signInAudience,preferredSingleSignOnMode, `
+        @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}} 
+```
