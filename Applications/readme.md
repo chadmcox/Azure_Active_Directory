@@ -77,8 +77,8 @@ Select-MgProfile -Name beta
 $appids = (Get-MgReportAzureAdApplicationSignInSummary -Period 'D30' | where {$_.SuccessfulSignInCount -gt 0}).id
 
 #retrieve list of applications that allow any account to sign into it.
-Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and accountEnabled eq true" -all -Property appId,id,displayName,appRoleAssignmentRequired,signInAudience,publisherName, preferredSingleSignOnMode -ExpandProperty owners  | `
-    where {$_.appId -in $appids -and $_.PublisherName -notlike "*Microsoft*"} | select `
+Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and accountEnabled eq true" -all -Property appId,id,displayName,appRoleAssignmentRequired,signInAudience,publisherName,appOwnerOrganizationId, preferredSingleSignOnMode -ExpandProperty owners  | `
+    where {$_.appId -in $appids -and $_.PublisherName -notlike "*Microsoft*" -and $_.appOwnerOrganizationId -ne 'f8cdef31-a31e-4b4a-93e4-5f571e91255a'} | select `
         appId,id,displayName,appRoleAssignmentRequired, publisherName,signInAudience,preferredSingleSignOnMode, `
-        @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}} 
+        @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}} | export-csv .\unrestrictedApps.csv -NoTypeInformation
 ```
