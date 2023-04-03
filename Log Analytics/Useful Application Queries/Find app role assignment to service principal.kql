@@ -1,0 +1,4 @@
+let operations = pack_array('Add app role assignment to service principal','Remove app role assignment to service principal');
+AuditLogs 
+| where TimeGenerated > ago (30d)
+| where OperationName in (operations)
