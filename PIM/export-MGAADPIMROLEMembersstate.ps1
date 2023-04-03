@@ -1,9 +1,44 @@
-Connect-MgGraph
-Select-MgProfile -Name "beta"
-Import-Module Microsoft.Graph.Identity.Governance
-cd "$env:USERPROFILE\Downloads"
-$context = get-mgcontext
+<#PSScriptInfo
+.VERSION 2023.4.3
+.GUID 65460b6b-943b-4ac7-780c-91e57d9db760
+.AUTHOR Chad.Cox@microsoft.com
+    https://github.com/chadmcox
+.COMPANYNAME 
+.COPYRIGHT This Sample Code is provided for the purpose of illustration only and is not
+intended to be used in a production environment.  THIS SAMPLE CODE AND ANY
+RELATED INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.  We grant You a
+nonexclusive, royalty-free right to use and modify the Sample Code and to
+reproduce and distribute the object code form of the Sample Code, provided
+that You agree: (i) to not use Our name, logo, or trademarks to market Your
+software product in which the Sample Code is embedded; (ii) to include a valid
+copyright notice on Your software product in which the Sample Code is embedded;
+and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
+against any claims or lawsuits, including attorneys` fees, that arise or result
+from the use or distribution of the Sample Code..
+.TAGS 
+.DETAILS
+this looks for policy from the following articles
 
+.EXAMPLE
+#>
+param($path="$env:USERPROFILE\downloads")
+cd $path
+
+Import-Module Microsoft.Graph.Identity.Governance
+
+function login-MSGraph{
+    Get-MgEnvironment | select name | out-host
+    $selection = Read-Host "Type the name of the azure environment that you would like to connect to:  (example Global)"
+    if($selection -notin "Global","China","USGov","Germany","USGovDoD"){$selection = "Global"}
+    $mg_env = Get-MgEnvironment | where {$_.name -eq $selection}
+
+    $script:graphendpoint = $mg_env.GraphEndpoint
+
+    Connect-MgGraph -Scopes "Policy.Read.All" -Environment $mg_env.name
+    Select-MgProfile -Name "beta"
+}
 function retrieveaadpimrolemembers{
     [cmdletbinding()] 
     param()
@@ -24,7 +59,6 @@ function retrieveaaddirrolemembers{
         @{N="roleName";E={$role.DisplayName}}, @{N="SubjectId";E={$_.ID}}, AssignmentState,Permanant 
     }
 }
-
 
 function retrieveactualobject{
     [cmdletbinding()] 
@@ -54,6 +88,9 @@ function expandgroup{
         $groupmems
     }
 }
+
+$context = get-mgcontext
+login-MSGraph
 
 retrieveaadpimrolemembers -PipelineVariable members | foreach{
     retrieveactualobject -objectid $members.subjectid -members $members -PipelineVariable cleanmem | foreach {
