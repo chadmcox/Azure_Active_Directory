@@ -89,8 +89,9 @@ function expandgroup{
     }
 }
 
-$context = get-mgcontext
 login-MSGraph
+$context = get-mgcontext
+
 
 retrieveaadpimrolemembers -PipelineVariable members | foreach{
     retrieveactualobject -objectid $members.subjectid -members $members -PipelineVariable cleanmem | foreach {
