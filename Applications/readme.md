@@ -81,10 +81,9 @@ $hashapps = Get-MgApplication -Property appId,createdDateTime -all | select appI
 
 #retrieve list of applications that allow any account to sign into it.
 Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and accountEnabled eq true" -all `
-    -Property tags,appId,id,displayName,appRoleAssignmentRequired,signInAudience,publisherName,appOwnerOrganizationId, preferredSingleSignOnMode -ExpandProperty owners  | `
-    where {$_.PublisherName -notlike "*Microsoft*" -and $_.appOwnerOrganizationId -ne 'f8cdef31-a31e-4b4a-93e4-5f571e91255a' -and $_.tags -contains "WindowsAzureActiveDirectoryIntegratedApp" -and $_.appRoleAssignmentRequired -ne $true} | select `
+    -Property tags,appId,id,displayName,appRoleAssignmentRequired,signInAudience,publisherName,appOwnerOrganizationId, preferredSingleSignOnMode,KeyCredentials -ExpandProperty owners  | `
+    where {$_.PublisherName -notlike "*Microsoft*" -and $_.appOwnerOrganizationId -ne 'f8cdef31-a31e-4b4a-93e4-5f571e91255a' -and $_.tags -contains "WindowsAzureActiveDirectoryIntegratedApp" -and $_.appRoleAssignmentRequired -ne $true -and $_.appId -in $appids} | select `
         appId,id,displayName,appRoleAssignmentRequired, publisherName,signInAudience,preferredSingleSignOnMode, `
-        @{N="recentSignin";E={if($_.appId -in $appids){$true}}}, `
         @{N="SAMLSigningCert";E={if($_.KeyCredentials.Usage -eq 'Sign'){$true}}}, `
         @{N="oauth2PermissionGrants";E={if(Get-MgServicePrincipalOauth2PermissionGrant -ServicePrincipalId $_.id){$true}}}, `
         @{N="createdOn";E={(get-date $hashapps[$($_.appId)].createdDateTime).tostring('yyyy-MM-dd')}}, `
