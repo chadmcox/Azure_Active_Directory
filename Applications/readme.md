@@ -90,3 +90,23 @@ Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and accoun
         @{N="Owner";E={($_.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}, `
         @{N="tags";E={[string]$_.tags}} | export-csv .\unrestrictedApps.csv -NoTypeInformation
 ```
+
+## Get a list of Applications with assigned permissions.
+```
+Connect-MgGraph -scopes Application.Read.All, Directory.Read.All
+Select-MgProfile -Name beta
+
+$allsps = Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and accountEnabled eq true" -all
+$hashroles = $allsps | select -ExpandProperty AppRoles | select id,value -Unique | group id -AsHashTable -AsString
+
+Get-mgServicePrincipal -filter "accountEnabled eq true" -all -ExpandProperty owners | foreach{
+    $aadsp = $null; $aadsp=$_
+    Get-MgServicePrincipalAppRoleAssignment -serviceprincipalid $_.id | foreach{$appra=$null;$appra=$_
+        $hashroles[$($appra.appRoleId)] | select -ExpandProperty value -pv perm | select `
+            @{Name="DisplayName";Expression={$($appra.PrincipalDisplayName)}}, `
+             @{Name="Permission to";Expression={$($appra.ResourceDisplayName)}}, `
+             @{Name="Scope";Expression={$($_)}}, `
+             @{N="Owner";E={($aadsp.owners.id | foreach{Get-mguser -userId $_}).UserPrincipalName -join(",")}}
+    }
+} | export-csv .\apppermissions.csv -notypeinformation
+```
