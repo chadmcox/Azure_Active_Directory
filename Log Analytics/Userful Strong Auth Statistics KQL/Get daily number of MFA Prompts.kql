@@ -1,6 +1,7 @@
 let isGUID = "[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}";
 SigninLogs
 | where TimeGenerated > ago(30d)
+| where AppDisplayName <> 'Windows Sign In' and UserType <> "Guest"
 | mv-expand todynamic(AuthenticationDetails)
 | extend ['Authentication Method'] = tostring(AuthenticationDetails.authenticationMethod)
 | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
@@ -11,8 +12,10 @@ SigninLogs
 | where ['Authentication Method'] <> "Windows Hello for Business"
 | distinct TimeGenerated,UserPrincipalName, ['Authentication Method'],TrustedLocation
 | summarize
-    MFA=countif(['Authentication Method'] !in ("FIDO2 security key", "Passwordless phone sign-in", "Windows Hello for Business")),
-    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation')
+    MFACount=countif(['Authentication Method'] !in ("FIDO2 security key", "Passwordless phone sign-in", "Windows Hello for Business")),
+    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),
+    UniqueUserCount = count_distinct(UserPrincipalName)
     by startofday(TimeGenerated)
-| project startofday(TimeGenerated), MFA, 
-TrustedLocationPercentage=(todouble(['Total Trusted Location']) * 100 / todouble(MFA))
+| project startofday(TimeGenerated), MFACount, UniqueUserCount,
+AVGMFAPerUser=(todouble(MFACount) / todouble(UniqueUserCount)),
+TrustedLocationPercentage=(todouble(['Total Trusted Location']) * 100 / todouble(MFACount))
