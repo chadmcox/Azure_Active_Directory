@@ -16,6 +16,6 @@ SigninLogs
     ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),
     UniqueUserCount = count_distinct(UserPrincipalName)
     by startofday(TimeGenerated)
-| project startofday(TimeGenerated), MFACount, 
+| project startofday(TimeGenerated), MFACount, UniqueUserCount,
 AVGMFAPerUser=(todouble(MFACount) / todouble(UniqueUserCount)),
 TrustedLocationPercentage=(todouble(['Total Trusted Location']) * 100 / todouble(MFACount))
