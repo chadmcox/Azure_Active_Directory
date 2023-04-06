@@ -1,5 +1,5 @@
 <#
-.VERSION 2023.1.26
+.VERSION 2021.12.1
 .GUID be1af58d-ee61-4f7e-a57f-b28712ccd991
 .AUTHOR Chad.Cox@microsoft.com
     https://blogs.technet.microsoft.com/chadcox/ (retired)
@@ -30,13 +30,11 @@ will need to be provided to the account.
 
 .Instructions
 This script will remove guest that have not accepted an invite after 30 days.
-
-This has been updated to exclude guest members of unified groups.
 #> 
 #this is the number of days a guest account has to accept before, they are considered to be deleted.
 $notacceptedindays = 30
 #this is a standard theshold, only the number provided below will be returned and deleted.
-$removalthreshold = 100
+$removalthreshold = 3
 
 $today = get-date
 
@@ -86,6 +84,17 @@ function remove-AADGuestUser{
         Write-Output "$($_.Exception.Response.StatusCode)"
     }
 }
+function restore-AADGuestUser{
+    [cmdletbinding()]
+    param($guestid)
+    Start-Sleep -Seconds 15
+    try{
+            $uri = "https://graph.microsoft.com/beta/directory/deleteditems/$guestid/restore"
+            Invoke-RestMethod -Uri $Uri -Headers $graphApiHeader -Method POST -ContentType "application/json"
+    }catch{
+        Write-Output "$($_.Exception.Response.StatusCode)"
+    }
+}
 
 # Get access token for Graph API
 $graphApiToken = Get-GraphAPIAccessToken
@@ -94,10 +103,15 @@ $graphApiHeader = @{ Authorization = "Bearer $graphApiToken" }
 
 #this is the graph api to users
 #https://docs.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-beta
+#$uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest' and externalUserState eq 'PendingAcceptance'"
 $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest' and externalUserState eq 'PendingAcceptance' and accountEnabled eq true&`$expand=memberOf"
 return-AADMSGraph -Uri $uri -pv user | where {(NEW-TIMESPAN –Start $_.externalUserStateChangeDateTime –End $today).days -gt $notacceptedindays} | `
-    where {!($_.memberOf.groupTypes -contains "Unified")} | ` #this line makes sure to not remove guest in teams or distribution list to early.
+    where {!($_.memberOf.groupTypes -contains "Unified")} | `
     select id, accountEnabled, creationType, mail, displayName, userPrincipalName, userType, externalUserState, externalUserStateChangeDateTime -First $removalthreshold | foreach{
-        Write-Output "Removing $($_.userPrincipalName)"
+        Write-Output "Removing $($_.userPrincipalName) : $($_.externalUserStateChangeDateTime)"
         remove-AADGuestUser -guestid $_.id
+        
+        #this code is for testing so that it restores the object in my lab
+        #Write-Output "Restoring $($_.userPrincipalName)"
+        #restore-AADGuestUser -guestid $_.id
     }
