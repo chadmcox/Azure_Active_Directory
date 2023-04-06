@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 2022.12.7
+.VERSION 2023.4.6
 .GUID 65460b6b-943b-4ac7-980c-91e57d9db760
 .AUTHOR Chad.Cox@microsoft.com
     https://github.com/chadmcox
@@ -144,7 +144,7 @@ function get-commoncapolicies{
         where {$_.grantControls.builtInControls -contains "approvedApplication"} | `
         where {($_.conditions.applications.includeApplications -eq 'All') -or ($_.conditions.applications.includeApplications -eq 'Office365')} | `
         where {$_.conditions.users.includeUsers -eq "All"} | `
-        where {$_.conditions.platforms.includePlatforms -contains "android" -and $_.conditions.platforms.includePlatforms -contains "iOS"}
+        where {$_.conditions.platforms.includePlatforms -contains "android" -or $_.conditions.platforms.includePlatforms -contains "iOS"}
     $Protection_Level | select @{n='Section';e={"Common Device Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
     #--------------------------------------------------------------------------
@@ -153,7 +153,7 @@ function get-commoncapolicies{
         where {$_.grantControls.builtInControls -contains "compliantApplication"} | `
         where {($_.conditions.applications.includeApplications -eq 'All') -or ($_.conditions.applications.includeApplications -eq 'Office365')} | `
         where {$_.conditions.users.includeUsers -eq "All"} | `
-        where {$_.conditions.platforms.includePlatforms -contains "android" -and $_.conditions.platforms.includePlatforms -contains "iOS"}
+        where {$_.conditions.platforms.includePlatforms -contains "android" -or $_.conditions.platforms.includePlatforms -contains "iOS"}
     $Protection_Level | select @{n='Section';e={"Common Device Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
     #--------------------------------------------------------------------------
@@ -203,6 +203,7 @@ function get-commoncapolicies{
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
 
     #--------------------------------------------------------------------------
+    $Protection_Level = "Enterprise"
     $Policy = "Block when sign-in risk is high"
     $found = $null;$found = $all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | `
         where {$_.conditions.applications.includeApplications -eq 'All'} | `
@@ -221,39 +222,69 @@ function get-commoncapolicies{
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     $Protection_Level | select @{n='Section';e={"Common Identity Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+    
+    #--------------------------------------------------------------------------
+    $Policy = "Require Compliant Device for All Apps"
+    $found = $null;$found = $all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | `
+        where {!($_.grantControls.builtInControls -like "*mfa*")} | `
+        where {($_.conditions.applications.includeApplications -eq 'All')} | `
+        where {$_.grantControls.builtInControls -contains "compliantDevice"} | `
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    $Protection_Level | select @{n='Section';e={"Common Device Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+
+    $Protection_Level = "Starting"
+    $Policy = "Always require MFA or Trusted Device or Compliant Device from untrusted networks"
+    $found = $null;$found = $all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | `
+        where {$_.conditions.applications.includeApplications -eq 'All'} | `
+        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+        where {!($_.conditions.signInRiskLevels -like "*")} | `
+        where {!($_.conditions.userRiskLevels -like "*")} | `
+        where {$_.grantControls.builtInControls -contains "compliantDevice" -or $_.grantControls.builtInControls -contains "domainJoinedDevice"} | `
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -gt 0}
+    $Protection_Level | select @{n='Section';e={"Generic Identity Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+    #--------------------------------------------------------------------------
+    $Policy = "Always require MFA or Trusted Device or Compliant Device"
+    $found = $null;$found = $all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | `
+        where {$_.conditions.applications.includeApplications -eq 'All'} | `
+        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+        where {!($_.conditions.signInRiskLevels -like "*")} | `
+        where {!($_.conditions.userRiskLevels -like "*")} | `
+        where {$_.grantControls.builtInControls -contains "compliantDevice" -or $_.grantControls.builtInControls -contains "domainJoinedDevice"} | `
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    $Protection_Level | select @{n='Section';e={"Generic Identity Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+    #--------------------------------------------------------------------------
+    $Protection_Level = "Enterprise"
+    $Policy = "Require MFA for Microsoft Graph PowerShell and Explorer"
+    $found = $null;$found = $all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | `
+        where {($_.conditions.applications.includeApplications -eq 'All') -or ($_.conditions.applications.includeApplications -contains 'de8bc8b5-d9f9-48b1-a8ad-b748da725064' -and $_.conditions.applications.includeApplications -contains '14d82eec-204b-4c2f-b7e8-296a70dab67e')} | `
+        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+        where {!($_.conditions.signInRiskLevels -like "*")} | `
+        where {!($_.conditions.userRiskLevels -like "*")} | `
+        where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    $Protection_Level | select @{n='Section';e={"Common Identity Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+    #--------------------------------------------------------------------------
+    $Policy = "Require MFA for Microsoft Azure Management"
+    $found = $null;$found = $all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | `
+        where {($_.conditions.applications.includeApplications -eq 'All') -or ($_.conditions.applications.includeApplications -contains '797f4846-ba00-4fd7-ba43-dac1f8f63013')} | `
+        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+        where {!($_.conditions.signInRiskLevels -like "*")} | `
+        where {!($_.conditions.userRiskLevels -like "*")} | `
+        where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    $Protection_Level | select @{n='Section';e={"Common Identity Policy"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
 }
 function get-privcapolicies{
     [cmdletbinding()] 
         param()
+    $priv_found = $null
     #--------------------------------------------------------------------------
-    #Common Privileged User Policies
-    $Policy = "Require privileged users to use compliant devices"
-    $found = $null;$found = $all_conditional_access_policies  | `
-        where {$_.conditions.users.includeUsers -eq "All" -or $_.conditions.users.includeRoles -like "*"} | `
-        where {$_.conditions.applications.includeApplications -eq 'All'} | `
-        where {$_.grantControls.builtInControls -contains "compliantDevice"} | `
-        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
-    #is all user defined?
-    $priv_found = @()
-    $priv_found = $found | where {$_.conditions.users.includeUsers -eq "All"} | `
-        where {!($_.conditions.users.excludeRoles | foreach{$_ -in $critical_role_template_guids})} 
-    #if all isnt found is each privileged role defined 
-    if(!($priv_found)){
-        $priv_found = $found
-        $critical_role_template_guids | foreach{
-            if(!($found.conditions.users.includeRoles -contains $_)){
-                
-                $priv_found = $null
-            }
-        }
-    }
-    $found = $priv_found
-
-    $Protection_Level | select @{n='Section';e={"Privileged User Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
-        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
-
-    #--------------------------------------------------------------------------
-    $Policy = "Require privileged user to MFA"
+    $Policy = "Require privileged role member to MFA"
     $Protection_Level = "Enterprise"
     $found = $null;$found = $all_conditional_access_policies  | `
         where {($_.conditions.users.includeRoles -like "*") -or ($_.conditions.users.includeUsers -eq "All")} | `
@@ -261,11 +292,12 @@ function get-privcapolicies{
         where {($_.grantControls.builtInControls -like "*mfa*") -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
         where {!($_.conditions.signInRiskLevels -like "*")} | `
         where {!($_.conditions.userRiskLevels -like "*")} | `
+        where {!($_.grantControls.builtInControls -contains "compliantDevice") -and !($_.grantControls.builtInControls -contains "domainJoinedDevice")} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     #is all user defined?
-    $priv_found = @()
-    $priv_found = $found | where {$_.conditions.users.includeUsers -eq "All"}  | `
-        where {!($_.conditions.users.excludeRoles | foreach{$_ -in $critical_role_template_guids})} 
+    #$priv_found = @()
+    #$priv_found = $found | where {$_.conditions.users.includeUsers -eq "All"}  | `
+    #    where {!($_.conditions.users.excludeRoles | foreach{$_ -in $critical_role_template_guids})} 
     #if all isnt found is each privileged role defined 
     if(!($priv_found)){
         $priv_found = $found
@@ -310,6 +342,34 @@ function get-privcapolicies{
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
 
     #--------------------------------------------------------------------------
+    $Policy = "Require privileged role member to use compliant device"
+    $Protection_Level = "Enterprise"
+    $found = $null;$found = $all_conditional_access_policies  | `
+        where {($_.conditions.users.includeRoles -like "*") -or ($_.conditions.users.includeUsers -eq "All")} | `
+        where {!($_.grantControls.builtInControls -like "*mfa*")} | `
+        where {($_.conditions.applications.includeApplications -eq 'All')} | `
+        where {$_.grantControls.builtInControls -contains "compliantDevice"} | `
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    #is all user defined?
+    $priv_found = @()
+    #$priv_found = $found | where {$_.conditions.users.includeUsers -eq "All"}  | `
+    #    where {!($_.conditions.users.excludeRoles | foreach{$_ -in $critical_role_template_guids})}
+    #if all isnt found is each privileged role defined 
+    if(!($priv_found)){
+        $priv_found = $found
+        $critical_role_template_guids | foreach{
+            if(!($found.conditions.users.includeRoles -contains $_)){
+                
+                $priv_found = $null
+            }
+        }
+    }
+    $found = $priv_found | where {$_.conditions.users.includeRoles -notcontains "d29b2b05-8046-44ba-8758-1e26182fcf32"}
+
+    $Protection_Level | select @{n='Section';e={"Privileged User Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+
+    #--------------------------------------------------------------------------
     $Policy = "Block Directory Sync Role Accounts from signing in from non trusted networks"
     $Protection_Level = "Enterprise"
     $role = "d29b2b05-8046-44ba-8758-1e26182fcf32"
@@ -320,13 +380,27 @@ function get-privcapolicies{
         where {$_.grantControls.builtInControls  -like "*Block*"}
     $Protection_Level | select @{n='Section';e={"Privileged User Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+
+    #--------------------------------------------------------------------------
+    $Policy = "Block when Directory Sync Account sign in risk is low medium high"
+    $Protection_Level = "Enterprise"
+    $role = "d29b2b05-8046-44ba-8758-1e26182fcf32"
+    $found = $null;$found = $all_conditional_access_policies  | `
+        where {$role -in $_.Conditions.users.includeRoles} | `
+        where {$_.conditions.signInRiskLevels -contains "high" -and $_.conditions.signInRiskLevels -contains "medium" -and$_.conditions.signInRiskLevels -contains "low"} | `
+        where {$_.grantControls.builtInControls  -like "*Block*"}
+    $Protection_Level | select @{n='Section';e={"Privileged User Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+
+    #Require privileged role member to MFA with Auth Strengths (Fido2,CBA, Microsoft Authenticator password-less)
+    
 }
 function get-guestcapolicies{
     [cmdletbinding()] 
         param()
     #Guest policies
     #--------------------------------------------------------------------------
-    $Protection_Level = "Enterprise"
+    $Protection_Level = "Starting"
     $Policy = "Require guest to MFA for High and Medium Sign-in Risk"
     $found = $null;$found = $all_conditional_access_policies  | `
         where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers"} | `
@@ -348,6 +422,51 @@ function get-guestcapolicies{
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     $Protection_Level | select @{n='Section';e={"Guest Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
         @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+
+    #--------------------------------------------------------------------------
+    $Protection_Level = "Enterprise"
+    $Policy = "Block Guest for Medium and High Sign-in Risk"
+    $found = $null;$found = $all_conditional_access_policies  | `
+        where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers"} | `
+        where {$_.conditions.applications.includeApplications -eq 'All'} | `
+        where {$_.grantControls.builtInControls  -like "*Block*"} | `
+        where {$_.conditions.signInRiskLevels -contains "high" -and $_.conditions.signInRiskLevels -contains "medium"} | `
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    $Protection_Level | select @{n='Section';e={"Guest Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+
+    #--------------------------------------------------------------------------
+    $Policy = "Block Guest from Azure Management"
+    $found = $null;$found = $all_conditional_access_policies  | `
+        #where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers"} | `
+        where {($_.conditions.applications.includeApplications -contains '797f4846-ba00-4fd7-ba43-dac1f8f63013')} | `
+        where {$_.grantControls.builtInControls  -like "*Block*"} | `
+         where {!($_.conditions.signInRiskLevels -contains "high")}
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    $Protection_Level | select @{n='Section';e={"Guest Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+
+    #--------------------------------------------------------------------------
+    $Policy = "Block Guest from Microsoft Graph PowerShell and Graph Explorer"
+    $found = $null;$found = $all_conditional_access_policies  | `
+        #where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers"} | `
+        where {($_.conditions.applications.includeApplications -contains 'de8bc8b5-d9f9-48b1-a8ad-b748da725064' -and $_.conditions.applications.includeApplications -contains '14d82eec-204b-4c2f-b7e8-296a70dab67e')} | `
+        where {$_.grantControls.builtInControls  -like "*Block*"} | `
+         where {!($_.conditions.signInRiskLevels -contains "high")}
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    $Protection_Level | select @{n='Section';e={"Guest Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+
+    #--------------------------------------------------------------------------
+    $Policy = "Block Guest to unapproved Applications"
+    $found = $null;$found = $all_conditional_access_policies  | `
+        where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers"} | `
+        where {$_.grantControls.builtInControls  -like "*Block*"} | `
+         where {!($_.conditions.signInRiskLevels -contains "high")}
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    $Protection_Level | select @{n='Section';e={"Guest Policies"}},@{n='Protection Level';e={$Protection_Level}}, @{n='Policy';e={$Policy}}, `
+        @{n='Applied';e={if($found){$true}else{$false}}},@{n='Policy Found';e={($found.DisplayName -join(" | "))}}
+    
 }
 
 #--------------------------------------------------------------------------
@@ -450,10 +569,10 @@ function export-capscenerio{
 login-MSGraph
 #export all enabled conditional access policies
 $uri = "$script:graphendpoint/beta/identity/conditionalAccess/policies"
-$all_conditional_access_policies = get-MSGraphRequest -uri $uri | where {$_.state -eq "enabled"}
+$all_conditional_access_policies = get-MSGraphRequest -uri $uri #| where {$_.state -eq "enabled"}
 
 #this is used to add prefix to file name
 $tenant = (get-mgdomain  | where isdefault -eq $true).id
 #run the function that runes each individual functions
-export-capscenerio  | export-csv ".\$($tenant)_zero_trust_policies.csv" -NoTypeInformation
+export-capscenerio | sort section, 'protection level'  | export-csv ".\$($tenant)_zero_trust_policies.csv" -NoTypeInformation
 write-host "Results found here: $path" -ForegroundColor Yellow
