@@ -569,7 +569,7 @@ function export-capscenerio{
 login-MSGraph
 #export all enabled conditional access policies
 $uri = "$script:graphendpoint/beta/identity/conditionalAccess/policies"
-$all_conditional_access_policies = get-MSGraphRequest -uri $uri #| where {$_.state -eq "enabled"}
+$all_conditional_access_policies = get-MSGraphRequest -uri $uri | where {$_.state -eq "enabled"}
 
 #this is used to add prefix to file name
 $tenant = (get-mgdomain  | where isdefault -eq $true).id
