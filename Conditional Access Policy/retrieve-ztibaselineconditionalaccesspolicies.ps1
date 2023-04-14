@@ -582,69 +582,69 @@ $Breakdownfile = ".\$($tenant)_policy_breakdown.txt"
 
 "Policies targeting all users" | out-file $Breakdownfile
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.users.includeUsers -eq "All"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting guest" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting roles" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {($_.conditions.users.includeRoles -like "*")} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {($_.conditions.users.includeRoles -like "*")} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting groups" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {($_.conditions.users.includeGroups -like "*")} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {($_.conditions.users.includeGroups -like "*")} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting all apps" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.applications.includeApplications -eq 'All'} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.applications.includeApplications -eq 'All'} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting select apps" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.applications.includeApplications -ne 'All'} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.applications.includeApplications -ne 'All'} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies with Session Controls" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies requiring MFA" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies requiring Device Compliance" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.grantControls.builtInControls -contains "compliantDevice"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.grantControls.builtInControls -contains "compliantDevice"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies requiring Trusted Device" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.grantControls.builtInControls -contains "domainJoinedDevice"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.grantControls.builtInControls -contains "domainJoinedDevice"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting IOS" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "iOS"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "iOS"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting Andriod" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "android"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "android"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting Windows" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "windows"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "windows"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting MacOS" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "macos"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "macos"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies targeting Linux" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "Linux"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.platforms.includePlatforms -contains "Linux"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies requiring risk" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies | where {$_.conditions.userRiskLevels -like "*" -or $_.conditions.signInRiskLevels -contains "high" -or $_.conditions.signInRiskLevels -contains "medium" -or $_.conditions.signInRiskLevels -contains "low"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies | where {$_.conditions.userRiskLevels -like "*" -or $_.conditions.signInRiskLevels -contains "high" -or $_.conditions.signInRiskLevels -contains "medium" -or $_.conditions.signInRiskLevels -contains "low"} | select displayName,state | out-file $Breakdownfile -Append
 
 "Policies that block" | out-file $Breakdownfile -Append
 "---------------------------------------------------------" | out-file $Breakdownfile -Append
-$all_conditional_access_policies |where {$_.grantControls.builtInControls  -like "*Block*"} | select displayName | out-file $Breakdownfile -Append
+$all_conditional_access_policies |where {$_.grantControls.builtInControls  -like "*Block*"} | select displayName,state | out-file $Breakdownfile -Append
 write-host "Results found here: $path" -ForegroundColor Yellow
