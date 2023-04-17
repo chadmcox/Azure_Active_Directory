@@ -1,29 +1,3 @@
-<#PSScriptInfo
-.VERSION 2023.4.10
-.GUID 65460b6b-943b-4ac7-980c-91e57d9db760
-.AUTHOR Chad.Cox@microsoft.com
-    https://github.com/chadmcox
-.COMPANYNAME 
-.COPYRIGHT This Sample Code is provided for the purpose of illustration only and is not
-intended to be used in a production environment.  THIS SAMPLE CODE AND ANY
-RELATED INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
-EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.  We grant You a
-nonexclusive, royalty-free right to use and modify the Sample Code and to
-reproduce and distribute the object code form of the Sample Code, provided
-that You agree: (i) to not use Our name, logo, or trademarks to market Your
-software product in which the Sample Code is embedded; (ii) to include a valid
-copyright notice on Your software product in which the Sample Code is embedded;
-and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
-against any claims or lawsuits, including attorneys` fees, that arise or result
-from the use or distribution of the Sample Code..
-.TAGS 
-.DETAILS
-this looks for policy from the following articles
-Zero Trust identity and device access configurations
-https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/microsoft-365-policies-configurations
-.EXAMPLE
-#>
 param($path="$env:USERPROFILE\downloads")
 cd $path
 
@@ -599,14 +573,14 @@ $all_capolicies | foreach{
         @{n='excludeLocations';e={if($_.conditions.locations.excludeLocations -eq 'AllTrusted'){'AllTrusted'}else{($_.conditions.locations.excludeLocations | measure).count}}}, `
         @{n='clientAppTypes';e={if($_.conditions.clientAppTypes -eq 'all'){'All'}else{($_.conditions.clientAppTypes | measure).count}}}, `
         @{n='deviceFilter';e={if($_.conditions.devices.deviceFilter){$true}else{}}}, `
-        @{n='Block';e={if($_.grantControls.grantControls.builtInControls -eq 'block'){$true}else{}}}, `
-        @{n='RequireMFA';e={if($_.grantControls.grantControls.builtInControls -contains 'MFA'){$true}else{}}}, `
+        @{n='Block';e={if($_.grantControls.builtInControls -eq 'block'){$true}else{}}}, `
+        @{n='RequireMFA';e={$_.grantControls.builtInControls -contains 'MFA'}}, `
         @{n='authenticationStrength';e={$_.grantControls.authenticationStrength.requirementsSatisfied}}, `
-        @{n='RequireCompliantDevice';e={if($_.grantControls.grantControls.builtInControls -contains 'compliantDevice'){$true}else{}}}, `
-        @{n='RequireDomainJoinedDevice';e={if($_.grantControls.grantControls.builtInControls -contains 'domainJoinedDevice'){$true}else{}}}, `
-        @{n='RequirePasswordChange';e={if($_.grantControls.grantControls.builtInControls -contains 'passwordChange'){$true}else{}}}, `
-        @{n='RequireApprovedApplication';e={if($_.grantControls.grantControls.builtInControls -contains 'approvedApplication'){$true}else{}}}, `
-        @{n='RequireCompliantApplication';e={if($_.grantControls.grantControls.builtInControls -contains 'compliantApplication'){$true}else{}}}, `
+        @{n='RequireCompliantDevice';e={$_.grantControls.builtInControls -contains 'compliantDevice'}}, `
+        @{n='RequireDomainJoinedDevice';e={$_.grantControls.builtInControls -contains 'domainJoinedDevice'}}, `
+        @{n='RequirePasswordChange';e={if($_.grantControls.builtInControls -contains 'passwordChange'){$true}else{}}}, `
+        @{n='RequireApprovedApplication';e={$_.grantControls.builtInControls -contains 'approvedApplication'}}, `
+        @{n='RequireCompliantApplication';e={$_.grantControls.builtInControls -contains 'compliantApplication'}}, `
         @{n='disableResilienceDefaults';e={$_.grantControls.sessionControls.disableResilienceDefaults}}, `
         @{n='applicationEnforcedRestrictions';e={$_.sessionControls.applicationEnforcedRestrictions.isenabled}}, `
         @{n='cloudAppSecurity';e={$_.sessionControls.cloudAppSecurity.cloudAppSecurityType}}, `
