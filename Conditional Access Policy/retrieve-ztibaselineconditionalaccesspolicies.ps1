@@ -551,36 +551,132 @@ $all_enabled_capolicies = $all_capolicies | where {$_.state -eq "enabled"}
 $tenant = (get-mgdomain  | where isdefault -eq $true).id
 #run the function that runes each individual functions
 export-capscenerio | sort section, 'protection level'  | export-csv ".\$($tenant)_zero_trust_policies.csv" -NoTypeInformation
-write-host "Results found here: $path" -ForegroundColor Yellow
 
 
+function findobject{
+    [cmdletbinding()] 
+    param($objid,[switch]$isrole,[switch]$isapp)
+    if(!($script:already_enumerated.containskey($objid))){
+        if($isapp){
+            Get-MgServicePrincipal -Filter "appId eq '$objid'" | foreach{
+                $script:already_enumerated.add($_.appid,$_.DisplayName)
+            }
+        }
+        if(!($isrole)){
+            Get-MgDirectoryObject -DirectoryObjectId $objid | select id -ExpandProperty AdditionalProperties | `
+                convertto-json | convertfrom-json | select id, @{n='Name';e={if($_.userprincipalname){$_.userprincipalname}else{$_.displayname}}} | foreach{
+                $script:already_enumerated.add($_.Id,$_.name)
+            }
+        }elseif($isrole){
+            Get-MgDirectoryRole -filter "RoleTemplateId eq '$objid'" | select RoleTemplateId, displayname | foreach{
+                $script:already_enumerated.add($_.RoleTemplateId,$_.displayname)
+            }
+        } 
+    }
+        if($script:already_enumerated.containskey($objid)){
+            $script:already_enumerated[$objid]
+        }else{
+            $objid
+        }
+
+}
+
+function enumerateincludedusers{
+    [cmdletbinding()] 
+    param($cap)
+    $foundobjects = @()
+    if($cap.conditions.users.includeUsers -eq 'All'){
+        return 'All'
+    }elseif(($cap.conditions.users.includeUsers | measure).count -gt 0){
+        $foundobjects = $_.conditions.users.includeUsers | foreach{
+            findobject -objid $_
+        }
+    }
+    if(($cap.conditions.users.includeGuestsOrExternalUsers | measure).count -gt 0){
+        $foundobjects += $cap.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -split(",")
+    }
+    if(($cap.conditions.users.includeRoles | measure).count -gt 0){
+        $foundobjects += $cap.conditions.users.includeRoles | foreach{
+            findobject -objid $_ -isrole
+        }
+    }
+    if(($cap.conditions.users.includeGroups | measure).count -gt 0){
+        $foundobjects += $cap.conditions.users.includeGroups | foreach{
+            findobject -objid $_
+        }
+    }
+    if(($cap.conditions.clientApplications.includeServicePrincipals | measure).count -gt 0){
+        $foundobjects += $cap.conditions.clientApplications.includeServicePrincipals | foreach{
+            findobject -objid $_
+        }
+    }
+     ($foundobjects -join(";")).Replace("Administrator","Admins.")
+}
+function enumerateexcludedusers{
+    [cmdletbinding()] 
+    param($cap)
+    $foundobjects = @()
+    if($cap.conditions.users.excludeUsers -eq 'All'){
+        return 'All'
+    }elseif(($cap.conditions.users.excludeUsers | measure).count -gt 0){
+        $foundobjects = $cap.conditions.users.excludeUsers | foreach{
+            findobject -objid $_
+        }
+    }
+    if(($cap.conditions.users.excludeGuestsOrExternalUsers | measure).count -gt 0){
+        $foundobjects += $cap.conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes -split(",")
+    }
+    if(($cap.conditions.users.excludeRoles | measure).count -gt 0){
+        $foundobjects += $cap.conditions.users.excludeRoles | foreach{
+            findobject -objid $_ -isrole
+        }
+    }
+    if(($cap.conditions.users.excludeGroups | measure).count -gt 0){
+        $foundobjects += $cap.conditions.users.excludeGroups | foreach{
+            findobject -objid $_
+        }
+    }
+    if(($cap.conditions.clientApplications.excludeServicePrincipals | measure).count -gt 0){
+        $foundobjects += $cap.conditions.clientApplications.excludeServicePrincipals | foreach{
+            findobject -objid $_
+        }
+    }
+     ($foundobjects -join(";")).Replace("Administrator","Admins.")
+}
+
+
+$script:already_enumerated = @{}
+$script:already_enumerated.add("All","All")
+$script:already_enumerated.add("Office365","Office365")
+$script:already_enumerated.add("GuestsOrExternalUsers","GuestsOrExternalUsers")
+$script:already_enumerated.add("None","None")
+$script:already_enumerated.add("ServicePrincipalsInMyTenant","ServicePrincipalsInMyTenant")
+
+write-host "Creating reports"
 $all_capolicies | foreach{
     $_ | select displayName, state, `
-        @{n='includeUsers';e={if($_.conditions.users.includeUsers -eq 'All'){'All'}else{($_.conditions.users.includeUsers | measure).count}}}, `
-        @{n='excludeUsers';e={($_.conditions.users.excludeUsers | measure).count}}, `
-        @{n='includeGuestsOrExternalUsers';e={($_.conditions.users.includeGuestsOrExternalUsers | measure).count}}, `
-        @{n='excludeGuestsOrExternalUsers';e={($_.conditions.users.excludeGuestsOrExternalUsers | measure).count}}, `
-        @{n='includeRoles';e={($_.conditions.users.includeRoles | measure).count}}, `
-        @{n='excludeRoles';e={($_.conditions.users.excludeRoles | measure).count}}, `
-        @{n='includeApplications';e={if($_.conditions.applications.includeApplications -eq 'All'){'All'}else{($_.conditions.applications.includeApplications | measure).count}}}, `
-        @{n='excludeApplications';e={($_.conditions.applications.excludeApplications | measure).count}}, `
+        @{n='included: Users,Guest or Roles';e={enumerateincludedusers -cap $_}}, `
+        @{n='excluded: Users,Guest or Roles';e={enumerateexcludedusers -cap $_}}, `
+        @{n='included: Applications';e={($_.conditions.applications.includeApplications | foreach{findobject -objid $_ -isapp}) -join(";")}}, `
+        @{n='excluded: Applications';e={($_.conditions.applications.excludeApplications | foreach{findobject -objid $_ -isapp}) -join(";")}}, `
         @{n='includeUserActions';e={$_.conditions.applications.includeUserActions}}, `
-        @{n='userRiskLevels';e={[string]$($_.conditions.userRiskLevels)}}, `
-        @{n='signInRiskLevels';e={[string]$($_.conditions.signInRiskLevels)}}, `
-        @{n='includePlatforms';e={if($_.conditions.platforms.includePlatforms -eq 'All'){'All'}else{[string]$_.conditions.platforms.includePlatforms}}}, `
-        @{n='excludePlatforms';e={if($_.conditions.platforms.excludePlatforms -eq 'All'){'All'}else{[string]$_.conditions.platforms.excludePlatforms}}}, `
+        @{n='userRiskLevels';e={$(($_.conditions.userRiskLevels) -join(";"))}}, `
+        @{n='signInRiskLevels';e={$(($_.conditions.signInRiskLevels) -join(";"))}}, `
+        @{n='includePlatforms';e={if($_.conditions.platforms.includePlatforms -eq 'All'){'All'}else{$(($_.conditions.platforms.includePlatforms) -join(";"))}}}, `
+        @{n='excludePlatforms';e={if($_.conditions.platforms.excludePlatforms -eq 'All'){'All'}else{$(($_.conditions.platforms.excludePlatforms) -join(";"))}}}, `
         @{n='includeLocations';e={if($_.conditions.locations.includeLocations -eq 'All'){'All'}else{($_.conditions.locations.includeLocations | measure).count}}}, `
         @{n='excludeLocations';e={if($_.conditions.locations.excludeLocations -eq 'AllTrusted'){'AllTrusted'}else{($_.conditions.locations.excludeLocations | measure).count}}}, `
-        @{n='clientAppTypes';e={if($_.conditions.clientAppTypes -eq 'all'){'All'}else{($_.conditions.clientAppTypes | measure).count}}}, `
+        @{n='clientAppTypes';e={if($_.conditions.clientAppTypes -eq 'all'){'All'}else{$(($_.conditions.clientAppTypes) -join(";"))}}}, `
         @{n='deviceFilter';e={if($_.conditions.devices.deviceFilter){$true}else{}}}, `
-        @{n='Block';e={if($_.grantControls.builtInControls -eq 'block'){$true}else{}}}, `
-        @{n='RequireMFA';e={$_.grantControls.builtInControls -contains 'MFA'}}, `
+        @{n='grantControls';e={$(($_.grantControls.builtInControls) -join(";"))}}, `
+        #@{n='Block';e={if($_.grantControls.builtInControls -eq 'block'){$true}else{}}}, `
+        #@{n='RequireMFA';e={$_.grantControls.builtInControls -contains 'MFA'}}, `
         @{n='authenticationStrength';e={$_.grantControls.authenticationStrength.requirementsSatisfied}}, `
-        @{n='RequireCompliantDevice';e={$_.grantControls.builtInControls -contains 'compliantDevice'}}, `
-        @{n='RequireDomainJoinedDevice';e={$_.grantControls.builtInControls -contains 'domainJoinedDevice'}}, `
-        @{n='RequirePasswordChange';e={if($_.grantControls.builtInControls -contains 'passwordChange'){$true}else{}}}, `
-        @{n='RequireApprovedApplication';e={$_.grantControls.builtInControls -contains 'approvedApplication'}}, `
-        @{n='RequireCompliantApplication';e={$_.grantControls.builtInControls -contains 'compliantApplication'}}, `
+        #@{n='RequireCompliantDevice';e={$_.grantControls.builtInControls -contains 'compliantDevice'}}, `
+        #@{n='RequireDomainJoinedDevice';e={$_.grantControls.builtInControls -contains 'domainJoinedDevice'}}, `
+        #@{n='RequirePasswordChange';e={if($_.grantControls.builtInControls -contains 'passwordChange'){$true}else{}}}, `
+        #@{n='RequireApprovedApplication';e={$_.grantControls.builtInControls -contains 'approvedApplication'}}, `
+        #@{n='RequireCompliantApplication';e={$_.grantControls.builtInControls -contains 'compliantApplication'}}, `
         @{n='disableResilienceDefaults';e={$_.grantControls.sessionControls.disableResilienceDefaults}}, `
         @{n='applicationEnforcedRestrictions';e={$_.sessionControls.applicationEnforcedRestrictions.isenabled}}, `
         @{n='cloudAppSecurity';e={$_.sessionControls.cloudAppSecurity.cloudAppSecurityType}}, `
@@ -591,3 +687,6 @@ $all_capolicies | foreach{
         TokenProtection
 
 } | export-csv ".\$($tenant)_ca_policies.csv" -NoTypeInformation
+
+
+write-host "Results found here: $path" -ForegroundColor Yellow
