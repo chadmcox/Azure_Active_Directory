@@ -1,0 +1,11 @@
+//https://cloudbrothers.info/en/prem-global-admin-password-reset/
+let SensitiveActions = dynamic(["Update service principal","Add service principal credentials","Add owner to service principal","Add delegated permission grant"]);
+AuditLogs
+| extend InitiatedByUPN = parse_json(tostring(InitiatedBy.user)).userPrincipalName
+| where InitiatedByUPN startswith "Sync_" and InitiatedByUPN endswith "onmicrosoft.com"
+| where OperationName in~ (SensitiveActions)
+| mv-expand TargetResources
+| where TargetResources.type == "ServicePrincipal"
+| extend TargetResourcesDisplayName = TargetResources.displayName
+| extend TargetResourcesId = TargetResources.id
+| extend InitiatedByIpAddress = parse_json(tostring(InitiatedBy.user)).ipAddress
