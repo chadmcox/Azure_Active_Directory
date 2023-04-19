@@ -1,0 +1,8 @@
+let includeapps = pack_array("Graph Explorer","Microsoft Graph PowerShell");
+let thisTenantId = SigninLogs | take 1 | distinct AADTenantId;
+AADNonInteractiveUserSignInLogs | union SigninLogs
+| where TimeGenerated > ago(14d) 
+| where HomeTenantId !in (thisTenantId) and HomeTenantId <> '' 
+| where  AppDisplayName in (includeapps)
+//| where AADTenantId == ResourceTenantId
+| distinct AppDisplayName, UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement, ResourceDisplayName
