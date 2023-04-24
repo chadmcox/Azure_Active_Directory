@@ -1,6 +1,6 @@
 let operations = pack_array('Add app role assignment to service principal','Remove app role assignment to service principal');
 AuditLogs 
-| where TimeGenerated > ago (30d)
+//| where TimeGenerated > ago (30d)
 | where OperationName in (operations)
 | extend AppRoleValue = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[1].newValue)
 | extend AppRoleDisplayName = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[2].newValue)
