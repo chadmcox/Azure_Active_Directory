@@ -50,3 +50,14 @@ Get-MgPrivilegedAccessRoleSetting -PrivilegedAccessId AADRoles -Filter "resource
     $_.UserMemberSettings | convertto-json -depth 99 | out-file "$dir\$($padid)_UserMemberSettings.json"
     $_.UserEligibleSettings | convertto-json -depth 99 | out-file "$dir\$($padid)_UserEligibleSettings.json"
 }
+
+New-Item -ItemType directory -Name ".\PIM_Roles_to_PIM_Group_Mapping"
+Get-MgPrivilegedAccessRoleDefinition -PrivilegedAccessId AADRoles -Filter "resourceId eq '$($context.TenantId)'" | foreach{
+    $role = $null; $role = $_
+    Get-MgPrivilegedAccessRoleAssignment -PrivilegedAccessId AADRoles -Filter "resourceId eq '$($context.TenantId)' and roleDefinitionId eq '$($role.id)'" | foreach{
+        $assignment = $Null; $assignment=$_
+        Get-MgDirectoryObject -DirectoryObjectId $_.subjectid | select -ExpandProperty AdditionalProperties | `
+            Convertto-Json | ConvertFrom-Json | where {$_."@odata.type" -eq '#microsoft.graph.group'} | select `
+                @{N="roleName";E={$role.DisplayName}}, @{N="groupName";E={$_.displayName}}, @{N="AssignmentState";E={$assignment.AssignmentState}}
+    }
+} | export-csv ".\PIM_Roles_to_Group_Mapping\pimrolegroupmapping.csv" -notypeinformation
