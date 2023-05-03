@@ -1,5 +1,6 @@
-//
-//
+//Reference how to update the privuserlist
+//https://github.com/chadmcox/Azure_AD_Conditional_Access_Policies/blob/main/anothertry.md#create-list-of-privileged-users-for-the-kql-designed-to-search-for-privileged-user-impact
+
 
 let privusers = pack_array("**replace this with the results from the privuser.txt found from the powershell cmdlets**");
 SigninLogs 
