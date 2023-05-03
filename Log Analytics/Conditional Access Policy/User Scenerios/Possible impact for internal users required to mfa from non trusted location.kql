@@ -1,0 +1,18 @@
+let thisTenantId = SigninLogs | take 1 | distinct AADTenantId;
+let guests = AADNonInteractiveUserSignInLogs | union SigninLogs | where TimeGenerated > ago(14d) | where HomeTenantId !in (thisTenantId) and HomeTenantId <> '' | distinct UserId;
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+AADNonInteractiveUserSignInLogs 
+| where TimeGenerated > ago(14d)
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| where NetworkLocationDetails !contains "trustedNamedLocation"
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
+| union SigninLogs 
+| where TimeGenerated > ago(14d) 
+| where UserType <> "Guest" and UserId !in (guests)
+| where HomeTenantId == ResourceTenantId
+| where NetworkLocationDetails !contains "trustedNamedLocation"
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
+| where AppDisplayName  !in (excludeapps) and AppDisplayName <> ''
+| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,TrustedLocation
+| summarize apps=make_list(AppDisplayName) by UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,TrustedLocation
