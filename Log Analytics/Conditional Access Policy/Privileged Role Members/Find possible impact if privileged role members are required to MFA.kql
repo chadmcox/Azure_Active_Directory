@@ -1,0 +1,6 @@
+let privusers = pack_array("**replace this with the results from the privuser.txt found from the powershell cmdlets**");
+AADNonInteractiveUserSignInLogs
+| union SigninLogs
+| where TimeGenerated > ago(14d) and UserId  in~ (privusers) and ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| where AppDisplayName  <> "Windows Sign In" and AppDisplayName <> "Microsoft Authentication Broker" and AppDisplayName <> 'Microsoft Account Controls V2' 
+| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, Category
