@@ -1,0 +1,11 @@
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == "0"
+| where HomeTenantId == ResourceTenantId
+| where NetworkLocationDetails !contains "trustedNamedLocation"
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| extend isIPv6 = tostring(iff(IPAddress matches regex @"(([\d|\w]{1,4}\:){7}[\d|\w]{1,4})",'Yes','No'))
+| distinct IPAddress, TrustedLocation, UserPrincipalName, isIPv6
+| summarize uniqueusercountbyip = count() by IPAddress, TrustedLocation, isIPv6
+| where uniqueusercountbyip >= 4
+| sort by uniqueusercountbyip desc 
