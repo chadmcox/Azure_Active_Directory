@@ -3,6 +3,7 @@
 ```
 install-module microsoft.graph.users
 install-module microsoft.graph.applications
+$now = (get-date).AddDays(30)
 
 
 Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","Application.Read.All"
@@ -20,6 +21,7 @@ Get-MgServicePrincipal -filter "servicePrincipalType eq 'Application' and Accoun
 ```
 Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","Application.Read.All"
 Select-MgProfile -Name beta
+$now = (get-date).AddDays(30)
 
 Get-MgApplication -all -ExpandProperty owners | `
     where {($_.PasswordCredentials.EndDateTime) -or ($_.KeyCredentials.EndDateTime)} | `
