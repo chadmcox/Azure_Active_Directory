@@ -1,0 +1,1 @@
+let includeapps = pack_array("Graph Explorer","Microsoft Graph PowerShell","Windows Azure Service Management API","Azure Resource Manager","Azure portal","Azure Data Lake","Application Insights API","Log Analytics API","Microsoft Cloud App Security","Azure Advanced Threat Protection","Windows Defender ATP");
