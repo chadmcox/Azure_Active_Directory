@@ -1,4 +1,4 @@
-let includeapps = pack_array("Graph Explorer","Microsoft Graph PowerShell","Windows Azure Service Management API","Azure Resource Manager","Azure portal","Azure Data Lake","Application Insights API","Log Analytics API","Microsoft Cloud App Security","Azure Advanced Threat Protection","Windows Defender ATP");
+let includeapps = pack_array("Microsoft Graph Command Line Tools","Graph Explorer","Microsoft Graph PowerShell","Windows Azure Service Management API","Azure Resource Manager","Azure portal","Azure Data Lake","Application Insights API","Log Analytics API","Microsoft Cloud App Security","Azure Advanced Threat Protection","Windows Defender ATP");
 AADNonInteractiveUserSignInLogs
 | where TimeGenerated > ago(14d) and ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication"
 | where AppDisplayName in (includeapps) 
