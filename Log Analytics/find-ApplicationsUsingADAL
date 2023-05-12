@@ -3,3 +3,12 @@ SigninLogs
 | where AuthenticationProcessingDetails contains "ADAL"
 | distinct AppDisplayName, UserPrincipalName
 | summarize Count=count() by AppDisplayName
+
+
+
+
+/this looks at apps that are doing it
+AADServicePrincipalSignInLogs 
+| where TimeGenerated >= ago(30d)
+| where AuthenticationProcessingDetails contains "ADAL"
+| distinct ServicePrincipalName, IPAddress, ResultType, ResultDescription
