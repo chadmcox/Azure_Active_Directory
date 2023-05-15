@@ -6,6 +6,7 @@ let badattempts = SigninLogs
 SigninLogs 
 | where TimeGenerated > ago(14d)
 | where ResultType in (0,53003)
+| where NetworkLocationDetails !contains 'trustedNamedLocation'
 | where ClientAppUsed contains "Authenticated SMTP"
 | where UserPrincipalName in (badattempts)
 | distinct TimeGenerated,UserPrincipalName,RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, ResultType,ResultDescription, IPAddress, Location
