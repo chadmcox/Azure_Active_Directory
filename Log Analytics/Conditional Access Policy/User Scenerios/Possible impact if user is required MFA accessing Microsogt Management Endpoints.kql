@@ -3,6 +3,7 @@ AADNonInteractiveUserSignInLogs
 | where TimeGenerated > ago(14d) and ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication"
 | where AppDisplayName in (includeapps) 
 | union SigninLogs
+| where AADTenantId == ResourceTenantId
 | where TimeGenerated > ago(14d) and ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
 | where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps)
 | distinct AppDisplayName, UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement
