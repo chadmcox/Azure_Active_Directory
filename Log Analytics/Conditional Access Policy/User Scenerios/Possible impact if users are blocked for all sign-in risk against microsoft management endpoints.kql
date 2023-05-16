@@ -1,5 +1,6 @@
 let includeapps = pack_array("Microsoft Graph Command Line Tools","Graph Explorer","Microsoft Graph PowerShell","Windows Azure Service Management API","Azure Resource Manager","Azure portal","Azure Data Lake","Application Insights API","Log Analytics API","Microsoft Cloud App Security","Azure Advanced Threat Protection","Windows Defender ATP");
-SigninLogs
+AADNonInteractiveUserSignInLogs 
+| union SigninLogs
 | where TimeGenerated > ago(14d) and ResultType == 0
 | where AADTenantId == ResourceTenantId
 | where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps)
