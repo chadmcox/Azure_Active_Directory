@@ -1,6 +1,7 @@
  SigninLogs 
  | where TimeGenerated > ago(30d)
  | where ResultType == 0
+ | where AADTenantId == ResourceTenantId
  | extend os = tostring(parse_json(DeviceDetail).operatingSystem)
  | where AppDisplayName == "Microsoft Device Registration Client"
  | where AuthenticationRequirement == 'singleFactorAuthentication'
