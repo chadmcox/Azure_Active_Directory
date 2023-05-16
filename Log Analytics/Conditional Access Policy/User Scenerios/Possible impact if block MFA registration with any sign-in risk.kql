@@ -1,5 +1,6 @@
 SigninLogs 
 | where TimeGenerated > ago(14d) //and ResultType == 50072 
+| where AADTenantId == ResourceTenantId
 | where RiskLevelDuringSignIn in ("high","medium","low") and RiskState !in ("dismissed")
 | extend detail = tostring(parse_json(AuthenticationContextClassReferences)[0].detail)
 | extend id = tostring(parse_json(AuthenticationContextClassReferences)[0].id)
