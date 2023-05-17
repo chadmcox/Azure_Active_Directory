@@ -1,0 +1,5 @@
+SigninLogs
+| where TimeGenerated > ago(14d) and ResultType == 0
+| where AADTenantId == ResourceTenantId and UserType == "Guest"
+| where ClientAppUsed <> "Browser"
+| distinct UserPrincipalName, ClientAppUsed, AppDisplayName
