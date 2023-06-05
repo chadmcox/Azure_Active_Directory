@@ -110,8 +110,6 @@ return-AADMSGraph -Uri $uri -pv user | where {(NEW-TIMESPAN –Start $_.external
     select id, accountEnabled, creationType, mail, displayName, userPrincipalName, userType, externalUserState, externalUserStateChangeDateTime -First $removalthreshold | foreach{
         Write-Output "Removing $($_.userPrincipalName) : $($_.externalUserStateChangeDateTime)"
         remove-AADGuestUser -guestid $_.id
-        
-        #this code is for testing so that it restores the object in my lab
         #Write-Output "Restoring $($_.userPrincipalName)"
         #restore-AADGuestUser -guestid $_.id
     }
