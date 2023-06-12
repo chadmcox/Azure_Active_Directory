@@ -1,0 +1,4 @@
+AuditLogs
+| where TimeGenerated > ago(30d)
+| where LoggedByService == "PIM"
+| where Category == "RoleManagement"
