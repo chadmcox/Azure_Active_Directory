@@ -1,9 +1,11 @@
 SigninLogs 
-| where TimeGenerated > ago(14d) //and ResultType == 50072 
+| where TimeGenerated > ago(30d) 
+| where ResultType in (50072,50079)
 | where AADTenantId == ResourceTenantId
-| where RiskLevelDuringSignIn in ("high","medium","low") and RiskState !in ("dismissed")
+| where RiskLevelDuringSignIn in ("high","medium","low") and RiskState !in ("dismissed","remediated")
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
 | extend detail = tostring(parse_json(AuthenticationContextClassReferences)[0].detail)
 | extend id = tostring(parse_json(AuthenticationContextClassReferences)[0].id)
-| where detail == 'required'
 | where AppDisplayName <> 'Microsoft Authenticator App'
-| project AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement, Category, id
+| distinct AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement, Category, ResultDescription, ResultType, TrustedLocation, detail, id, IPAddress
+| distinct UserPrincipalName, RiskLevelDuringSignIn, TrustedLocation
