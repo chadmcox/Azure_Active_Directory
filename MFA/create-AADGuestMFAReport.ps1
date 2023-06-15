@@ -30,8 +30,8 @@ function getAADUserMFAStatus{
 
 $results = getAADUserMFAStatus  | where {$_.userprincipalname -like "*EXT*"}
 $results | select id,userPrincipalName,userDisplayName, isRegistered, isEnabled, isCapable,isMfaRegistered, @{N="authMethods";E={[string]$_.authMethods}} `
-    | export-csv .\AAD_User_MFA_Status.csv -NoTypeInformation
+    | export-csv .\AAD_Guest_MFA_Status.csv -NoTypeInformation
 $results | where {$_.isMFARegistered -eq $true}  -PipelineVariable st | select -ExpandProperty authMethods | `
-    select @{N="userPrincipalName";E={$st.userPrincipalName}},@{N="authMethods";E={$_}} | export-csv .\AAD_User_Registered_AuthMethods.csv -NoTypeInformation
+    select @{N="userPrincipalName";E={$st.userPrincipalName}},@{N="authMethods";E={$_}} | export-csv .\AAD_Guest_Registered_AuthMethods.csv -NoTypeInformation
 
 write-host "Results found here $resultslocation"
