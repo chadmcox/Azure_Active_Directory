@@ -1,5 +1,8 @@
 param($defaultdirectory="$env:USERPROFILE\Downloads")
 cd $defaultdirectory
+
+connect-mggraph -scope 'Application.Read.All', 'Directory.Read.All', 'AuditLog.Read.All'
+
 function getFromMSGraph{
     [cmdletbinding()] 
     param($uri)
