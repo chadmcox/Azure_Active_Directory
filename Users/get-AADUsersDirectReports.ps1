@@ -1,3 +1,4 @@
+param($manager = "bob@contoso.com")
 function get-userTransitiveReports{
     param($id, $manager)
     $uri = "https://graph.microsoft.com/beta/users/$($id)?`$expand=transitiveReports"
@@ -10,7 +11,6 @@ function get-userTransitiveReports{
 
 
 Select-MgProfile -Name beta
-$manager = "bob@contoso.com"
 $managerobj = get-mguser -UserId $manager
 get-userTransitiveReports -id $managerobj.id -manager $managerobj.DisplayName | export-csv ".\$($managerobj.userprincipalname)_directreports.csv" -NoTypeInformation
 
