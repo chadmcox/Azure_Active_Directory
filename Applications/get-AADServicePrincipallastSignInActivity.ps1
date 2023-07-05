@@ -1,4 +1,5 @@
 param($defaultdirectory="$env:USERPROFILE\Downloads")
+cd $defaultdirectory
 function getFromMSGraph{
     [cmdletbinding()] 
     param($uri)
