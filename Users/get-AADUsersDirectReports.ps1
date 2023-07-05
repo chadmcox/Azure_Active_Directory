@@ -1,3 +1,10 @@
+<#
+get a users direct reports and enumerates all of the others direct reports transitively
+
+for what ever reason the function isnt working correctly I link there is suppose to be a level option i need to use.
+
+#>
+
 param($manager = "bob@contoso.com")
 function get-userTransitiveReports{
     param($id, $manager)
