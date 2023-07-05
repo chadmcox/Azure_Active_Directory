@@ -1,5 +1,4 @@
 param($defaultdirectory="$env:USERPROFILE\Downloads")
-cd $defaultdirectory
 function getFromMSGraph{
     [cmdletbinding()] 
     param($uri)
@@ -29,7 +28,7 @@ function getFromMSGraph{
     }until ($uri -eq $null)
 }
 
-$hash_sps = Get-MgServicePrincipal -all | select id, appid, displayname, serviceprincipaltype | group appid -AsHashTable -AsString
+$hash_sps = Get-MgServicePrincipal -all | select id, appid, displayname, serviceprincipaltype, PublisherName | group appid -AsHashTable -AsString
 
 write-host "Total Service Principals $($hash_sps.count)"
 $hash_sps.keys | foreach{$hash_sps[$_]} | select serviceprincipaltype | group serviceprincipaltype | select name, count
@@ -39,6 +38,7 @@ getFromMSGraph -uri $uri | select appid,  `
     @{N="id";E={$hash_sps[$_.appid].id}}, `
     @{N="displayname";E={$hash_sps[$_.appid].displayname}}, `
     @{N="Serviceprincipaltype";E={$hash_sps[$_.appid].Serviceprincipaltype}}, `
+    @{N="PublisherName";E={$hash_sps[$_.appid].PublisherName}}, `
     @{N="lastSignInActivity";E={$_.lastSignInActivity.lastSignInDateTime}}, `
     @{N="SignInActivityType";E={if($_.delegatedClientSignInActivity.lastSignInDateTime){"delegated"
         }elseif($_.delegatedResourceSignInActivity.lastSignInDateTime){"delegated"
@@ -46,3 +46,7 @@ getFromMSGraph -uri $uri | select appid,  `
         }elseif($_.applicationAuthenticationResourceSignInActivity.lastSignInDateTime){"application"
         }else{"unknown"}}} | where {$_.Serviceprincipaltype -ne "ManagedIdentity" -and !($_.id -eq $null)} | `
             export-csv .\AADServicePrincipallastSignInActivity.csv -notypeinformation
+
+$hash_splastsignin = import-csv .\AADServicePrincipallastSignInActivity.csv | select appid | group appid -AsHashTable -AsString
+$hash_sps.keys | foreach{$hash_sps[$_]} | where {$_.Serviceprincipaltype -ne "ManagedIdentity" -and !($hash_splastsignin.containskey($_.appid)) -and !($_.displayname -eq "workflow")} | select `
+    id, appid, displayname, serviceprincipaltype, PublisherName | export-csv .\AADServicePrincipalNOlastSignInActivityInfo.csv -notypeinformation
