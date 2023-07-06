@@ -75,7 +75,7 @@ getFromMSGraph -uri $uri | select appid,  `
         }elseif($_.delegatedResourceSignInActivity.lastSignInDateTime){"delegated"
         }elseif($_.applicationAuthenticationClientSignInActivity.lastSignInDateTime){"application"
         }elseif($_.applicationAuthenticationResourceSignInActivity.lastSignInDateTime){"application"
-        }else{"unknown"}}} | where {$_.Serviceprincipaltype -ne "ManagedIdentity" -and !($_.id -eq $null) -and !($_.PublisherName -eq 'Microsoft Services')} | `
+        }else{"unknown"}}} | where {$_.Serviceprincipaltype -ne "ManagedIdentity" -and !($_.id -eq $null) -and !($_.PublisherName -eq 'Microsoft Services')-and !($_.PublisherName -eq 'Microsoft')} | `
             export-csv .\AADServicePrincipallastSignInActivity.csv -notypeinformation
 
 write-host "Exporting Service Principals with no signin info"
