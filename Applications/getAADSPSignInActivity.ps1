@@ -33,7 +33,7 @@ $sps_lastsignin = Get-MgBetaReportServicePrincipalSignInActivity -all
 $sps_lastsignin_hash = $sps_lastsignin | select appid -ExpandProperty LastSignInActivity | select appid, @{N="LastSignInDateTime";E={$_.LastSignInDateTime}} | group appid -AsHashTable -AsString
 
 Get-MgBetaServicePrincipal -Filter "serviceprincipaltype eq 'Application' and AccountEnabled eq true" -all -ExpandProperty owners | `
-    where {!($_.PublisherName -like "*Microsoft*") -or $_.PublisherName -eq "Microsoft Accounts"} | select `
+    where {!($_.PublisherName -like "*Microsoft*") -or $_.PublisherName -eq "Microsoft Accounts" -and !($_.AppOwnerOrganizationId -eq 'f8cdef31-a31e-4b4a-93e4-5f571e91255a')} | select `
     id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname,AppRoleAssignmentRequired,SignInAudience, `
     @{N="createdDateTime";E={[datetime]$_.AdditionalProperties.createdDateTime}}, `
     @{N="LastSignInDateTime";E={[datetime]$sps_lastsignin_hash[$_.appid].LastSignInDateTime}}, `
