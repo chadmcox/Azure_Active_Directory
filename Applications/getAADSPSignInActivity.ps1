@@ -32,9 +32,9 @@ connect-mggraph -scope 'Application.Read.All', 'Directory.Read.All', 'AuditLog.R
 $sps_lastsignin = Get-MgBetaReportServicePrincipalSignInActivity -all
 $sps_lastsignin_hash = $sps_lastsignin | select appid -ExpandProperty LastSignInActivity | select appid, @{N="LastSignInDateTime";E={$_.LastSignInDateTime}} | group appid -AsHashTable -AsString
 
-Get-MgBetaServicePrincipal -Filter "serviceprincipaltype eq 'Application' and AccountEnabled eq true" -ExpandProperty owners | `
+Get-MgBetaServicePrincipal -Filter "serviceprincipaltype eq 'Application' and AccountEnabled eq true" -all -ExpandProperty owners | `
     where {!($_.PublisherName -like "*Microsoft*") -or $_.PublisherName -eq "Microsoft Accounts"} | select `
-    id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname, `
-    @{N="Owner";E={($_.owners.id | foreach{Get-mgbetauser -userId $_}).UserPrincipalName -join(";")}}, `
+    id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname,AppRoleAssignmentRequired,SignInAudience, `
     @{N="createdDateTime";E={[datetime]$_.AdditionalProperties.createdDateTime}}, `
-    @{N="LastSignInDateTime";E={[datetime]$sps_lastsignin_hash[$_.appid].LastSignInDateTime}} | export-csv .\aadsp_activity.csv -notypeinformation
+    @{N="LastSignInDateTime";E={[datetime]$sps_lastsignin_hash[$_.appid].LastSignInDateTime}}, `
+    @{N="Owner";E={($_.owners.id | foreach{Get-mgbetauser -userId $_}).UserPrincipalName -join(";")}} | export-csv .\aadsp_activity.csv -notypeinformation
