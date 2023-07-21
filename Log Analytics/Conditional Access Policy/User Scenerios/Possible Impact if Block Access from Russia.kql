@@ -1,0 +1,5 @@
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == "0"
+| where Location == "RU"
+| distinct UserPrincipalName, UserType, AppDisplayName, Location
