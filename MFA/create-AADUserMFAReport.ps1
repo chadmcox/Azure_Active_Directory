@@ -20,7 +20,7 @@ cd $resultslocation
 function getAADUserMFAStatus{
     [cmdletbinding()] 
     param()
-    $uri = "https://graph.microsoft.com/beta/reports/credentialUserRegistrationDetails"
+    $uri = "https://graph.microsoft.com/beta/reports/authenticationMethods/userRegistrationDetails"
     do{$results = $null
         for($i=0; $i -le 3; $i++){
             try{
@@ -41,10 +41,7 @@ function getAADUserMFAStatus{
 
 
 
-$results = getAADUserMFAStatus
-$results | select id,userPrincipalName,userDisplayName, isRegistered, isEnabled, isCapable,isMfaRegistered, @{N="authMethods";E={[string]$_.authMethods}} `
+$results = getAADUserMFAStatus | where {$_.isMfaRegistered -eq $true -and $_.userType -eq 'member'}
+$results | select id,userPrincipalName,userDisplayName,userType,isAdmin, isMfaRegistered,isPasswordlessCapable,defaultMfaMethod,userPreferredMethodForSecondaryAuthentication, @{N="methodsRegistered";E={[string]$_.methodsRegistered}} `
     | export-csv .\AAD_User_MFA_Status.csv -NoTypeInformation
-$results | where {$_.isMFARegistered -eq $true}  -PipelineVariable st | select -ExpandProperty authMethods | `
-    select @{N="userPrincipalName";E={$st.userPrincipalName}},@{N="authMethods";E={$_}} | export-csv .\AAD_User_Registered_AuthMethods.csv -NoTypeInformation
-
 write-host "Results found here $resultslocation"
