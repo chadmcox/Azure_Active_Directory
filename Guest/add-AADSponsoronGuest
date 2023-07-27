@@ -28,6 +28,11 @@ $all_guest_invites = getAADGuestinvite
 
 
 foreach($event in $all_guest_invites){
-    $uri = "https://graph.microsoft.com/beta/users/$($event.targetResources.id)/sponsors/$($event.initiatedBy.user.id)"
-    Invoke-MgGraphRequest -Uri $uri -Method POST
+$uri = "https://graph.microsoft.com/beta/users/$($event.targetResources.id)/sponsors/`$ref"
+$body = @"
+{
+  "@odata.id": "https://graph.microsoft.com/beta/users/$($event.initiatedBy.user.id)"
+}
+"@
+Invoke-MgGraphRequest -Uri $uri -Method POST -Body $body
 }
