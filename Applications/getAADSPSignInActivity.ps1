@@ -41,7 +41,9 @@ $sps_lastsignin = Get-MgBetaReportServicePrincipalSignInActivity -all | where {$
         }else{"unknown"}}}
 write-host "Found SignInActivity for $($sps_lastsignin.count) service principals"
 write-host "Build a hash table for quick lookup"
-$sps_lastsignin_hash = $sps_lastsignin | select appid -ExpandProperty LastSignInActivity | select appid, @{N="LastSignInDateTime";E={$_.LastSignInDateTime}} | group appid -AsHashTable -AsString
+$sps_lastsignin_hash = $sps_lastsignin | select appid -ExpandProperty LastSignInActivity | `
+    select appid, @{N="LastSignInDateTime";E={$_.LastSignInDateTime}},ignInActivityType | `
+    group appid -AsHashTable -AsString
 
 write-host "Getting all service principals and create the report"
 Get-MgBetaServicePrincipal -Filter "serviceprincipaltype eq 'Application' and AccountEnabled eq true" -all -ExpandProperty owners | `
