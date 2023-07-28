@@ -69,7 +69,7 @@ function return-AADMSGraph{
     }until ($uri -eq $null)
 }
 
-$$uri = "https://graph.microsoft.com/beta/auditLogs/directoryAudits?`$filter=activityDisplayName eq 'Invite external user' and createdDateTime gt $querydate"
+$uri = "https://graph.microsoft.com/beta/auditLogs/directoryAudits?`$filter=activityDisplayName eq 'Invite external user' and createdDateTime gt $querydate"
 return-AADMSGraph | where {$_.initiatedBy.user.id} | foreach{
 $body = @"
 {
