@@ -19,8 +19,8 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .DESCRIPTION
-This script will remove guest that have not used their accounts in x number of days.
-Important its designed to work in Azure AutomationAccounts. To set up the Azure Automation Account
+This script will populate the sponsors attribute on guest accounts.
+logs go back 30 days, but when this is set to reoccuring I would do a daily run of this. To set up the Azure Automation Account
 Review this url: https://github.com/chadmcox/Azure_Active_Directory_Scripts/blob/master/Maintenance%20Task/README.md
 This is using oauth2 to authenticate, from the managedid created as part of 
 the azure automation account.  Once the accounts is create appropriate permissions
