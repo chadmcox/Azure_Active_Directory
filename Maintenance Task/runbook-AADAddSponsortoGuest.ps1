@@ -71,11 +71,12 @@ function return-AADMSGraph{
 
 $uri = "https://graph.microsoft.com/beta/auditLogs/directoryAudits?`$filter=activityDisplayName eq 'Invite external user' and createdDateTime gt $querydate"
 return-AADMSGraph | where {$_.initiatedBy.user.id} | foreach{
+Write-Output "Updating Guest: $() with a sponsor of $($_.targetResources.id)"
 $body = @"
 {
-  "@odata.id": "https://graph.microsoft.com/beta/users/$($_.targetResources.id)"
+  "@odata.id": "https://graph.microsoft.com/beta/users/$($_.initiatedBy.user.id)"
 }
 "@
-$uri = "https://graph.microsoft.com/beta/users/$($_.initiatedBy.user.id)"
+$uri = "https://graph.microsoft.com/beta/users/$($_.targetResources.id)"
 Invoke-RestMethod -Uri $Uri -Headers $graphApiHeader -Method POST -ContentType "application/json" -body $body
 }
