@@ -70,6 +70,7 @@ function return-AADMSGraph{
 }
 
 $uri = "https://graph.microsoft.com/beta/auditLogs/directoryAudits?`$filter=activityDisplayName eq 'Invite external user' and createdDateTime gt $querydate"
+Write-Output "$uri"
 return-AADMSGraph | where {$_.initiatedBy.user.id} | foreach{
 Write-Output "Updating Guest: $($_.targetResources.id) with a sponsor of $($_.initiatedBy.user.id)"
 $body = @"
