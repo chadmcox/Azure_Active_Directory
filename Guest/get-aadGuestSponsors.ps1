@@ -1,3 +1,6 @@
+param($resultslocation = "$env:USERPROFILE\Downloads")
+cd $resultslocation
+Connect-MgGraph -Scopes "User.ReadBasic.All", "User.Read.All","Directory.Read.All","Directory.AccessAsUser.All"
 function getAADGuest{
     [cmdletbinding()] 
     param()
