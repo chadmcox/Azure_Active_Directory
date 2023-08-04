@@ -9,8 +9,14 @@ $group_permissions = $Graph | select -ExpandProperty approles | select * | where
 Get-MgBetaServicePrincipalAppRoleAssignedTo -ServicePrincipalId $graph.id -All | `
     where {$_.AppRoleId -in ($group_permissions.id)} | select PrincipalDisplayName, PrincipalId -Unique | foreach{
         Get-MgBetaServicePrincipal -serviceprincipalid $_.PrincipalId -ExpandProperty owners | foreach{
-            $_ | select appid, displayname,PublisherName, owners
-            Get-MgBetaApplication -filter "appId eq '$($_.appid)'" -ExpandProperty owners | `
-                select appid, displayname,PublisherName, owners | where {$_.owners -like "*"}
+            $app = $null;$app = $_
+            $app | select appid, displayname,PublisherName,@{N="via";Expression={"AppRoleAssignment"}}
+            ($app.owners).id | select @{N="appid";Expression={$app.appid}}, `
+                @{N="displayname";Expression={(Get-MgBetaDirectoryObjectById -Ids $_ | select -ExpandProperty AdditionalProperties | convertto-json | convertfrom-json).displayname}}, `
+                @{N="PublisherName";Expression={$app.PublisherName}},@{N="via";Expression={"Owner of $($app.displayname)"}}
+            (Get-MgBetaApplication -filter "appId eq '$($_.appid)'" -ExpandProperty owners | `
+                select -expandproperty owners).id | select @{N="appid";Expression={$app.appid}}, `
+                @{N="displayname";Expression={(Get-MgBetaDirectoryObjectById -Ids $_ | select -ExpandProperty AdditionalProperties | convertto-json | convertfrom-json).displayname}}, `
+                @{N="PublisherName";Expression={$app.PublisherName}},@{N="via";Expression={"Owner of $($app.displayname)"}}
         }
-    }
+    } | select DisplayName,via -Unique
