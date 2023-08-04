@@ -2,7 +2,7 @@
 #https://dirkjanm.io/azure-ad-privilege-escalation-application-admin/
 #want the ability to prevent the assignment of credentials and grant role assignment
 
-connect-mggraph
+connect-mggraph -scope Application.Read.All, Directory.Read.All
 Get-MgBetaServicePrincipal -all -ExpandProperty owners | `
     where {$_.PublisherName -like "*Microsoft*" -or !($_.PublisherName -eq "Microsoft Accounts") -and $_.AppOwnerOrganizationId -eq 'f8cdef31-a31e-4b4a-93e4-5f571e91255a'} | `
         where {$_.owners -like "*"} | select appid, displayname,PublisherName, owners
