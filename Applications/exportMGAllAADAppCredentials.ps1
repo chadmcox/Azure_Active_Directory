@@ -37,29 +37,43 @@ function getFromMSGraph{
 function exportcreds{
     [cmdletbinding()]
         param()
-        @($aadApps,$aadSps) | select * -pv aadsp | select @{Name="Principal";Expression={$aadsp.displayname}}, `
+
+        $aadSps | select * -pv aadsp | where {$_.KeyCredentials -like "*"}  | select -ExpandProperty keyCredentials | select @{Name="Principal";Expression={$aadsp.displayname}}, `
                 @{Name="PrincipalID";Expression={$aadsp.ID}}, @{Name="PrincipalPublisherName";Expression={$aadsp.PublisherName}}, `
                 @{Name="PrincipalAppDisplayName";Expression={$aadsp.AppDisplayName}}, @{Name="PrincipalAppId";Expression={$aadsp.Appid}}, `
-                @{Name="PrincipalEnabled";Expression={$aadsp.AccountEnabled}}, @{Name="ObjectType";Expression={$aadsp.ObjectType}}, `
-                @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}},@{Name="CredType";Expression={"Key"}} `
-                    -ExpandProperty KeyCredentials | select `
-                Principal, PrincipalID, PrincipalPublisherName, PrincipalAppDisplayName, PrincipalAppId, PrincipalEnabled, `
-                 ObjectType, ServicePrincipalType,CredType, displayName, type, usage, startDateTime, endDateTime
+                @{Name="PrincipalEnabled";Expression={$aadsp.AccountEnabled}}, `
+                @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}},@{Name="CredType";Expression={"Key"}}, `
+                displayName, type, usage, startDateTime, endDateTime, `
+                    @{Name="Expired";Expression={(New-TimeSpan -Start ([datetime]$_.endDateTime) -end $(get-date)).TotalDays -gt 0}}
+        $aadApps | select * -pv aadsp | where {$_.KeyCredentials -like "*"}  | select -ExpandProperty keyCredentials | select @{Name="Principal";Expression={$aadsp.displayname}}, `
+                @{Name="PrincipalID";Expression={$aadsp.ID}}, @{Name="PrincipalPublisherName";Expression={$aadsp.PublisherName}}, `
+                @{Name="PrincipalAppDisplayName";Expression={$aadsp.AppDisplayName}}, @{Name="PrincipalAppId";Expression={$aadsp.Appid}}, `
+                @{Name="PrincipalEnabled";Expression={$aadsp.AccountEnabled}}, `
+                @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}},@{Name="CredType";Expression={"Key"}}, `
+                displayName, type, usage, startDateTime, endDateTime, `
+                    @{Name="Expired";Expression={(New-TimeSpan -Start ([datetime]$_.endDateTime) -end $(get-date)).TotalDays -gt 0}}
+        $aadApps | select * -pv aadsp | where {$_.PasswordCredentials -like "*"}  | select -ExpandProperty PasswordCredentials | select @{Name="Principal";Expression={$aadsp.displayname}}, `
+                @{Name="PrincipalID";Expression={$aadsp.ID}}, @{Name="PrincipalPublisherName";Expression={$aadsp.PublisherName}}, `
+                @{Name="PrincipalAppDisplayName";Expression={$aadsp.AppDisplayName}}, @{Name="PrincipalAppId";Expression={$aadsp.Appid}}, `
+                @{Name="PrincipalEnabled";Expression={$aadsp.AccountEnabled}}, `
+                @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}},@{Name="CredType";Expression={"Key"}}, `
+                displayName, type, usage, startDateTime, endDateTime, `
+                    @{Name="Expired";Expression={(New-TimeSpan -Start ([datetime]$_.endDateTime) -end $(get-date)).TotalDays -gt 0}}
+        $aadSps | select * -pv aadsp | where {$_.PasswordCredentials -like "*"}  | select -ExpandProperty PasswordCredentials | select @{Name="Principal";Expression={$aadsp.displayname}}, `
+                @{Name="PrincipalID";Expression={$aadsp.ID}}, @{Name="PrincipalPublisherName";Expression={$aadsp.PublisherName}}, `
+                @{Name="PrincipalAppDisplayName";Expression={$aadsp.AppDisplayName}}, @{Name="PrincipalAppId";Expression={$aadsp.Appid}}, `
+                @{Name="PrincipalEnabled";Expression={$aadsp.AccountEnabled}}, `
+                @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}},@{Name="CredType";Expression={"Key"}}, `
+                displayName, type, usage, startDateTime, endDateTime, `
+                    @{Name="Expired";Expression={(New-TimeSpan -Start ([datetime]$_.endDateTime) -end $(get-date)).TotalDays -gt 0}}
+
         
-        @($aadApps,$aadSps) | select * -pv aadsp | select @{Name="Principal";Expression={$aadsp.displayname}}, `
-                @{Name="PrincipalID";Expression={$aadsp.ID}}, @{Name="PrincipalPublisherName";Expression={$aadsp.PublisherName}}, `
-                @{Name="PrincipalAppDisplayName";Expression={$aadsp.AppDisplayName}}, @{Name="PrincipalAppId";Expression={$aadsp.Appid}}, `
-                @{Name="PrincipalEnabled";Expression={$aadsp.AccountEnabled}}, @{Name="ObjectType";Expression={$aadsp.ObjectType}}, `
-                @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}},@{Name="CredType";Expression={"Pwd"}} `
-                     -ExpandProperty PasswordCredentials | select `
-                Principal, PrincipalID, PrincipalPublisherName, PrincipalAppDisplayName, PrincipalAppId, PrincipalEnabled, `
-                 ObjectType, ServicePrincipalType,CredType, displayName, type, usage, startDateTime, endDateTime
 }
 
 
 write-host "Retrieving every Service Principal"
-$sp_uri = "https://graph.microsoft.com/beta/servicePrincipals?`$expand=appRoleAssignments"
-$aadsps = getFromMSGraph -uri $sp_uri | select *, @{Name="ObjectType";Expression={"ServicePrincipal"}}
+$sp_uri = "https://graph.microsoft.com/beta/servicePrincipals"
+$aadsps = getFromMSGraph -uri $sp_uri | select *, @{Name="ObjectType";Expression={"ServicePrincipal"}} | where {$_.ServicePrincipalType -eq "application"}
 write-host "Retrieving every App"
 $app_uri = "https://graph.microsoft.com/beta/applications"
 $aadApps = getFromMSGraph -uri $app_uri | select *, @{Name="ObjectType";Expression={"Application"}}
