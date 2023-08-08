@@ -2,7 +2,7 @@ connect-mggraph
 #get the graph id
 $Graph = Get-MgBetaServicePrincipal -filter "appId eq '00000003-0000-0000-c000-000000000000'"
 #get the permission IDs
-$role_permissions = $Graph | select -ExpandProperty approles | select * | where {$_.value -in ("AppRoleAssignment.ReadWrite.All")}
+$role_permissions = $Graph | select -ExpandProperty approles | select * | where {$_.value -in ("AppRoleAssignment.ReadWrite.All","RoleManagement.ReadWrite.Directory")}
 
 
 Get-MgBetaServicePrincipalAppRoleAssignedTo -ServicePrincipalId $graph.id -All | `
