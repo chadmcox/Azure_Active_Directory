@@ -1,5 +1,8 @@
-
-connect-mggraph -scope 'Application.Read.All', 'Directory.Read.All'
+param($defaultpath = "$env:USERPROFILE\Downloads")
+if(!(Get-MgContext)){
+    connect-mggraph -scopes "Application.Read.All","Directory.Read.All"
+}
+cd $defaultpath
 $appids = "00000003-0000-0000-c000-000000000000","00000003-0000-0ff1-ce00-000000000000"
 $Graph = $appids | foreach {Get-MGBetaServicePrincipal -filter "appId eq '$($_)'"}
 $permissions = "Sites.FullControl.All","Sites.Manage.All","Sites.Read.All","Sites.ReadWrite.All","Files.Read.All","Files.ReadWrite.All","File.Read.All"
