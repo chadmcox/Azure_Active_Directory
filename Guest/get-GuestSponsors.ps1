@@ -26,7 +26,7 @@ function getAADGuest{
 
 $all_guest = getAADGuest
 
-getAADGuest | select displayName,userPrincipalName,userType,externalUserState, `
+$all_guest | select displayName,userPrincipalName,userType,externalUserState, `
     @{Name="externalUserStateChangeDateTime";Expression={(get-date $_.externalUserStateChangeDateTime).tostring('yyyy-MM-dd')}}, `
     creationType,accountEnabled,onPremisesSyncEnabled,Mail, `
     @{Name="createdDateTime";Expression={(get-date $_.createdDateTime).tostring('yyyy-MM-dd')}}, `
