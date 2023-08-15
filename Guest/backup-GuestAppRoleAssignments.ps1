@@ -27,6 +27,6 @@ function getAADGuest{
 $all_guest = getAADGuest
 
 $all_guest | where {$_.appRoleAssignments -like "*"} | select id,displayName,userPrincipalName,userType,onPremisesSyncEnabled, `
-    externalUserState,creationType,accountEnabled,mail, appRoleAssignments | convertto-json | out-file .\backup_guest_approleassignment.json
+    externalUserState,creationType,accountEnabled,mail, appRoleAssignments | convertto-json -depth 99 | out-file .\backup_guest_appRoleAssignments.json
 
 write-host "Results can be found here: $resultslocation"
