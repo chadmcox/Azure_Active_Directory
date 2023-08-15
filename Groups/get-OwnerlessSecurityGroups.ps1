@@ -5,6 +5,6 @@ if(!(Get-MgContext)){
 cd $defaultpath
 
 Get-MgBetaGroup -filter "SecurityEnabled eq true" -all `
-    -property Id, Displayname, OnPremisesSyncEnabled, SecurityEnabled,GroupTypes, IsAssignableToRole,MembershipRuleProcessingState, ExpirationDateTime, CreatedDateTime, CreatedByAppId `
+    -property Id, Displayname, OnPremisesSyncEnabled, SecurityEnabled,GroupTypes,mailEnabled, IsAssignableToRole,MembershipRuleProcessingState, ExpirationDateTime, CreatedDateTime, CreatedByAppId `
     -ExpandProperty owners | where {!($_.owners -like "*") -and !($_.onPremisesSyncEnabled -eq $true) -and !($_.GroupTypes -contains "Unified")} | select `
-        Id, Displayname, OnPremisesSyncEnabled, SecurityEnabled,GroupTypes, IsAssignableToRole,MembershipRuleProcessingState, ExpirationDateTime, CreatedDateTime, CreatedByAppId, owners
+        Id, Displayname, OnPremisesSyncEnabled,mailEnabled, SecurityEnabled,GroupTypes, IsAssignableToRole,MembershipRuleProcessingState, ExpirationDateTime, CreatedDateTime, CreatedByAppId, owners
