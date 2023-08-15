@@ -22,7 +22,10 @@ from the use or distribution of the Sample
 because the azuread modules do not handle time outs this script can be incomplete
 #>
 
-cd "$env:USERPROFILE\Downloads"
+param($defaultpath = "$env:USERPROFILE\Downloads")
+if(!(Get-MgContext)){
+    connect-mggraph -scopes "Application.Read.All","Directory.Read.All"
+}
 function getFromMSGraph{
     [cmdletbinding()] 
     param($uri)
