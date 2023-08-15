@@ -4,7 +4,7 @@ $roles = '158c047a-c907-4556-b7ef-446551a6b5f7', '9b895d92-2cd3-44c7-9d02-a6ac2d
 
   Get-AzureADDirectoryRole | where {$_.RoleTemplateId -in $roles} -pv role | foreach{
     Get-AzureADDirectoryRoleMember -objectid $_.objectId | select objecttype, displayName, @{N="via";Expression={"Role Member of $($role.displayname)"}}
-  } | select objecttype,DisplayName,via -Unique | export-csv .\role_members_can_elevate_privileges.csv -NoTypeInformation
+  } | select objecttype,DisplayName,via -Unique | export-csv .\role_members_can_change_creds.csv -NoTypeInformation
 
 
 
