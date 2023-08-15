@@ -1,6 +1,6 @@
 param($defaultpath = "$env:USERPROFILE\Downloads")
 if(!(Get-MgContext)){
-    connect-mggraph -scopes "Group.Read.All","Directory.Read.All","DirectoryRecommendations.Read.All"
+    connect-mggraph -scopes "Group.Read.All","Directory.Read.All"
 }
 cd $defaultpath
 
