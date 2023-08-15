@@ -5,7 +5,7 @@ function getAADGuest{
     [cmdletbinding()] 
     param()
     write-host "Exporting all Guest to: $resultslocation, this may take a while"
-    $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=id,displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime&`$expand=memberOf(`$select=id,displayName)"
+    $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=id,displayName,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime&`$expand=memberOf(`$select=id,displayName)"
     do{$results = $null
         for($i=0; $i -le 3; $i++){
             try{
@@ -26,7 +26,7 @@ function getAADGuest{
 
 $all_guest = getAADGuest
 
-$all_guest | where {$_.memberof -like "*"} | select id,displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled, `
+$all_guest | where {$_.memberof -like "*"} | select id,displayName,userPrincipalName,userType,onPremisesSyncEnabled, `
     externalUserState,creationType,accountEnabled,mail, memberof | convertto-json | out-file .\backup_guest_group_membership.json
 
 write-host "Results can be found here: $resultslocation"
