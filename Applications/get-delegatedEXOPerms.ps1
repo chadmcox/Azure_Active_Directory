@@ -1,3 +1,8 @@
+param($defaultpath = "$env:USERPROFILE\Downloads")
+if(!(Get-MgContext)){
+    connect-mggraph -scopes "Application.Read.All","Directory.Read.All"
+}
+cd $defaultpath
 $permissions = "Mail.Read","Mail.Read.Shared","Mail.ReadBasic","Mail.ReadBasic.All","Mail.ReadWrite","Mail.ReadWrite.Shared","Mail.Send", `
     "Mail.Send.Shared","MailboxSettings.Read","MailboxSettings.ReadWrite","EWS.AccessAsUser.All","Exchange.Manage"
 $appids = "00000003-0000-0000-c000-000000000000","00000002-0000-0ff1-ce00-000000000000"
