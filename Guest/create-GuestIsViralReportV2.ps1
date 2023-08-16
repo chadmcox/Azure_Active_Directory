@@ -42,12 +42,22 @@ function query-msgraphapi{
 function isguestviral{
     [cmdletbinding()]
     param($mail)
-    $userRealmUriFormat = "https://login.microsoftonline.com/common/userrealm?user={urlEncodedMail}&api-version=2.1"
-    $encodedMail = [System.Web.HttpUtility]::UrlEncode($mail)
-    $userRealmUri = $userRealmUriFormat -replace "{urlEncodedMail}", $encodedMail
-    try{$results = Invoke-WebRequest -Uri $userRealmUri}catch{}
-    ($results.Content | ConvertFrom-Json).IsViral
+    if(!($global:Hash_DomainisViral.containskey(($mail -split("@"))[1]))){
+        $userRealmUriFormat = "https://login.microsoftonline.com/common/userrealm?user={urlEncodedMail}&api-version=2.1"
+        $encodedMail = [System.Web.HttpUtility]::UrlEncode($mail)
+        $userRealmUri = $userRealmUriFormat -replace "{urlEncodedMail}", $encodedMail
+        try{$results = Invoke-WebRequest -Uri $userRealmUri}catch{}
+        if(($results.Content | ConvertFrom-Json).IsViral -eq $true){
+            ($results.Content | ConvertFrom-Json).IsViral
+            $global:Hash_DomainisViral.add(($mail -split("@"))[1],$true)
+        }else{
+            $false
+            $global:Hash_DomainisViral.add(($mail -split("@"))[1],$false)
+        }
+    }else{$global:Hash_DomainisViral["$(($mail -split("@"))[1])"]}
 }
+
+$global:Hash_DomainisViral = @{}
 
 $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime,identities&`$expand=memberOf"
 query-msgraphapi -uri $uri | select  displayName,userPrincipalName,userType,Mail,externalUserState, creationType,accountEnabled,onPremisesSyncEnabled,`
