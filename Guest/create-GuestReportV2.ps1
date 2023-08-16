@@ -23,7 +23,7 @@ function getAADGuest{
     [cmdletbinding()] 
     param()
     write-host "Exporting all Guest to: $resultslocation, this may take a while"
-    $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime"
+    $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime,identities&`$expand=memberOf"
     do{$results = $null
         for($i=0; $i -le 3; $i++){
             try{
@@ -50,6 +50,7 @@ getAADGuest | select displayName,userPrincipalName,userType,externalUserState, `
     @{Name="lastPasswordChangeDateTime";Expression={if($_.createdDateTime -ne $_.lastPasswordChangeDateTime){(get-date $_.lastPasswordChangeDateTime).tostring('yyyy-MM-dd')}}}, `
     @{Name="lastSignInDateTime";Expression={(get-date $_.signInActivity.lastSignInDateTime).tostring('yyyy-MM-dd')}}, `
     @{Name="lastNonInteractiveSignInDateTime";Expression={(get-date $_.signInActivity.lastNonInteractiveSignInDateTime).tostring('yyyy-MM-dd')}}, `
-    @{Name="Domain";Expression={($_.mail -split("@"))[1]}} | export-csv .\azuread_guestusers.csv -notypeinformation
+    @{Name="Domain";Expression={($_.mail -split("@"))[1]}}, @{Name="UnifiedGroupMember";Expression={$_.memberOf.groupTypes -contains "Unified"}}, `
+    @{Name="SignInType";Expression={($_.identities | where {$_.SignInType -eq "federated"}).Issuer}} | export-csv .\azuread_guestusers.csv -notypeinformation
 
 write-host "Results can be found here: $resultslocation"
