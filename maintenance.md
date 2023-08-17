@@ -18,6 +18,7 @@
 | Require all applications that users can log into require assignments to prevent accidental access by guest users.  |  |
 | Monitor for and replace credentials that are about to expire.    |  |
 | Monitor for applications that create user accounts.    |  |
+| Operationalize consent workflow request  |  |
 
 ## Directory Roles
 
