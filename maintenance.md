@@ -9,11 +9,13 @@
 
 ## Users
 
-## Roles
+## Groups
 
-## Id Protection
+## Devices
 
 ## Conditional Access Policies
+
+## Id Protection
 
 ## Privileged Identity Management
 
