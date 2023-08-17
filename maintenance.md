@@ -64,6 +64,13 @@
 
 ## Conditional Access Policies
 
+| Task | Script |
+| --------------------- | --------------------- |
+| review users listed as exceptions to conditional access policies. |  |
+| Monitor and review new, changed or deleted Conditional Access Policies. |  |
+| Monitor to make sure policies are performing the expected behavior. |  |
+| Review potential gaps in policies. |  |
+
 ## Id Protection
 
 | Task | Script |
