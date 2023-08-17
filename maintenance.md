@@ -30,7 +30,7 @@
 | --------------------- | --------------------- |
 | Review and monitor applications guest are accessing, look for access to unexpected applications like Azure Portal, PowerShell, Devops, HR Apps, Payrole Apps or VPNs. |  |
 |  Have a process in place to remove not accepted guest from the tenant after a specific period of time (15-30 days).  Make sure the guest user is not a member of a unified group as it could be to a distribution list and could cause problems.  if using some sort of automation review the logs to make sure it is working as expected. |  |
-| Find guest users that havent logged into the tenant after a period of time and remove then.  (I recommend a remove over a disable because if the remove was done in error the guest just needs to be reinvited.) |  |
+| Find guest users that haven't logged into the tenant after a period of time and remove then.  (I recommend a remove over a disable because if the remove was done in error the guest just needs to be reinvited.) |  |
 
 ## Users
 
