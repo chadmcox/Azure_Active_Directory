@@ -58,7 +58,7 @@
 | --------------------- | --------------------- |
 | Find and review stale devices. |  |
 | Find and remediate not supported operating systems. |  |
-| Monitor for devices failing to signin. |  |
+| Monitor for devices failing to signin and remediate |  |
 
 ## Conditional Access Policies
 
