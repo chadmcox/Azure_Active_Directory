@@ -14,7 +14,7 @@
 | Review and monitor for applications that have been assigned the permission to do role assignments, goal is to minimize and protect those applications.  |  |
 | Review and monitor for Microsoft built-in (first party) applications having owners assigned, Owners have the ability to perform role assignments and add credentials to the applications that could be used against the applications  |  |
 | Review and monitor for applications that have been given readwrite permissions.  Owners of these applications should be considered sensitive.  For these type of applications the goal is not to use owner assignments.  |  |
-| Find and disable applications that are considered stale.  |  |
+| Find and disable applications that are considered stale. The recommendations feature is a great place to start. |  |
 | Require all applications that users can log into require assignments to prevent accidental access by guest users.  |  |
 | Monitor for and replace credentials that are about to expire.    |  |
 | Monitor for applications that create user accounts.    |  |
