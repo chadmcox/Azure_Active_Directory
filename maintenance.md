@@ -45,6 +45,7 @@
 | Monitor for users being locked out frequently. |  |
 
 ## Groups
+
 | Task | Script |
 | --------------------- | --------------------- |
 | Find and review unused groups. |  |
@@ -52,6 +53,12 @@
 | Review and remdiate dynamic groups that are in an error state. |  |
 
 ## Devices
+
+| Task | Script |
+| --------------------- | --------------------- |
+| Find and review stale devices. |  |
+| Find and remediate not supported operating systems. |  |
+| Monitor for devices failing to signin. |  |
 
 ## Conditional Access Policies
 
