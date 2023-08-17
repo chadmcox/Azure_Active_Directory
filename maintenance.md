@@ -35,6 +35,12 @@
 
 ## Users
 
+| Task | Script |
+| --------------------- | --------------------- |
+| Find cloud users that are stale.  Consider disabling and removing. |  |
+| Make sure stale hybrid accounts are not synced to the cloud.  Only sync what is needed to the tenant. |  |
+| Review users that appear not to be syncing anymore and remediate. |  |
+
 ## Groups
 
 ## Devices
