@@ -20,7 +20,16 @@
 
 ## Directory Roles
 
-## Guest
+| Task | Script |
+| --------------------- | --------------------- |
+
+## Guest (B2B)
+
+| Task | Script |
+| --------------------- | --------------------- |
+| Review and monitor applications guest are accessing, look for access to unexpected applications like Azure Portal, PowerShell, Devops, HR Apps, Payrole Apps or VPNs. |  |
+|  Have a process to in place to remove not accepted guest from the tenant after a specific period of time.  Make sure the guest user is not a member of a unified group as it could be to a distribution list and could cause problems. |  |
+| Find guest users that havent logged into the tenant after a period of time and remove then.  (I recommend a remove over a disable because if the remove was done in error the guest just needs to be reinvited.) |  |
 
 ## Users
 
