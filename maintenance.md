@@ -3,6 +3,10 @@
 
 ## Applications and Service Principals
 
+| Task | Script |
+| --------------------- | --------------------- |
+|  |  |
+
 ## Directory Roles
 
 ## Guest
