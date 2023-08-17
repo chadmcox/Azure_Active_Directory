@@ -40,8 +40,16 @@
 | Find cloud users that are stale.  Consider disabling and removing. |  |
 | Make sure stale hybrid accounts are not synced to the cloud.  Only sync what is needed to the tenant. |  |
 | Review users that appear not to be syncing anymore and remediate. |  |
+| Monitor for cloud users being created, if a hybrid environment is in place. |  |
+| Monitor for possible brute force against users. |  |
+| Monitor for users being locked out frequently. |  |
 
 ## Groups
+| Task | Script |
+| --------------------- | --------------------- |
+| Find and review unused groups. |  |
+| Review and remdiate dynamic groups that are not on. |  |
+| Review and remdiate dynamic groups that are in an error state. |  |
 
 ## Devices
 
