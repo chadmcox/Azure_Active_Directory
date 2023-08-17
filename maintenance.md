@@ -43,6 +43,8 @@
 | Monitor for cloud users being created, if a hybrid environment is in place. |  |
 | Monitor for possible brute force against users. |  |
 | Monitor for users being locked out frequently. |  |
+| Monitor for users potentially experiencing mfa spamming. |  |
+| Monitor for users performing several deny's or reporting fraud. |  |
 
 ## Groups
 
@@ -63,6 +65,15 @@
 ## Conditional Access Policies
 
 ## Id Protection
+
+| Task | Script |
+| --------------------- | --------------------- |
+| Find and define unknown trusted networks. This may include setting up zscaler or umbrella as a trusted network. |  |
+| Monitor for users registering MFA with a risk. |  |
+| Monitor for users changing passwords outside the trusted network to remediate a risk, using a less secure mfa method |  |
+| Consider automation to dismiss low and medium risk after 30 days |  |
+| Monitor and remediate high user risk |  |
+| Review and remediate users being flagged as a risk due to password spray |  |
 
 ## Privileged Identity Management
 
