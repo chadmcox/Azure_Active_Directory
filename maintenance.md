@@ -88,4 +88,4 @@
 | Task | Script |
 | --------------------- | --------------------- |
 | Review and remediate PIM role and Group settings. |  |
-| Review and make sur directory role members and privileged group members are not permenant. |  |
+| Review and make sure directory role members and privileged group members are not permenant. |  |
