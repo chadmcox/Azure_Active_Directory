@@ -13,25 +13,49 @@ and their authentication time
 param($defaultpath="$env:USERPROFILE\downloads")
 
 Connect-AzAccount
-$accessToken = (Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com").Token
+$script:accessToken = (Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com").Token
 Add-Type -AssemblyName System.Web
 
-$authHeader = @{
+$script:authHeader = @{
       "Authorization" = "Bearer " + $AccessToken
     }
 
 function query-msgraphapi{
     [cmdletbinding()]
     param($uri)
+    $authcount = 0
     do{$results = $null
+        if($authcount -gt 300){
+            #might have a timeout condition occuring so making it get a new access token every 3000 users
+            $script:accessToken = (Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com").Token
+            Add-Type -AssemblyName System.Web
+
+            $script:authHeader = @{
+                  "Authorization" = "Bearer " + $AccessToken
+                }
+            
+            $authcount = 0
+        }else{
+            $authcount++
+        }
         for($i=0; $i -le 3; $i++){
             try{
                 $results = Invoke-RestMethod -Uri $Uri -Headers $authHeader -Method Get -ContentType "application/json"
                 break
             }catch{#if this fails it is going to try to authenticate again and rerun query
+                write-host "$($_.Exception.response.statuscode)"
                 if(($_.Exception.response.statuscode -eq "TooManyRequests") -or ($_.Exception.Response.StatusCode.value__ -eq 429)){
                     #if this hits up against to many request response throwing in the timer to wait the number of seconds recommended in the response.
                     Start-Sleep -Seconds $_.Exception.response.headers.RetryAfter.Delta.seconds
+                }elseif($_.Exception.response.statuscode -eq "Unauthorized"){
+                    $script:accessToken = (Get-AzAccessToken -ResourceUrl "https://graph.microsoft.com").Token
+                    Add-Type -AssemblyName System.Web
+
+                    $script:authHeader = @{
+                          "Authorization" = "Bearer " + $AccessToken
+                        }
+            
+                    $authcount = 0
                 }
             }
         }
@@ -59,7 +83,7 @@ function isguestviral{
 
 $global:Hash_DomainisViral = @{}
 
-$uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime,identities&`$expand=memberOf"
+$uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=id,displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime,identities&`$expand=memberOf"
 query-msgraphapi -uri $uri | select  displayName,userPrincipalName,userType,Mail,externalUserState, creationType,accountEnabled,onPremisesSyncEnabled,`
     @{Name="externalUserStateChangeDateTime";Expression={(get-date $_.externalUserStateChangeDateTime).tostring('yyyy-MM-dd')}}, `
     @{Name="createdDateTime";Expression={(get-date $_.createdDateTime).tostring('yyyy-MM-dd')}}, `
@@ -70,4 +94,3 @@ query-msgraphapi -uri $uri | select  displayName,userPrincipalName,userType,Mail
     @{Name="IsViral";Expression={$SignInType =$null;$SignInType = ($_.identities | where {$_.SignInType -eq "federated"}).Issuer; `
         if(!($SignInType)){isguestviral -mail $_.mail}elseif($SignInType -eq 'ExternalAzureAD'){isguestviral -mail $_.mail}}}  | `
             export-csv "$defaultpath\aad_guests.csv" -NoTypeInformation
-write-host "Results can be found here: $defaultpath\aad_guests.csv"
