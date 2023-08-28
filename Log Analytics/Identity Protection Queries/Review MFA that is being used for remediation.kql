@@ -1,9 +1,8 @@
 SigninLogs
-| where TimeGenerated > ago(14d) 
+| where TimeGenerated > ago(30d) 
 | where AADTenantId == ResourceTenantId
-| where RiskState == "remediated"
-| where RiskLevelDuringSignIn in ("high","medium","low") 
-| extend mfaUsed = tostring(MfaDetail.authMethod)
-| project AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, mfaUsed, MfaDetail,ConditionalAccessStatus, AuthenticationRequirement, Category, ResultType, ResultDescription
-| summarize mfaTypeCount = count() by mfaUsed, RiskLevelDuringSignIn
-| sort mfaTypeCount desc 
+| where RiskDetail == "userPassedMFADrivenByRiskBasedPolicy"
+| extend mfaMethod = tostring(MfaDetail.authMethod)
+| extend authMethod = tostring(parse_json(AuthenticationDetails)[0].authenticationMethod)
+| project AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, mfaMethod, authMethod,ConditionalAccessStatus, AuthenticationRequirement, Category, ResultType, ResultDescription
+| summarize mfaTypeCount = count() by mfaMethod, authMethod, RiskLevelDuringSignIn
