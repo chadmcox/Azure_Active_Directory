@@ -6,5 +6,5 @@ SigninLogs
 | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
 | extend Country = tostring(LocationDetails.countryOrRegion)
 | where TrustedLocation != "trustedNamedLocation"
-| where AuthenticationDetails !contains "Invalid username or password" and AuthenticationDetails !contains "Incorrect password"
+| where AuthenticationDetails contains "Correct password" and AuthenticationDetails !contains "Incorrect password"
 | project TimeGenerated,AppDisplayName,AppId, UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement, ResultType,ResultDescription, Location, Identity, IPAddress, AutonomousSystemNumber
