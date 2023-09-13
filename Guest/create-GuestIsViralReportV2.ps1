@@ -39,10 +39,11 @@ function query-msgraphapi{
             $authcount++
         }
         for($i=0; $i -le 3; $i++){
-            try{
+            try{$results = $null
                 $results = Invoke-RestMethod -Uri $Uri -Headers $authHeader -Method Get -ContentType "application/json"
                 break
             }catch{#if this fails it is going to try to authenticate again and rerun query
+                $results = $null
                 write-host "$($_.Exception.response.statuscode)"
                 if(($_.Exception.response.statuscode -eq "TooManyRequests") -or ($_.Exception.Response.StatusCode.value__ -eq 429)){
                     #if this hits up against to many request response throwing in the timer to wait the number of seconds recommended in the response.
