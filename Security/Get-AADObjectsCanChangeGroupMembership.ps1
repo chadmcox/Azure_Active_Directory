@@ -26,7 +26,18 @@ $roles = '810a2642-a034-447f-a5e8-41beaa378541',',11451d60-acb2-45eb-a7d6-43d0f0
   '69091246-20e8-4a56-aa4d-066075b2a7a8', 'f28a1f50-f6e7-4571-818b-6a12f2af6b6c', '29232cdf-9323-42fd-ade2-1d097af3e4de', `
   '9360feb5-f418-4baa-8175-e2a00bac4301', 'fe930be7-5e62-47db-91af-98c3a49a38b1', '62e90394-69f5-4237-9190-012177145e10'
 
-  Get-MgBetaDirectoryRole -all | where {$_.RoleTemplateId -in $roles} -pv role | foreach{
+$results = Get-MgBetaDirectoryRole -all | where {$_.RoleTemplateId -in $roles} -pv role | foreach{
     Get-MgBetaDirectoryRoleMember -DirectoryRoleId $_.Id | foreach{$_ | select -expandproperty AdditionalProperties | `
-        convertto-json| convertfrom-json}  | select displayName, @{N="via";Expression={"Role Member of $($role.displayname)"}}
-  } | select DisplayName,via -Unique
+        convertto-json| convertfrom-json}  | select displayName, "@odata.type",appid, @{N="via";Expression={"Role Member of $($role.displayname)"}}
+  }
+
+$results | select displayName, via -unique
+
+$results | where {$_."@odata.type" -eq "#microsoft.graph.servicePrincipal"} | foreach{
+    Get-MgBetaServicePrincipal -filter "appId eq '$($_.appid)'" -ExpandProperty owners | foreach{
+        $app = $null;$app = $_
+        ($app.owners).id | select @{N="appid";Expression={$app.appid}}, `
+                @{N="displayname";Expression={(Get-MgBetaDirectoryObjectById -Ids $_ | select -ExpandProperty AdditionalProperties | convertto-json | convertfrom-json).displayname}}, `
+                @{N="PublisherName";Expression={$app.PublisherName}},@{N="via";Expression={"Owner of $($app.displayname)"}}
+    }
+}  | select DisplayName,via -Unique
