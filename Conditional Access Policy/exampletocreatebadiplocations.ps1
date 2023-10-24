@@ -1,3 +1,4 @@
+connect-mggraph -scope "Policy.Read.All","Policy.ReadWrite.ConditionalAccess"
 $url = "https://raw.githubusercontent.com/SecOps-Institute/Tor-IP-Addresses/master/tor-exit-nodes.lst"
 $response = Invoke-WebRequest $url -UseBasicParsing
 $ipRegex = "\b(?:\d{1,3}\.){3}\d{1,3}\b"
@@ -9,7 +10,7 @@ while ($counter -lt $count)
 {
   $body = @{
             "@odata.type" = "#microsoft.graph.ipNamedLocation"
-            displayName = "Untrusted IP named location IPv4 $title"
+            displayName = "Untrusted IP named location IPv4"
             ipRanges = New-Object System.Collections.ArrayList # Use list to always conver to json properly
             IsTrusted = $false
         }  
