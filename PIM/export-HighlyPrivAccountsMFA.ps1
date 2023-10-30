@@ -48,6 +48,7 @@ $rolemembers | foreach{$mem=$null;$mem=$_
             @{N="IsMfaCapable";E={$reg.IsMfaCapable}}, `
             @{N="IsMfaRegistered";E={$reg.IsMfaRegistered}}, `
             @{N="IsPasswordlessCapable";E={$reg.IsPasswordlessCapable}}, `
+            @{N="microsoftAuthenticator";E={$reg.MethodsRegistered -contains "microsoftAuthenticatorPush"}}, `
             @{N="microsoftAuthenticatorPasswordless";E={$reg.MethodsRegistered -contains "microsoftAuthenticatorPasswordless"}}, `
             @{N="windowsHelloForBusiness";E={$reg.MethodsRegistered -contains "windowsHelloForBusiness"}}, `
             @{N="fido2";E={$reg.MethodsRegistered -contains "fido2"}}, `
