@@ -27,7 +27,7 @@ function mgquery{
     }until ($uri -eq $null)
 }
 
-$uri = "https://graph.microsoft.com/beta/reports/credentialUserRegistrationDetails?`$filter=authMethods/any(t:t eq microsoft.graph.registrationAuthMethod'appNotification')"
+$uri = "https://graph.microsoft.com/beta/reports/credentialUserRegistrationDetails"
 $users = mgquery -uri $uri -pv user | select id, userPrincipalName, userDisplayName
 $count = $users.count; $i=0
 $users | select id, userPrincipalName, userDisplayName -pv user | foreach {$i++
