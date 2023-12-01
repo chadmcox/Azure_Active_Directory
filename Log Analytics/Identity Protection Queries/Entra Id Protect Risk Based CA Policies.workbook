@@ -1,0 +1,222 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Entra ID Protect Risky User Conditional Access Policy Scenerios"
+            },
+            "name": "text - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs \r\n| where TimeGenerated > ago(14d) and ResultType == 0  \r\n| where RiskLevelAggregated == 'high' \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| project TimeGenerated, AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,IsRisky, RiskEventTypes_V2, authRequirement",
+              "size": 0,
+              "title": "High risk users not being blocked by risk based Conditional Access Policy",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 30,
+                "sortBy": [
+                  {
+                    "itemKey": "TimeGenerated",
+                    "sortOrder": 2
+                  }
+                ]
+              },
+              "sortBy": [
+                {
+                  "itemKey": "TimeGenerated",
+                  "sortOrder": 2
+                }
+              ]
+            },
+            "name": "High risk users not being blocked by risk based Conditional Access Policy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs \r\n| where TimeGenerated > ago(14d) and ResultType == 0  \r\n| where RiskLevelAggregated == 'high' \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| project TimeGenerated, AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,IsRisky, RiskEventTypes_V2, authRequirement",
+              "size": 0,
+              "title": "High risk users not being prompted to change password by risk based Conditional Access Policy",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 30
+              }
+            },
+            "name": "High risk users not being prompted to change password by risk based Conditional Access Policy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs \r\n| where TimeGenerated > ago(14d) \r\n| where AuthenticationRequirementPolicies has \"riskBasedPolicy\" \r\n| where ResultType == 50142 |  project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
+              "size": 0,
+              "title": "Users that changed password due to risk based Conditional Access Policy",
+              "noDataMessage": "no result type 50142 found",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "Users that changed password due to risk based Conditional Access Policy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs | where TimeGenerated > ago(14d) | where ResultType !in (0,50074,50140,50097) | where AppDisplayName <> \"Microsoft Authentication Broker\"   | where RiskState == \"atRisk\" and RiskLevelAggregated in (\"low\",\"medium\",\"high\") | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\"| project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus",
+              "size": 0,
+              "title": "Risky users not successfully signing-in due to risk based Conditional Access Policy",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "sortBy": [
+                  {
+                    "itemKey": "RiskLevelAggregated",
+                    "sortOrder": 1
+                  }
+                ]
+              },
+              "sortBy": [
+                {
+                  "itemKey": "RiskLevelAggregated",
+                  "sortOrder": 1
+                }
+              ]
+            },
+            "name": "Risky users not successfully signing-in due to risk based Conditional Access Policy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs | where TimeGenerated > ago(14d) | where RiskState == \"remediated\" | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskDetail == \"userChangedPasswordOnPremises\" | project TimeGenerated, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
+              "size": 0,
+              "title": "Users Risk remediated by On-Premise Password Reset",
+              "noDataMessage": "Consider on-premises password reset to remediate user risks setting",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "Users Risk remediated by On-Premise Password Reset"
+          }
+        ]
+      },
+      "name": "group - 0"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Entra ID Protect Risky Sign-in Conditional Access Policy Scenerios"
+            },
+            "name": "text - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs | where TimeGenerated > ago(14d) | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") | project TimeGenerated,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement",
+              "size": 0,
+              "title": "High risk sign-ins not being blocked by risk based Conditional Access Policy",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "High risk sign-ins not being blocked by risk based Conditional Access Policy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let strauthreq = SigninLogs | where TimeGenerated > ago(14d) | where ResultType in (50074)| where RiskLevelDuringSignIn in (\"high\") | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId; SigninLogs | where TimeGenerated > ago(14d) | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") | where CorrelationId !in (strauthreq) | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" | project TimeGenerated,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement",
+              "size": 0,
+              "title": "High risk sign-ins not being prompted for MFA by risk based Conditional Access Policy",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "High risk sign-ins not being prompted for MFA by risk based Conditional Access Policy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "//SigninLogs | where TimeGenerated > ago(14d) | where ResultType !in (0,50074,50140,50053,50126,50097,70044,53000,50173,50129) and ResultDescription <> \"Other\" | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskLevelDuringSignIn in (\"low\",\"medium\",\"high\")   | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement\r\nSigninLogs | where TimeGenerated > ago(14d) \r\n| where ResultType == 53003 or AuthenticationRequirementPolicies has \"riskBasedPolicy\"\r\n| where ResultType !in (0,50074,50140,50053,50126,50097,70044,53000,50173,50129) and ResultDescription <> \"Other\" | where AppDisplayName <> \"Microsoft Authentication Broker\"  \r\n| where RiskLevelDuringSignIn in (\"low\",\"medium\",\"high\")  \r\n| extend Policy = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider)  | project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, Policy",
+              "size": 0,
+              "title": "Risk sign-ins not successfull due to risk based Conditional Access Policy",
+              "showExportToExcel": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 50,
+                "sortBy": [
+                  {
+                    "itemKey": "RiskLevelAggregated",
+                    "sortOrder": 1
+                  }
+                ]
+              },
+              "sortBy": [
+                {
+                  "itemKey": "RiskLevelAggregated",
+                  "sortOrder": 1
+                }
+              ]
+            },
+            "name": "Risk sign-ins not successfull due to risk based Conditional Access Policy"
+          }
+        ]
+      },
+      "name": "Sign-in risk"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Trusted Network\r\n\r\nSummary of IP addresses that are not listed as a trusted network that could be due to the number of unique users signing in from the IP. Use the ASN to help identify the owner of the network to determine if it should be listed as trusted for Conditional Access Policies."
+            },
+            "name": "text - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where TimeGenerated > ago(30d)\r\n| where ResultType == \"0\"\r\n| where HomeTenantId == ResourceTenantId and UserType <> \"Guest\"\r\n| where NetworkLocationDetails !contains \"trustedNamedLocation\"\r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))\r\n| extend isIPv6 = tostring(iff(IPAddress matches regex @\"(([\\d|\\w]{1,4}\\:){7}[\\d|\\w]{1,4})\",'Yes','No'))\r\n| distinct IPAddress, TrustedLocation, UserPrincipalName, isIPv6, AutonomousSystemNumber, Location\r\n| summarize UniqueUserCount = count() by IPAddress, TrustedLocation, isIPv6, AutonomousSystemNumber, Location\r\n| where UniqueUserCount >= 4\r\n| sort by UniqueUserCount desc \r\n| project  IPAddress,UniqueUserCount, TrustedLocation, isIPv6, AutonomousSystemNumber, Location",
+              "size": 0,
+              "showAnalytics": true,
+              "showExportToExcel": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 50
+              }
+            },
+            "name": "query - 1"
+          }
+        ]
+      },
+      "name": "group - 2"
+    }
+  ],
+  "fallbackResourceIds": [
+    "/subscriptions/f365c4f8-69b0-4f28-bd9b-ca885182bad6/resourcegroups/dps-csa-security-engineering-rg/providers/microsoft.operationalinsights/workspaces/hon-central-la-prod"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
