@@ -9,9 +9,9 @@ install-module microsoft.graph
 
 #connect to mggraph
 Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All"
-Select-MgProfile -Name beta
-Get-MgUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Property id, displayName, signInActivity, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, passwordPolicies, mail, lastPasswordChangeDateTime | `
+Get-MgBetaUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Property id, displayName, signInActivity, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, passwordPolicies, mail, lastPasswordChangeDateTime | `
     select id, displayName, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, mail, lastPasswordChangeDateTime, passwordPolicies, `
+        @{N='lastSuccessfulSignInDateTime';E={$_.signInActivity.lastSuccessfulSignInDateTime}}, `
         @{N='LastSignInDateTime';E={$_.signInActivity.LastSignInDateTime}}, `
         @{N='LastNonInteractiveSignInDateTime';E={$_.signInActivity.LastNonInteractiveSignInDateTime}}
       
