@@ -1,12 +1,12 @@
-# First connect to graph with the microsoft.graph cmdlets
+# First connect to graph with the Microsoft.Graph.Beta cmdlets
 ```
 Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All"
-Select-MgProfile -Name beta
+
 ```
 
 # Get a basic list of devices and the registration and trust type
 ```
-Get-MgDevice -all | Select displayname, operatingsystem, accountenabled, profiletype, trusttype, `
+Get-MgBetaDevice -all | Select displayname, operatingsystem, accountenabled, profiletype, trusttype, `
   @{N="enrollmentType";Expression={$_.AdditionalProperties.enrollmentType}}, `
   @{N="createdDateTime";Expression={(get-date $_.AdditionalProperties.createdDateTime).tostring('yyyy-MM-dd')}} | `
     export-csv .\aaddevices.csv -NoTypeInformation
