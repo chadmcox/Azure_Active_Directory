@@ -6,10 +6,13 @@ Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All",
 
 # Get a basic list of devices and the registration and trust type
 ```
-Get-MgBetaDevice -all | Select displayname, operatingsystem, accountenabled, profiletype, trusttype, `
-  @{N="enrollmentType";Expression={$_.AdditionalProperties.enrollmentType}}, `
-  @{N="createdDateTime";Expression={(get-date $_.AdditionalProperties.createdDateTime).tostring('yyyy-MM-dd')}} | `
-    export-csv .\aaddevices.csv -NoTypeInformation
+Get-MgBetaDevice -all | Select `
+    displayname, operatingsystem, OperatingSystemVersion, accountenabled, profiletype, trusttype, `
+    onPremisesSyncEnabled, @{N="enrollmentType";Expression={$_.AdditionalProperties.enrollmentType}}, `
+    @{N="enrollmentProfileName";Expression={$_.AdditionalProperties.enrollmentProfileName}}, `
+    @{N="createdDateTime";Expression={(get-date $_.AdditionalProperties.createdDateTime).tostring('yyyy-MM-dd')}}, `
+    @{N="ApproximateLastSignInDateTime";Expression={(get-date $_.ApproximateLastSignInDateTime).tostring('yyyy-MM-dd')}} | `
+        export-csv .\devices.csv -NoTypeInformation
 ```
 
 # Get a list of all windows devices and the registration and trust type
