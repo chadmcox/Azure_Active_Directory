@@ -14,7 +14,7 @@ Get-MgBetaDevice -all | Select displayname, operatingsystem, accountenabled, pro
 
 # Get a list of all windows devices and the registration and trust type
 ```
-Get-MgDevice -filter "operatingSystem eq 'Windows'" -all | Select `
+Get-MgBetaDevice -filter "operatingSystem eq 'Windows'" -all | Select `
     displayname, operatingsystem, accountenabled, profiletype, trusttype, `
     @{N="enrollmentType";Expression={$_.AdditionalProperties.enrollmentType}}, `
     @{N="enrollmentProfileName";Expression={$_.AdditionalProperties.enrollmentProfileName}}, `
@@ -24,7 +24,7 @@ Get-MgDevice -filter "operatingSystem eq 'Windows'" -all | Select `
 
 # Get a list and filter on windows that are Azure AD Joined
 ```
-Get-MgDevice -filter "operatingSystem eq 'Windows' and trustType eq 'AzureAd'" -all | Select `
+Get-MgBetaDevice -filter "operatingSystem eq 'Windows' and trustType eq 'AzureAd'" -all | Select `
     displayname, operatingsystem, accountenabled, profiletype, trusttype, `
     @{N="enrollmentType";Expression={$_.AdditionalProperties.enrollmentType}}, `
     @{N="enrollmentProfileName";Expression={$_.AdditionalProperties.enrollmentProfileName}}, `
