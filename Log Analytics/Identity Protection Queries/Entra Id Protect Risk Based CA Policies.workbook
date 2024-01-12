@@ -649,7 +649,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where ResultType == 0  \r\n| where RiskLevelAggregated == 'high' and RiskState == \"atRisk\"\r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| project TimeGenerated, AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,IsRisky, RiskEventTypes_V2, authRequirement",
+              "query": "SigninLogs \r\n| where ResultType == 0  \r\n| where RiskLevelAggregated == 'high' and RiskState == \"atRisk\"\r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  apps=make_list(AppDisplayName) by UserPrincipalName,ResultType, ResultDescription, UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 3,
               "title": "High risk users not being blocked by risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -658,20 +658,9 @@
               "resourceType": "microsoft.operationalinsights/workspaces",
               "visualization": "table",
               "gridSettings": {
-                "rowLimit": 15,
-                "sortBy": [
-                  {
-                    "itemKey": "TimeGenerated",
-                    "sortOrder": 2
-                  }
-                ]
+                "rowLimit": 15
               },
-              "sortBy": [
-                {
-                  "itemKey": "TimeGenerated",
-                  "sortOrder": 2
-                }
-              ]
+              "sortBy": []
             },
             "name": "High risk users not being blocked by risk-based access policy"
           },
@@ -679,7 +668,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where ResultType == 0  \r\n| where RiskState == \"atRisk\" and RiskLevelAggregated == 'high' \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| project TimeGenerated, AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,IsRisky, RiskEventTypes_V2, authRequirement",
+              "query": "SigninLogs \r\n| where ResultType == 0  \r\n| where RiskState == \"atRisk\" and RiskLevelAggregated == 'high' \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  apps=make_list(AppDisplayName) by UserPrincipalName,ResultType, ResultDescription, UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 3,
               "title": "High risk users not being prompted to change password by risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -696,7 +685,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where AuthenticationRequirementPolicies has \"riskBasedPolicy\" \r\n| where ResultType == 50142 |  project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
+              "query": "SigninLogs \r\n| where AuthenticationRequirementPolicies has \"riskBasedPolicy\" \r\n| where ResultType == 50142 \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  apps=make_list(AppDisplayName) by UserPrincipalName,ResultType, ResultDescription, UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 3,
               "title": "Users that changed password due to risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -714,7 +703,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where ResultType !in (0,50074,50140,50097) \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\"   \r\n| where RiskState == \"atRisk\" and RiskLevelAggregated in (\"low\",\"medium\",\"high\") and ConditionalAccessStatus <> \"notApplied\"\r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| where authRequirement <> \"riskBasedPolicy\"\r\n| project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, authRequirement",
+              "query": "SigninLogs \r\n| where ResultType !in (0,50074,50140,50097) \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\"   \r\n| where RiskState == \"atRisk\" and RiskLevelAggregated in (\"low\",\"medium\",\"high\") and ConditionalAccessStatus <> \"notApplied\"\r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| where authRequirement <> \"riskBasedPolicy\"\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  apps=make_list(AppDisplayName) by UserPrincipalName,ResultType, ResultDescription, UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 3,
               "title": "Risky users not successfully signing-in due to risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -744,7 +733,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where RiskState == \"remediated\" | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskDetail == \"userChangedPasswordOnPremises\" | project TimeGenerated, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
+              "query": "SigninLogs \r\n| where RiskState == \"remediated\" | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskDetail == \"userChangedPasswordOnPremises\" \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 3,
               "title": "Users Risk remediated by On-Premise Password Reset",
               "noDataMessage": "Consider on-premises password reset to remediate user risk settings",
@@ -763,7 +752,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where RiskState == \"remediated\" | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskDetail == \"userPerformedSecuredPasswordReset\"  | project TimeGenerated, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
+              "query": "SigninLogs \r\n| where RiskState == \"remediated\" | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskDetail == \"userPerformedSecuredPasswordReset\"  \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  apps=make_list(AppDisplayName) by UserPrincipalName,ResultType, ResultDescription, UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 3,
               "title": "Users Risk remediated by Password Reset",
               "noDataMessage": "Consider  password reset to remediate user risk settings",
@@ -799,7 +788,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") | project TimeGenerated,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement",
+              "query": "SigninLogs \r\n| where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  apps=make_list(AppDisplayName) by UserPrincipalName,ResultType, ResultDescription, UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 0,
               "title": "High risk sign-ins not being blocked by risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -816,7 +805,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "let strauthreq = SigninLogs \r\n| where ResultType in (50074)| where RiskLevelDuringSignIn in (\"high\") | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId; SigninLogs | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") | where CorrelationId !in (strauthreq) | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" | project TimeGenerated,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement",
+              "query": "let strauthreq = SigninLogs \r\n| where ResultType in (50074)| where RiskLevelDuringSignIn in (\"high\") | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId; SigninLogs | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") | where CorrelationId !in (strauthreq) | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" | distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  apps=make_list(AppDisplayName) by UserPrincipalName,ResultType, ResultDescription, UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 0,
               "title": "High risk sign-ins not self-remediating using MFA by risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -833,7 +822,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "//SigninLogs | where ResultType !in (0,50074,50140,50053,50126,50097,70044,53000,50173,50129) and ResultDescription <> \"Other\" | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskLevelDuringSignIn in (\"low\",\"medium\",\"high\")   | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement\r\nSigninLogs \r\n| where ResultType == 53003 or AuthenticationRequirementPolicies has \"riskBasedPolicy\"  and ConditionalAccessStatus <> \"notApplied\"\r\n| where ResultType !in (0,50074,50140,50053,50126,50097,70044,53000,50173,50129) and ResultDescription <> \"Other\" | where AppDisplayName <> \"Microsoft Authentication Broker\"  \r\n| where RiskLevelDuringSignIn in (\"low\",\"medium\",\"high\")  \r\n| extend Policy = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider)  \r\n| project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, Policy",
+              "query": "//SigninLogs | where ResultType !in (0,50074,50140,50053,50126,50097,70044,53000,50173,50129) and ResultDescription <> \"Other\" | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskLevelDuringSignIn in (\"low\",\"medium\",\"high\")   | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement\r\nSigninLogs \r\n| where ResultType == 53003 or AuthenticationRequirementPolicies has \"riskBasedPolicy\"  and ConditionalAccessStatus <> \"notApplied\"\r\n| where ResultType !in (0,50074,50140,50053,50126,50097,70044,53000,50173,50129) and ResultDescription <> \"Other\" | where AppDisplayName <> \"Microsoft Authentication Broker\"  \r\n| where RiskLevelDuringSignIn in (\"low\",\"medium\",\"high\")  \r\n| extend Policy = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider)  \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  apps=make_list(AppDisplayName) by UserPrincipalName,ResultType, ResultDescription, UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2",
               "size": 0,
               "title": "Risky sign-ins not successfull due to risk-based access policy",
               "timeContextFromParameter": "TimeRange",
