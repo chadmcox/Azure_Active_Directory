@@ -1,0 +1,11 @@
+SigninLogs  
+| where CreatedDateTime >= ago(60d)
+| extend errorCode = toint(Status.errorCode)
+| extend displayName = tostring(DeviceDetail.displayName)
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| where UserType <> "Guest"
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where displayName <> ''
+| distinct UserPrincipalName,displayName,os,trustType,isCompliant
