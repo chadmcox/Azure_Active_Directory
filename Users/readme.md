@@ -9,7 +9,7 @@ install-module microsoft.graph
 
 #connect to mggraph
 Connect-MgGraph -Scopes "Directory.ReadWrite.All", "Directory.AccessAsUser.All","User.Read.All","AuditLog.Read.All"
-Get-MgBetaUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Property id, displayName, signInActivity, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, passwordPolicies, mail, lastPasswordChangeDateTime | `
+Get-MgBetaUser -Filter "userType eq 'Member' and AccountEnabled eq true" -all  -Property id, displayName, signInActivity, userPrincipalName, userType, onPremisesSyncEnabled, createdDateTime, accountEnabled, passwordPolicies, mail, lastPasswordChangeDateTime,onPremisesLastSyncDateTime | `
     select id, displayName, userPrincipalName, userType, onPremisesSyncEnabled, accountEnabled, mail, `
         @{Name="createdDateTime";Expression={(get-date $_.createdDateTime).tostring('yyyy-MM-dd')}}, `
         @{Name="onPremisesLastSyncDateTime";Expression={(get-date $_.onPremisesLastSyncDateTime).tostring('yyyy-MM-dd')}}, `
