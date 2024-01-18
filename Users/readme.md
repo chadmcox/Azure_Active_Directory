@@ -3,7 +3,7 @@
 ## get a list of users with basic sign-in and pwd information
 ```
 #make sure the microsoft graph modules are available
-get-module microsoft.graph* -list available
+get-module microsoft.graph* -listavailable
 #if not install them
 install-module microsoft.graph
 
