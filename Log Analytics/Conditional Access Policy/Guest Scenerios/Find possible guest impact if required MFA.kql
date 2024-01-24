@@ -1,8 +1,11 @@
-// URL: https://learn.microsoft.com/en-us/azure/active-directory/external-identities/b2b-tutorial-require-mfa
 let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
 SigninLogs 
 | where TimeGenerated > ago(14d) and UserType == "Guest" and AppDisplayName !in (excludeapps)
 | where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication"
 | where AADTenantId == ResourceTenantId
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'Mfa'
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result <> "success"
 | distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,Category, UserType
 | summarize apps=make_list(AppDisplayName) by UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, Category, UserType
