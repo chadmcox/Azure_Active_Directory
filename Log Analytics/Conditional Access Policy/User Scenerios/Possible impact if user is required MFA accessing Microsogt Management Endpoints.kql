@@ -10,3 +10,4 @@ SigninLogs
 | extend result = tostring(ConditionalAccessPolicies["result"])
 | where result <> "success"
 | distinct AppDisplayName, UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement
+| summarize apps=make_list(AppDisplayName) by UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement
