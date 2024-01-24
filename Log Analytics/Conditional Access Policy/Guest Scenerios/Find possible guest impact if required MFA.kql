@@ -1,4 +1,4 @@
-let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
 SigninLogs 
 | where TimeGenerated > ago(14d) and UserType == "Guest" and AppDisplayName !in (excludeapps)
 | where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication"
