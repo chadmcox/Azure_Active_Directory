@@ -1,0 +1,8 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+SigninLogs 
+| where TimeGenerated > ago(14d) and UserType == "Guest" and AppDisplayName !in (excludeapps)
+| where ResultType == 0
+| where AADTenantId == ResourceTenantId
+| where SessionLifetimePolicies !contains 'signInFrequencyPeriodicReauthentication'
+| distinct AppDisplayName, UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement
+| summarize apps=make_list(AppDisplayName) by UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement
