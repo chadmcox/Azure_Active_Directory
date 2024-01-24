@@ -1,6 +1,8 @@
- SigninLogs 
+SigninLogs 
  | where TimeGenerated > ago(14d)
+ | where ResultType == 0
  | where AADTenantId == ResourceTenantId
  | where AppDisplayName == "Microsoft Intune Enrollment"
  | where AuthenticationRequirement == 'singleFactorAuthentication'
+ | where Status !contains "MFA requirement satisfied by claim in the token"
  | distinct AppDisplayName, UserPrincipalName, AuthenticationRequirement
