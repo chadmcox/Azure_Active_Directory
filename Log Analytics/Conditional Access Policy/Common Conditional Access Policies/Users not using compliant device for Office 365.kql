@@ -1,0 +1,23 @@
+let includeapps = pack_array("Exchange Online","Microsoft 365 Search Service","Microsoft Forms","Microsoft Planner","Microsoft Stream","Microsoft Teams","Microsoft To-Do","Microsoft Flow","Microsoft Office 365 Portal","Microsoft Office client application","Microsoft Stream","Microsoft To-Do WebApp","Microsoft Whiteboard Services","Office Delve","Office Online","OneDrive","Power Apps","Power Automate","Security & compliance portal","SharePoint Online","Skype for Business Online","Skype and Teams Tenant Admin API","Sway","Yammer","PowerApps Service","Viva Engage","Targeted Messaging Service","Microsoft Exchange Online Protection","Connectors","OfficeHome","OfficeClientService","Microsoft Teams Chat Aggregator","Microsoft People Cards Service","Office 365 Search Service","Skype Presence Service","Office 365 Exchange Microservices");
+SigninLogs
+| where TimeGenerated > ago(30d) and ResultType == 0
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps)
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where AADTenantId == ResourceTenantId
+| where UserType <> "Guest"
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'RequireCompliantDevice' or ConditionalAccessPolicies["enforcedGrantControls"] contains 'RequireDomainJoinedDevice'
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result <> "success"
+| extend capname = tostring(ConditionalAccessPolicies["displayName"])
+| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
+| summarize 
+    officelist = make_set(AppDisplayName),
+    oslist = make_set(os),
+    browserlist = make_set(browser),
+    clientapplist = make_set(ClientAppUsed)
+     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant
