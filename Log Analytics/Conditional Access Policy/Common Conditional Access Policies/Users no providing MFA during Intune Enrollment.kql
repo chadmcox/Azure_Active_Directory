@@ -1,0 +1,16 @@
+SigninLogs 
+| where ResultType == 0
+| where AADTenantId == ResourceTenantId
+| where AppDisplayName == "Microsoft Intune Enrollment"
+| where AuthenticationRequirement == 'singleFactorAuthentication'
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'Mfa'
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result <> "success"
+| extend os = tostring(DeviceDetail.operatingSystem) 
+| extend trustType = tostring(DeviceDetail.trustType) 
+| extend isCompliant = tostring(DeviceDetail.isCompliant) 
+| extend deviceName = tostring(DeviceDetail.displayName)
+| distinct AppDisplayName, UserPrincipalName, AuthenticationRequirement, deviceName, os, trustType, isCompliant
+| project AppDisplayName, UserPrincipalName, AuthenticationRequirement, deviceName, os, trustType, isCompliant
