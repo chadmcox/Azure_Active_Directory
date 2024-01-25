@@ -1,0 +1,14 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
+SigninLogs 
+| where UserType <> "Guest"
+| where HomeTenantId == ResourceTenantId
+| where NetworkLocationDetails !contains "trustedNamedLocation"
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'Mfa'
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result <> "success"
+| where AppDisplayName  !in (excludeapps) and AppDisplayName <> ''
+| distinct AppDisplayName,UPN = tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement
+| summarize apps=make_list(AppDisplayName) by UPN,ConditionalAccessStatus,AuthenticationRequirement
