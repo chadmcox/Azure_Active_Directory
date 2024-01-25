@@ -1,6 +1,6 @@
 let includeapps = pack_array("Exchange Online","Microsoft 365 Search Service","Microsoft Forms","Microsoft Planner","Microsoft Stream","Microsoft Teams","Microsoft To-Do","Microsoft Flow","Microsoft Office 365 Portal","Microsoft Office client application","Microsoft Stream","Microsoft To-Do WebApp","Microsoft Whiteboard Services","Office Delve","Office Online","OneDrive","Power Apps","Power Automate","Security & compliance portal","SharePoint Online","Skype for Business Online","Skype and Teams Tenant Admin API","Sway","Yammer","PowerApps Service","Viva Engage","Targeted Messaging Service","Microsoft Exchange Online Protection","Connectors","OfficeHome","OfficeClientService","Microsoft Teams Chat Aggregator","Microsoft People Cards Service","Office 365 Search Service","Skype Presence Service","Office 365 Exchange Microservices");
 SigninLogs
-| where TimeGenerated > ago(30d) and ResultType == 0
+| where ResultType == 0
 | extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
 | extend trustType = tostring(parse_json(DeviceDetail).trustType) 
 | extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
