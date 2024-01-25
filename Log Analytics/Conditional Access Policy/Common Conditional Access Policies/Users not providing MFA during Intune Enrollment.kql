@@ -1,3 +1,4 @@
+//Link to policy https://learn.microsoft.com/en-us/mem/intune/enrollment/multi-factor-authentication?context=%2Fentra%2Fidentity%2Fconditional-access%2Fcontext%2Fconditional-access-context.json
 SigninLogs 
 | where ResultType == 0
 | where AADTenantId == ResourceTenantId
