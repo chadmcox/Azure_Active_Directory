@@ -7,5 +7,5 @@ SigninLogs
 | where ConditionalAccessPolicies["enforcedGrantControls"] contains 'Mfa'
 | extend result = tostring(ConditionalAccessPolicies["result"])
 | where result <> "success"
-| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,Category, UserType
-| summarize apps=make_list(AppDisplayName) by UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, Category, UserType
+| distinct AppDisplayName,UPN = tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement,Category, UserType
+| summarize apps=make_list(AppDisplayName) by UPN,ConditionalAccessStatus,AuthenticationRequirement, Category, UserType
