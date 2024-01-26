@@ -3,9 +3,9 @@ SigninLogs
 | where TimeGenerated > ago(14d) and UserType == "Guest" and AppDisplayName !in (excludeapps)
 | where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication"
 | where AADTenantId == ResourceTenantId
-| mv-expand ConditionalAccessPolicies
-| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'Mfa'
-| extend result = tostring(ConditionalAccessPolicies["result"])
-| where result <> "success"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
 | distinct AppDisplayName,UPN = tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement,Category, UserType
 | summarize apps=make_list(AppDisplayName) by UPN,ConditionalAccessStatus,AuthenticationRequirement, Category, UserType
