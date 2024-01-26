@@ -1,5 +1,4 @@
 let pim = AuditLogs 
-| where TimeGenerated > ago(60d) 
 | where ActivityDisplayName == 'Add member to role completed (PIM activation)'  
 | extend caller = tolower(tostring(InitiatedBy.user.userPrincipalName)) 
 | extend Role = tostring(TargetResources[0].displayName) 
