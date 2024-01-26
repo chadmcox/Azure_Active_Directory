@@ -5,10 +5,10 @@ SigninLogs
 | where AppDisplayName == "Microsoft Intune Enrollment"
 | where AuthenticationRequirement == 'singleFactorAuthentication'
 | where Status !contains "MFA requirement satisfied by claim in the token"
-| mv-expand ConditionalAccessPolicies
-| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'Mfa'
-| extend result = tostring(ConditionalAccessPolicies["result"])
-| where result <> "success"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
 | extend os = tostring(DeviceDetail.operatingSystem) 
 | extend trustType = tostring(DeviceDetail.trustType) 
 | extend isCompliant = tostring(DeviceDetail.isCompliant) 
