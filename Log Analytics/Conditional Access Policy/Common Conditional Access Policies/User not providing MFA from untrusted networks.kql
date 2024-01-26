@@ -5,10 +5,10 @@ SigninLogs
 | where NetworkLocationDetails !contains "trustedNamedLocation"
 | where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
 | where Status !contains "MFA requirement satisfied by claim in the token"
-| mv-expand ConditionalAccessPolicies
-| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'Mfa'
-| extend result = tostring(ConditionalAccessPolicies["result"])
-| where result <> "success"
 | where AppDisplayName  !in (excludeapps) and AppDisplayName <> ''
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
 | distinct AppDisplayName,UPN = tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement
 | summarize apps=make_list(AppDisplayName) by UPN,ConditionalAccessStatus,AuthenticationRequirement
