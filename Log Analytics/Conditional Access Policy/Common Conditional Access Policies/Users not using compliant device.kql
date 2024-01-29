@@ -1,3 +1,5 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Users not using compliant device
 let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
 SigninLogs
 | where ResultType == 0  and AppDisplayName !in (excludeapps)
