@@ -1,3 +1,5 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Possible Admins not providing MFA during sign-in
 let pim = AuditLogs 
 | where ActivityDisplayName == 'Add member to role completed (PIM activation)'  
 | extend caller = tolower(tostring(InitiatedBy.user.userPrincipalName)) 
