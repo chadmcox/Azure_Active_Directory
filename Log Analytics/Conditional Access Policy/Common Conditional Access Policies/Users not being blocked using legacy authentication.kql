@@ -1,3 +1,5 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Users not being blocked using legacy authentication
 //key to this one is also using the non interactive logs
 AADNonInteractiveUserSignInLogs
 | union SigninLogs
