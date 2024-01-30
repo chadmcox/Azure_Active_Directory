@@ -57,14 +57,14 @@ function exportcreds{
                 @{Name="PrincipalAppDisplayName";Expression={$aadsp.AppDisplayName}}, @{Name="PrincipalAppId";Expression={$aadsp.Appid}}, `
                 @{Name="PrincipalEnabled";Expression={$aadsp.AccountEnabled}}, `
                 @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}},@{Name="CredType";Expression={"Key"}}, `
-                displayName, type, usage, startDateTime, endDateTime, `
+                displayName, @{Name="type";Expression={'pwd'}}, usage, startDateTime, endDateTime, `
                     @{Name="Expired";Expression={(New-TimeSpan -Start ([datetime]$_.endDateTime) -end $(get-date)).TotalDays -gt 0}}
         $aadSps | select * -pv aadsp | where {$_.PasswordCredentials -like "*"}  | select -ExpandProperty PasswordCredentials | select @{Name="Principal";Expression={$aadsp.displayname}}, `
                 @{Name="PrincipalID";Expression={$aadsp.ID}}, @{Name="PrincipalPublisherName";Expression={$aadsp.PublisherName}}, `
                 @{Name="PrincipalAppDisplayName";Expression={$aadsp.AppDisplayName}}, @{Name="PrincipalAppId";Expression={$aadsp.Appid}}, `
                 @{Name="PrincipalEnabled";Expression={$aadsp.AccountEnabled}}, `
                 @{Name="ServicePrincipalType";Expression={$aadsp.ServicePrincipalType}},@{Name="CredType";Expression={"Key"}}, `
-                displayName, type, usage, startDateTime, endDateTime, `
+                displayName, @{Name="type";Expression={'pwd'}}, usage, startDateTime, endDateTime, `
                     @{Name="Expired";Expression={(New-TimeSpan -Start ([datetime]$_.endDateTime) -end $(get-date)).TotalDays -gt 0}}
 
         
