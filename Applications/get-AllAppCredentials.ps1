@@ -80,5 +80,5 @@ $aadApps = getFromMSGraph -uri $app_uri | select *, @{Name="ObjectType";Expressi
 
 
 write-host "Building report"
-exportcreds | export-csv .\aad_appcreds.csv -notypeinformation
+exportcreds | select *,@{Name="goodForDays";Expression={(New-TimeSpan -Start ([datetime]$_.startDateTime) -end ([datetime]$_.endDateTime)).Totaldays}} | export-csv .\aad_appcreds.csv -notypeinformation
 write-host "Results found here $defaultpath"
