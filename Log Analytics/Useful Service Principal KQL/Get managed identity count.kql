@@ -1,0 +1,1 @@
+AADManagedIdentitySignInLogs | where TimeGenerated > ago(60d) | distinct ServicePrincipalId | count
