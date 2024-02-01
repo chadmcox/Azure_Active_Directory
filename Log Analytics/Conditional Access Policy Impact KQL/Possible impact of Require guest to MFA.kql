@@ -1,7 +1,0 @@
-// URL: https://learn.microsoft.com/en-us/azure/active-directory/external-identities/b2b-tutorial-require-mfa
-SigninLogs 
-| where TimeGenerated > ago(14d) and UserType == "Guest" 
-| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
-| where AADTenantId <> HomeTenantId
-| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,Category 
-| summarize apps=make_list(AppDisplayName) by UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, Category

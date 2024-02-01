@@ -1,5 +1,0 @@
-//This will show the users that would be blocked by this policy
-SigninLogs 
-| where TimeGenerated > ago(14d) 
-| where RiskState == "atRisk" and RiskLevelAggregated == "high"
-| project AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,IsRisky, RiskEventTypes_V2, MfaDetail, ConditionalAccessStatus, AuthenticationRequirement, ResultType
