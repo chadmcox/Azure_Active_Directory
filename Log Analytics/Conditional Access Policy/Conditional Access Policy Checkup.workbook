@@ -4,7 +4,7 @@
     {
       "type": 1,
       "content": {
-        "json": "# Conditional Access Policy Check Up"
+        "json": "# Conditional access policy check up"
       },
       "customWidth": "70",
       "name": "text - 0"
@@ -153,6 +153,57 @@
       },
       "customWidth": "30",
       "name": "parameters - 5 - Copy"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "tabStyle": "bigger",
+        "links": [
+          {
+            "id": "fc95509d-6b5e-44e5-a3e4-7f5c829bbe53",
+            "cellValue": "settab",
+            "linkTarget": "parameter",
+            "linkLabel": "Summary",
+            "subTarget": "Summary",
+            "style": "link"
+          },
+          {
+            "id": "74b62dfc-832c-4f85-ad99-5f513538cb36",
+            "cellValue": "settab",
+            "linkTarget": "parameter",
+            "linkLabel": "Multi-factor details",
+            "subTarget": "MFA",
+            "style": "link"
+          },
+          {
+            "id": "4c369c05-55c3-424e-946e-df7270acdf02",
+            "cellValue": "settab",
+            "linkTarget": "parameter",
+            "linkLabel": "Device compliance details",
+            "subTarget": "Compliance",
+            "style": "link"
+          },
+          {
+            "id": "d158eb5e-487d-4f37-ae61-5b6dd14402d0",
+            "cellValue": "settab",
+            "linkTarget": "parameter",
+            "linkLabel": "Risk details",
+            "subTarget": "Risk",
+            "style": "link"
+          },
+          {
+            "id": "0778d9b7-4f54-437a-aaa7-8501c3a8a921",
+            "cellValue": "settab",
+            "linkTarget": "parameter",
+            "linkLabel": "Application details",
+            "subTarget": "App",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "Select One"
     },
     {
       "type": 12,
@@ -769,8 +820,151 @@
               "margin": "0",
               "maxWidth": "50"
             }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)\r\n//Users not required to MFA when sign-in risk is medium or high\r\nlet strauthreq = SigninLogs \r\n    | where ResultType in (50074)\r\n    | where RiskLevelDuringSignIn in (\"high\")\r\n    | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\"\r\n    | distinct CorrelationId;\r\nSigninLogs\r\n| where RiskState <> \"remediated\"\r\n| where ResultType in (0)\r\n| where AppDisplayName !in (\"Microsoft Authentication Broker\",\"Windows Sign In\")\r\n| where RiskLevelDuringSignIn in (\"high\")\r\n| where CorrelationId !in (strauthreq)\r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider)\r\n| where authRequirement <> \"riskBasedPolicy\" \r\n| distinct\r\n    ResultType,\r\n    ResultDescription,\r\n    AppDisplayName,\r\n    UserDisplayName,\r\n    UserPrincipalName = tolower(UserPrincipalName),\r\n    UserType,\r\n    RiskLevelAggregated,\r\n    RiskLevelDuringSignIn,\r\n    RiskEventTypes_V2\r\n| summarize\r\n    Applications=make_set(AppDisplayName),\r\n    [\"User Risk Level\"]=make_set(RiskLevelAggregated), \r\n    [\"Risk Types\"]=make_set(RiskEventTypes_V2),\r\n    [\"Sign-in Risk Level\"] = make_set(RiskLevelDuringSignIn)\r\n    by\r\n    UserDisplayName,\r\n    UserPrincipalName,\r\n    UserType\r\n    \r\n| project\r\n    [\"User Display Name\"] = UserDisplayName,\r\n    [\"User Principal Name\"] = UserPrincipalName,\r\n    [\"User Type\"] = UserType,\r\n    [\"User Risk Level\"],\r\n    [\"Sign-in Risk Level\"],\r\n    [\"Risk Types\"],\r\n    Applications\r\n| summarize [\"users\"] = count(\"User Principal Name\")",
+              "size": 3,
+              "title": "Count of users not required to MFA when sign-in risk is high",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "tiles",
+              "gridSettings": {
+                "rowLimit": 30
+              },
+              "sortBy": [],
+              "tileSettings": {
+                "titleContent": {},
+                "leftContent": {
+                  "columnMatch": "users",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "style": "decimal",
+                      "maximumFractionDigits": 2,
+                      "maximumSignificantDigits": 3
+                    }
+                  }
+                },
+                "showBorder": false,
+                "rowLimit": 15
+              },
+              "textSettings": {
+                "style": "bignumber"
+              }
+            },
+            "customWidth": "50",
+            "name": "Count of users not required to MFA when sign-in risk is high",
+            "styleSettings": {
+              "margin": "0",
+              "maxWidth": "50"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)\r\n//Users not required to MFA when sign-in risk is medium or high\r\nlet strauthreq = SigninLogs \r\n    | where ResultType in (50074)\r\n    | where RiskLevelDuringSignIn in (\"medium\",\"high\")\r\n    | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\"\r\n    | distinct CorrelationId;\r\nSigninLogs\r\n| where RiskState <> \"remediated\"\r\n| where ResultType in (0)\r\n| where AppDisplayName !in (\"Microsoft Authentication Broker\",\"Windows Sign In\")\r\n| where RiskLevelDuringSignIn in (\"medium\",\"high\")\r\n| where CorrelationId !in (strauthreq)\r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider)\r\n| where authRequirement <> \"riskBasedPolicy\" \r\n| distinct\r\n    ResultType,\r\n    ResultDescription,\r\n    AppDisplayName,\r\n    UserDisplayName,\r\n    UserPrincipalName = tolower(UserPrincipalName),\r\n    UserType,\r\n    RiskLevelAggregated,\r\n    RiskLevelDuringSignIn,\r\n    RiskEventTypes_V2\r\n| summarize\r\n    Applications=make_set(AppDisplayName),\r\n    [\"User Risk Level\"]=make_set(RiskLevelAggregated), \r\n    [\"Risk Types\"]=make_set(RiskEventTypes_V2),\r\n    [\"Sign-in Risk Level\"] = make_set(RiskLevelDuringSignIn)\r\n    by\r\n    UserDisplayName,\r\n    UserPrincipalName,\r\n    UserType\r\n    \r\n| project\r\n    [\"User Display Name\"] = UserDisplayName,\r\n    [\"User Principal Name\"] = UserPrincipalName,\r\n    [\"User Type\"] = UserType,\r\n    [\"User Risk Level\"],\r\n    [\"Sign-in Risk Level\"],\r\n    [\"Risk Types\"],\r\n    Applications\r\n| summarize [\"users\"] = count(\"User Principal Name\")",
+              "size": 3,
+              "title": "Count of users not required to MFA when sign-in risk is medium or high",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "tiles",
+              "gridSettings": {
+                "rowLimit": 30
+              },
+              "sortBy": [],
+              "tileSettings": {
+                "titleContent": {},
+                "leftContent": {
+                  "columnMatch": "users",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "style": "decimal",
+                      "maximumFractionDigits": 2,
+                      "maximumSignificantDigits": 3
+                    }
+                  }
+                },
+                "showBorder": false,
+                "rowLimit": 15
+              },
+              "textSettings": {
+                "style": "bignumber"
+              }
+            },
+            "customWidth": "50",
+            "name": "Count of users not required to MFA when sign-in risk is medium or high - Copy",
+            "styleSettings": {
+              "margin": "0",
+              "maxWidth": "50"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)\r\n//Users not required to MFA when sign-in risk is medium or high\r\nlet strauthreq = SigninLogs \r\n    | where ResultType in (50074)\r\n    | where RiskLevelDuringSignIn in (\"low\",\"medium\",\"high\")\r\n    | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\"\r\n    | distinct CorrelationId;\r\nSigninLogs\r\n| where RiskState <> \"remediated\"\r\n| where ResultType in (0)\r\n| where AppDisplayName !in (\"Microsoft Authentication Broker\",\"Windows Sign In\")\r\n| where RiskLevelDuringSignIn in (\"low\",\"medium\",\"high\")\r\n| where CorrelationId !in (strauthreq)\r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider)\r\n| where authRequirement <> \"riskBasedPolicy\" \r\n| distinct\r\n    ResultType,\r\n    ResultDescription,\r\n    AppDisplayName,\r\n    UserDisplayName,\r\n    UserPrincipalName = tolower(UserPrincipalName),\r\n    UserType,\r\n    RiskLevelAggregated,\r\n    RiskLevelDuringSignIn,\r\n    RiskEventTypes_V2\r\n| summarize\r\n    Applications=make_set(AppDisplayName),\r\n    [\"User Risk Level\"]=make_set(RiskLevelAggregated), \r\n    [\"Risk Types\"]=make_set(RiskEventTypes_V2),\r\n    [\"Sign-in Risk Level\"] = make_set(RiskLevelDuringSignIn)\r\n    by\r\n    UserDisplayName,\r\n    UserPrincipalName,\r\n    UserType\r\n    \r\n| project\r\n    [\"User Display Name\"] = UserDisplayName,\r\n    [\"User Principal Name\"] = UserPrincipalName,\r\n    [\"User Type\"] = UserType,\r\n    [\"User Risk Level\"],\r\n    [\"Sign-in Risk Level\"],\r\n    [\"Risk Types\"],\r\n    Applications\r\n| summarize [\"users\"] = count(\"User Principal Name\")",
+              "size": 3,
+              "title": "Count of users not required to MFA when sign-in risk is low, medium or high",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "tiles",
+              "gridSettings": {
+                "rowLimit": 30
+              },
+              "sortBy": [],
+              "tileSettings": {
+                "titleContent": {},
+                "leftContent": {
+                  "columnMatch": "users",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "style": "decimal",
+                      "maximumFractionDigits": 2,
+                      "maximumSignificantDigits": 3
+                    }
+                  }
+                },
+                "showBorder": false,
+                "rowLimit": 15
+              },
+              "textSettings": {
+                "style": "bignumber"
+              }
+            },
+            "customWidth": "50",
+            "name": "Count of users not required to MFA when sign-in risk is low, medium or high",
+            "styleSettings": {
+              "margin": "0",
+              "maxWidth": "50"
+            }
           }
         ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "settab",
+        "comparison": "isEqualTo",
+        "value": "Summary"
       },
       "name": "Impact Summary"
     },
@@ -779,195 +973,154 @@
       "content": {
         "version": "NotebookGroup/1.0",
         "groupType": "editable",
+        "title": "Device Compliance details",
         "items": [
           {
-            "type": 1,
+            "type": 3,
             "content": {
-              "json": "## Conditional access policy stats"
-            },
-            "customWidth": "100",
-            "name": "text - 0 - Copy",
-            "styleSettings": {
-              "maxWidth": "100"
-            }
-          }
-        ]
-      },
-      "name": "Impact Summary - Copy"
-    },
-    {
-      "type": 3,
-      "content": {
-        "version": "KqlItem/1.0",
-        "query": "SigninLogs\r\n| where TimeGenerated > ago (14d)\r\n| extend trustType = tostring(DeviceDetail.trustType)\r\n| extend isCompliant = tostring(DeviceDetail.isCompliant)\r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))\r\n| mv-apply ca=todynamic(ConditionalAccessPolicies) on (\r\n    where ca.result in (\"success\",\"failure\")\r\n    | extend PolicyName = tostring(ca.displayName)\r\n    //| extend PolicyResult = tostring(ca.result)\r\n    )\r\n| summarize\r\n    ['Total Signin Count']=count(),\r\n    ['Total MFA Count']=countif(AuthenticationRequirement == \"multiFactorAuthentication\"),\r\n    ['Total non MFA Count']=countif(AuthenticationRequirement == \"singleFactorAuthentication\"),\r\n    ['Total Trusted device']=countif(trustType == \"Hybrid Azure AD joined\"),\r\n    ['Total Compliant device']=countif(isCompliant == 'true'),\r\n    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),\r\n    ['Total CAP Applied']=countif(ConditionalAccessStatus == 'success'),\r\n    ['Total CAP Blocked']=countif(ResultType == 53003),\r\n    NumberofApps=dcount(AppDisplayName),NumberofUsers=dcount(UserPrincipalName)\r\n    by PolicyName//,PolicyResult\r\n| project\r\n    [\"Policy Name\"]=PolicyName,[\"User Count\"]=NumberofUsers,[\"APP Count\"]=NumberofApps,\r\n    ['Total Signin Count'],\r\n    ['Total CAP Blocked'],\r\n    [\"MFA %\"]=(todouble(['Total MFA Count']) * 100 / todouble(['Total Signin Count'])),\r\n    [\"Trusted Device %\"]=(todouble(['Total Trusted device']) * 100 / todouble(['Total Signin Count'])),\r\n    [\"Compliant Device %\"]=(todouble(['Total Compliant device']) * 100 / todouble(['Total Signin Count'])),\r\n    [\"Trusted Location %\"]=(todouble(['Total Trusted Location']) * 100 / todouble(['Total Signin Count'])),\r\n    [\"Conditional Policy Applied %\"]=(todouble(['Total CAP Applied']) * 100 / todouble(['Total Signin Count']))",
-        "size": 0,
-        "title": "Conditional Access Policy General Stats (14 days)",
-        "timeContext": {
-          "durationMs": 86400000
-        },
-        "queryType": 0,
-        "resourceType": "microsoft.operationalinsights/workspaces",
-        "gridSettings": {
-          "formatters": [
-            {
-              "columnMatch": "MFA %",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where TimeGenerated > ago (14d)\r\n| extend trustType = tostring(DeviceDetail.trustType)\r\n| extend isCompliant = tostring(DeviceDetail.isCompliant)\r\n| extend os = tostring(DeviceDetail.operatingSystem) \r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))\r\n| mv-apply ca=todynamic(ConditionalAccessPolicies) on (\r\n    where ca.result in (\"success\",\"failure\")\r\n    | extend PolicyName = tostring(ca.displayName)\r\n    //| extend PolicyResult = tostring(ca.result)\r\n    )\r\n| summarize\r\n    ['Total Signin']=count(),\r\n    ['Total IOS']=countif(os contains \"IOS\"),\r\n    ['Total Android']=countif(os contains \"Android\"),\r\n    ['Total Windows']=countif(os contains \"Windows\"),\r\n    ['Total MacOs']=countif(os contains \"MacOs\"),\r\n    ['Total Linux']=countif(os contains \"Linux\"),\r\n    ['Total Compliant Device']=countif(isCompliant == 'true'),\r\n    ['Total Trusted Device']=countif(trustType == \"Hybrid Azure AD joined\"),\r\n    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),\r\n    ['Total Blocked']=countif(ResultType == 53003),\r\n    NumberofApps=dcount(AppDisplayName),NumberofUsers=dcount(UserPrincipalName)\r\n    by PolicyName\r\n| project\r\n    PolicyName,NumberofUsers,NumberofApps,\r\n    ['Total Signin'],\r\n    ['% of IOS']=(todouble(['Total IOS']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Android']=(todouble(['Total Android']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Windows']=(todouble(['Total Windows']) * 100 / todouble(['Total Signin'])),\r\n    ['% of MacOs']=(todouble(['Total MacOs']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Linux']=(todouble(['Total Linux']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Compliant Device']=(todouble(['Total Compliant Device']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Trusted Device']=(todouble(['Total Trusted Device']) * 100 / todouble(['Total Signin'])),\r\n    ['Total Blocked']",
+              "size": 0,
+              "title": "Conditional access policy device stats by operating system (14 days)",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "% of IOS",
+                    "formatter": 0,
+                    "numberFormat": {
+                      "unit": 1,
+                      "options": {
+                        "style": "decimal"
+                      }
+                    }
+                  },
+                  {
+                    "columnMatch": "% of Android",
+                    "formatter": 0,
+                    "numberFormat": {
+                      "unit": 1,
+                      "options": {
+                        "style": "decimal"
+                      }
+                    }
+                  },
+                  {
+                    "columnMatch": "% of Windows",
+                    "formatter": 0,
+                    "numberFormat": {
+                      "unit": 1,
+                      "options": {
+                        "style": "decimal"
+                      }
+                    }
+                  },
+                  {
+                    "columnMatch": "% of MacOs",
+                    "formatter": 0,
+                    "numberFormat": {
+                      "unit": 1,
+                      "options": {
+                        "style": "decimal"
+                      }
+                    }
+                  },
+                  {
+                    "columnMatch": "% of Linux",
+                    "formatter": 0,
+                    "numberFormat": {
+                      "unit": 1,
+                      "options": {
+                        "style": "decimal"
+                      }
+                    }
+                  },
+                  {
+                    "columnMatch": "% of Compliant Device",
+                    "formatter": 0,
+                    "numberFormat": {
+                      "unit": 1,
+                      "options": {
+                        "style": "decimal"
+                      }
+                    }
+                  },
+                  {
+                    "columnMatch": "% of Trusted Device",
+                    "formatter": 0,
+                    "numberFormat": {
+                      "unit": 1,
+                      "options": {
+                        "style": "decimal"
+                      }
+                    }
+                  }
+                ]
               }
             },
-            {
-              "columnMatch": "Trusted Device %",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "Compliant Device %",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "Trusted Location %",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "Conditional Policy Applied %",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            }
-          ],
-          "sortBy": [
-            {
-              "itemKey": "User Count",
-              "sortOrder": 2
-            }
-          ]
-        },
-        "sortBy": [
+            "name": "query - 8"
+          },
           {
-            "itemKey": "User Count",
-            "sortOrder": 2
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let includeapps = pack_array(\"Exchange Online\",\"Microsoft 365 Search Service\",\"Microsoft Forms\",\"Microsoft Planner\",\"Microsoft Stream\",\"Microsoft Teams\",\"Microsoft To-Do\",\"Microsoft Flow\",\"Microsoft Office 365 Portal\",\"Microsoft Office client application\",\"Microsoft Stream\",\"Microsoft To-Do WebApp\",\"Microsoft Whiteboard Services\",\"Office Delve\",\"Office Online\",\"OneDrive\",\"Power Apps\",\"Power Automate\",\"Security & compliance portal\",\"SharePoint Online\",\"Skype for Business Online\",\"Skype and Teams Tenant Admin API\",\"Sway\",\"Yammer\",\"PowerApps Service\",\"Viva Engage\",\"Targeted Messaging Service\",\"Microsoft Exchange Online Protection\",\"Connectors\",\"OfficeHome\",\"OfficeClientService\",\"Microsoft Teams Chat Aggregator\",\"Microsoft People Cards Service\",\"Office 365 Search Service\",\"Skype Presence Service\",\"Office 365 Exchange Microservices\");\r\nSigninLogs\r\n| where ResultType == 0\r\n| extend os = tostring(parse_json(DeviceDetail).operatingSystem) \r\n| extend trustType = tostring(parse_json(DeviceDetail).trustType) \r\n| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) \r\n| extend browser = tostring(parse_json(DeviceDetail).browser)\r\n| where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps)\r\n| where isCompliant <> 'true' and trustType <> \"Hybrid Azure AD joined\"\r\n| where AADTenantId == ResourceTenantId\r\n| where UserType <> \"Guest\"\r\n| mv-apply ca=todynamic(ConditionalAccessPolicies) on (\r\n    summarize condition1 = countif(ca.result in (\"success\") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),\r\n    condition2 = countif(ca.result in (\"success\") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice')\r\n)\r\n| where condition1 == 0 and condition2 == 0\r\n| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName\r\n| summarize \r\n    officelist = make_set(AppDisplayName),\r\n    oslist = make_set(os),\r\n    browserlist = make_set(browser),\r\n    clientapplist = make_set(ClientAppUsed)\r\n     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant",
+              "size": 0,
+              "title": "Users not using compliant device for Office 365",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "Users not using compliant device for Office 365"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "let excludeapps = pack_array(\"Windows Sign In\",\"Microsoft Authentication Broker\",\"Microsoft Account Controls V2\");\r\nSigninLogs\r\n| where ResultType == 0  and AppDisplayName !in (excludeapps)\r\n| extend os = tostring(parse_json(DeviceDetail).operatingSystem) \r\n| extend trustType = tostring(parse_json(DeviceDetail).trustType) \r\n| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) \r\n| extend browser = tostring(parse_json(DeviceDetail).browser)\r\n| where isCompliant <> 'true' and trustType <> \"Hybrid Azure AD joined\"\r\n| where AADTenantId == ResourceTenantId\r\n| where UserType <> \"Guest\"\r\n| mv-apply ca=todynamic(ConditionalAccessPolicies) on (\r\n    summarize condition1 = countif(ca.result in (\"success\") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),\r\n    condition2 = countif(ca.result in (\"success\") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice')\r\n)\r\n| where condition1 == 0 and condition2 == 0\r\n| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName\r\n| summarize \r\n    [\"Application list\"] = make_set(AppDisplayName),\r\n    [\"Operating system list\"] = make_set(os),\r\n    [\"Browser list\"] = make_set(browser),\r\n    [\"Client app used\"] = make_set(ClientAppUsed)\r\n     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant",
+              "size": 0,
+              "title": "Users not using compliant device",
+              "timeContext": {
+                "durationMs": 86400000
+              },
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "Users not using compliant device"
           }
         ]
       },
-      "name": "query - 7"
+      "conditionalVisibility": {
+        "parameterName": "settab",
+        "comparison": "isEqualTo",
+        "value": "Compliance"
+      },
+      "name": "Device Compliance details"
     },
     {
-      "type": 3,
+      "type": 12,
       "content": {
-        "version": "KqlItem/1.0",
-        "query": "SigninLogs\r\n| where TimeGenerated > ago (14d)\r\n| extend trustType = tostring(DeviceDetail.trustType)\r\n| extend isCompliant = tostring(DeviceDetail.isCompliant)\r\n| extend os = tostring(DeviceDetail.operatingSystem) \r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))\r\n| mv-apply ca=todynamic(ConditionalAccessPolicies) on (\r\n    where ca.result in (\"success\",\"failure\")\r\n    | extend PolicyName = tostring(ca.displayName)\r\n    //| extend PolicyResult = tostring(ca.result)\r\n    )\r\n| summarize\r\n    ['Total Signin']=count(),\r\n    ['Total IOS']=countif(os contains \"IOS\"),\r\n    ['Total Android']=countif(os contains \"Android\"),\r\n    ['Total Windows']=countif(os contains \"Windows\"),\r\n    ['Total MacOs']=countif(os contains \"MacOs\"),\r\n    ['Total Linux']=countif(os contains \"Linux\"),\r\n    ['Total Compliant Device']=countif(isCompliant == 'true'),\r\n    ['Total Trusted Device']=countif(trustType == \"Hybrid Azure AD joined\"),\r\n    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),\r\n    ['Total Blocked']=countif(ResultType == 53003),\r\n    NumberofApps=dcount(AppDisplayName),NumberofUsers=dcount(UserPrincipalName)\r\n    by PolicyName\r\n| project\r\n    PolicyName,NumberofUsers,NumberofApps,\r\n    ['Total Signin'],\r\n    ['% of IOS']=(todouble(['Total IOS']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Android']=(todouble(['Total Android']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Windows']=(todouble(['Total Windows']) * 100 / todouble(['Total Signin'])),\r\n    ['% of MacOs']=(todouble(['Total MacOs']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Linux']=(todouble(['Total Linux']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Compliant Device']=(todouble(['Total Compliant Device']) * 100 / todouble(['Total Signin'])),\r\n    ['% of Trusted Device']=(todouble(['Total Trusted Device']) * 100 / todouble(['Total Signin'])),\r\n    ['Total Blocked']",
-        "size": 0,
-        "title": "Conditional Access Policy Device Stats",
-        "timeContext": {
-          "durationMs": 86400000
-        },
-        "queryType": 0,
-        "resourceType": "microsoft.operationalinsights/workspaces",
-        "gridSettings": {
-          "formatters": [
-            {
-              "columnMatch": "% of IOS",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "% of Android",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "% of Windows",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "% of MacOs",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "% of Linux",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "% of Compliant Device",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            },
-            {
-              "columnMatch": "% of Trusted Device",
-              "formatter": 0,
-              "numberFormat": {
-                "unit": 1,
-                "options": {
-                  "style": "decimal"
-                }
-              }
-            }
-          ]
-        }
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "Multi-factor details",
+        "items": []
       },
-      "name": "query - 8"
+      "conditionalVisibility": {
+        "parameterName": "settab",
+        "comparison": "isEqualTo",
+        "value": "MFA"
+      },
+      "name": "group - 8"
     }
   ],
   "fallbackResourceIds": [
-    "/subscriptions/2509a955-812f-4b59-871e-ab1e52042cbf/resourceGroups/AAD-LogAnalytics/providers/Microsoft.OperationalInsights/workspaces/aad-logs-agcompany"
+    "/subscriptions/f365c4f8-69b0-4f28-bd9b-ca885182bad6/resourceGroups/dps-csa-security-engineering-rg/providers/Microsoft.OperationalInsights/workspaces/HON-Central-LA-Prod"
   ],
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
 }
