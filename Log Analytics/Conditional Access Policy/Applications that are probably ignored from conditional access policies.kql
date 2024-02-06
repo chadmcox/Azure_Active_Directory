@@ -1,0 +1,6 @@
+//this link explains why https://learn.microsoft.com/en-us/entra/identity/conditional-access/concept-conditional-access-cloud-apps#all-cloud-apps
+SigninLogs 
+| where ResultType == 0
+| where ResourceIdentity == "00000003-0000-0000-c000-000000000000" and ClientAppUsed <> "Browser" and (AuthenticationProcessingDetails has "User.Read" or AuthenticationProcessingDetails has "profile" or AuthenticationProcessingDetails has "openid" or AuthenticationProcessingDetails has "email")
+| where HomeTenantId == ResourceTenantId
+| distinct AppDisplayName,UPN = tolower(UserPrincipalName),AuthenticationRequirement
