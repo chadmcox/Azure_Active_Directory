@@ -1,7 +1,5 @@
-//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
-//Users not using compliant device for Office 365
 let includeapps = pack_array("Exchange Online","Microsoft 365 Search Service","Microsoft Forms","Microsoft Planner","Microsoft Stream","Microsoft Teams","Microsoft To-Do","Microsoft Flow","Microsoft Office 365 Portal","Microsoft Office client application","Microsoft Stream","Microsoft To-Do WebApp","Microsoft Whiteboard Services","Office Delve","Office Online","OneDrive","Power Apps","Power Automate","Security & compliance portal","SharePoint Online","Skype for Business Online","Skype and Teams Tenant Admin API","Sway","Yammer","PowerApps Service","Viva Engage","Targeted Messaging Service","Microsoft Exchange Online Protection","Connectors","OfficeHome","OfficeClientService","Microsoft Teams Chat Aggregator","Microsoft People Cards Service","Office 365 Search Service","Skype Presence Service","Office 365 Exchange Microservices");
-SigninLogs
+let AAD = SigninLogs
 | where ResultType == 0
 | extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
 | extend trustType = tostring(parse_json(DeviceDetail).trustType) 
@@ -22,4 +20,27 @@ SigninLogs
     oslist = make_set(os),
     browserlist = make_set(browser),
     clientapplist = make_set(ClientAppUsed)
-     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant
+     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant;
+let AADNon = AADNonInteractiveUserSignInLogs
+| where ResultType == 0
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps)
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where UserType <> "Guest"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice')
+)
+| where condition1 == 0 and condition2 == 0
+| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
+| summarize 
+    officelist = make_set(AppDisplayName),
+    oslist = make_set(os),
+    browserlist = make_set(browser),
+    clientapplist = make_set(ClientAppUsed)
+     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant;
+AADNon
+| union AAD
