@@ -51,10 +51,15 @@ $uri = "$script:graphendpoint/beta/identity/conditionalAccess/policies"
 
 $all_capolicies = get-MSGraphRequest -uri $uri
 
- $results = $all_capolicies | foreach {$cap="";$cap=$_
+ $all_capolicies | foreach {$cap="";$cap=$_
     $cap.conditions.users.excludeUsers | foreach{
         $_ | select @{N="excludeUsers";Expression={$_}}, @{N="cap";Expression={$cap.displayName}}
     }
-}
+} | export-csv .\capresults.csv -NoTypeInformation
 
-$results | group excludeUsers | select name, count
+$all_capolicies | foreach {$cap="";$cap=$_
+    
+    "test" | select @{N="caps";Expression={$_}}, @{N="cap";Expression={$cap.displayName}},`
+         @{N="excludeusercount";Expression={$cap.conditions.users.excludeUsers.count}},`
+         @{N="exclude";Expression={[string]$cap.conditions.users.excludeUsers}}
+} |export-csv .\capresults_thisisbetter.csv -NoTypeInformation 
