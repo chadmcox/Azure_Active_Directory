@@ -15,12 +15,7 @@ let AAD = SigninLogs
 )
 | where condition1 == 0 and condition2 == 0
 | distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
-| summarize 
-    officelist = make_set(AppDisplayName),
-    oslist = make_set(os),
-    browserlist = make_set(browser),
-    clientapplist = make_set(ClientAppUsed)
-     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant;
+;
 let AADNon = AADNonInteractiveUserSignInLogs
 | where ResultType == 0
 | extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
@@ -36,11 +31,12 @@ let AADNon = AADNonInteractiveUserSignInLogs
 )
 | where condition1 == 0 and condition2 == 0
 | distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
+;
+AADNon
+| union AAD
 | summarize 
     officelist = make_set(AppDisplayName),
     oslist = make_set(os),
     browserlist = make_set(browser),
     clientapplist = make_set(ClientAppUsed)
-     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant;
-AADNon
-| union AAD
+     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant
