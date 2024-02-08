@@ -1,0 +1,19 @@
+let AAD = AADNonInteractiveUserSignInLogs
+| where ResultType in (53000)
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| distinct TimeGenerated,UserPrincipalName=tolower(UserPrincipalName);
+let AADNon =  SigninLogs
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| where ResultType <> 0
+| where ResultType in (53000)
+| distinct TimeGenerated,UserPrincipalName=tolower(UserPrincipalName);
+AADNon
+| union AAD
+| distinct TimeGenerated,UserPrincipalName=tolower(UserPrincipalName)
+| summarize countperday = count() by startofday(TimeGenerated)
