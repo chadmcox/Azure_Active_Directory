@@ -5,11 +5,13 @@
 ## Trusted Locations
 
 ## Existing risk cleanup
+### Export existing risk to a file
 ```
 Get-MgBetaRiskyUser -filter "RiskState eq 'atRisk'"  -All | `
     select Id, UserDisplayName, UserPrincipalName, RiskLevel, RiskState, RiskDetail, RiskLastUpdatedDateTime, IsProcessing, IsDeleted | `
         export-csv .\current_users_at_risk.csv -notypeinformation
 ```
+
 
 ## Look at current potential impact.
 
