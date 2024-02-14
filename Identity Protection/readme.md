@@ -17,6 +17,8 @@ Get-MgBetaRiskyUser -filter "RiskState eq 'atRisk'"  -All | `
 ```
 ### Dismiss user risk for single user
 ```
+Connect-MgGraph -Scopes IdentityRiskEvent.Read.All,	IdentityRiskyUser.ReadWrite.All
+
 $userid = '2aeedc43-2ad4-4a18-b78e-5b4511076146'
  
  $body = @"
