@@ -7,6 +7,10 @@
 ## Existing risk cleanup
 ### Export existing risk to a file
 ```
+install-module Microsoft.Graph.Beta.Identity.SignIns
+
+Connect-MgGraph -Scopes IdentityRiskEvent.Read.All
+
 Get-MgBetaRiskyUser -filter "RiskState eq 'atRisk'"  -All | `
     select Id, UserDisplayName, UserPrincipalName, RiskLevel, RiskState, RiskDetail, RiskLastUpdatedDateTime, IsProcessing, IsDeleted | `
         export-csv .\current_users_at_risk.csv -notypeinformation
