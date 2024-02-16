@@ -32,7 +32,6 @@ SigninLogs
     UserDisplayName,
     UserPrincipalName,
     UserType
-    
 | project
     ["User Display Name"] = UserDisplayName,
     ["User Principal Name"] = UserPrincipalName,
