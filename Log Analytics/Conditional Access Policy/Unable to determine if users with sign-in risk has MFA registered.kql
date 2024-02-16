@@ -20,8 +20,7 @@ SigninLogs
 | where RiskLevelDuringSignIn in ("low","medium","high")
 | where CorrelationId !in (strauthreq)
 | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider)
-| where authRequirement <> "riskBasedPolicy" 
-| where UserPrincipalName !in (userswithmfa)
+//| where authRequirement <> "riskBasedPolicy" 
 | distinct
     AuthenticationRequirement,
     ResultType,
@@ -33,6 +32,7 @@ SigninLogs
     RiskLevelAggregated,
     RiskLevelDuringSignIn,
     RiskEventTypes_V2
+| where UserPrincipalName !in (userswithmfa)
 | summarize
     Applications=make_set(AppDisplayName),
     ["User Risk Level"]=make_set(RiskLevelAggregated), 
