@@ -10,3 +10,4 @@ SigninLogs
 | where RiskState !in ("dismissed","remediated")
 | mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
 | distinct UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState,trustType,isCompliant,os,browser
+| project UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState,trustType,isCompliant,os,browser
