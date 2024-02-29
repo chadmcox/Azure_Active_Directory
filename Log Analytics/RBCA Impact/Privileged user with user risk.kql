@@ -6,9 +6,11 @@ let pim = AuditLogs
 | distinct caller,Role,Category, ActivityTime;
 SigninLogs 
 | where HomeTenantId == ResourceTenantId
-| where ResultType == 0 
+//| where ResultType == 0 
 | where RiskLevelAggregated in ("high","medium","low")
 | where RiskState !in ("dismissed","remediated")
 | extend ActivityTime = bin(TimeGenerated,1h)
-| project ActivityTime,ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement
+| project ActivityTime,ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement,RiskLevel
 | join kind=innerunique (pim) on caller, ActivityTime
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct caller,Role,Category, RiskLevelDuringSignIn, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState
