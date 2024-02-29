@@ -1,0 +1,4 @@
+AuditLogs 
+| where TimeGenerated > ago(60d)
+| where ActivityDisplayName == "Admin registered security info"
+| where ResultDescription == "Admin registered temporary access pass method for user"
