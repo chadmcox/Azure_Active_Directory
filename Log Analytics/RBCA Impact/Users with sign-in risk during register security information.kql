@@ -1,1 +1,6 @@
-
+SigninLogs
+| where AADTenantId == ResourceTenantId
+| where ResultType == 50125
+| where RiskLevelDuringSignIn in ("high","medium","low")
+| distinct UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState, ResultType, ResultDescription
+| project UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState,ResultType, ResultDescription 
