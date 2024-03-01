@@ -1,1 +1,6 @@
-
+SigninLogs
+| where ResultType == '53011'
+| where AuthenticationRequirementPolicies contains "riskBasedPolicy"
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct UserPrincipalName, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState
+| project UserPrincipalName, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState
