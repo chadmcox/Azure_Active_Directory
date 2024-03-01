@@ -1,0 +1,40 @@
+SigninLogs
+| where RiskState <> "remediated"
+| where AuthenticationRequirement <> 'multiFactorAuthentication'
+| where ResultType in (0)
+| where AppDisplayName !in ("Microsoft Authentication Broker","Windows Sign In")
+| where RiskLevelDuringSignIn in ("low","medium","high")
+| where CorrelationId !in (strauthreq)
+| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider)
+//| where authRequirement <> "riskBasedPolicy" 
+| distinct
+    AuthenticationRequirement,
+    ResultType,
+    ResultDescription,
+    AppDisplayName,
+    UserDisplayName,
+    UserPrincipalName = tolower(UserPrincipalName),
+    UserType,
+    RiskLevelAggregated,
+    RiskLevelDuringSignIn,
+    RiskEventTypes_V2
+| where UserPrincipalName !in (userswithmfa)
+| summarize
+    Applications=make_set(AppDisplayName),
+    ["User Risk Level"]=make_set(RiskLevelAggregated), 
+    ["Risk Types"]=make_set(RiskEventTypes_V2),
+    ["Sign-in Risk Level"] = make_set(RiskLevelDuringSignIn)
+    by
+    UserDisplayName,
+    UserPrincipalName,
+    UserType,
+    AuthenticationRequirement
+| project
+    ["User Display Name"] = UserDisplayName,
+    ["User Principal Name"] = UserPrincipalName,
+    ["User Type"] = UserType,
+    AuthenticationRequirement,
+    ["User Risk Level"],
+    ["Sign-in Risk Level"],
+    ["Risk Types"],
+    Applications
