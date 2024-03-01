@@ -1,0 +1,6 @@
+SigninLogs 
+| where ResultType == 0
+| where AppDisplayName in ("My Signins","Microsoft App Access Panel")
+| where RiskLevelDuringSignIn in ("high","medium","low")
+| distinct UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState, ResultType, ResultDescription
+| project UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState,ResultType, ResultDescription 
