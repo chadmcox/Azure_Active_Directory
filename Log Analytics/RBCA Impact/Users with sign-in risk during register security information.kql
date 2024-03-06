@@ -1,3 +1,4 @@
+//50125 = Sign-in was interrupted due to a password reset or password registration entry.
 SigninLogs
 | where AADTenantId == ResourceTenantId
 | where ResultType == 50125
