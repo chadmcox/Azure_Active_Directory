@@ -1,3 +1,4 @@
+//goal is to list users who are triggering mfa registration with user sign-in risk
 //50125 = Sign-in was interrupted due to a password reset or password registration entry.
 SigninLogs
 | where AADTenantId == ResourceTenantId
