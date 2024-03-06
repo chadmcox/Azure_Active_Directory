@@ -1,5 +1,7 @@
+//this list every user that has attempted to sign-in over the last 60 days
+//that have user risk.  Goal would be to make sure to clear these users risk
 SigninLogs
-| where TimeGenerated > ago(14d) 
+| where TimeGenerated > ago(60d) 
 | where AADTenantId == ResourceTenantId
 | where RiskLevelAggregated in ("medium","low")
 | where RiskState !in ("dismissed","remediated")
