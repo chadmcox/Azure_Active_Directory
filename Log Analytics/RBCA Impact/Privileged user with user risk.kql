@@ -1,3 +1,6 @@
+//first query list every azure role, group, entra id role that is checked out from PIM
+//it then looks at sign-ins within an hour of the check out to see if a user risk is associated
+//goal is to identify privileged accounts with user risk
 let pim = AuditLogs 
 | where ActivityDisplayName == 'Add member to role completed (PIM activation)'  
 | extend caller = tolower(tostring(InitiatedBy.user.userPrincipalName)) 
