@@ -1,0 +1,3 @@
+//MFA requirement satisfied by claim provided by external provider
+//this is what we expect from ping and okta if enforceMfaByFederatedIdp
+//is in use.
