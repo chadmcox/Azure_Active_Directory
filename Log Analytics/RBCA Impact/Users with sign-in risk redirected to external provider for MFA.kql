@@ -1,4 +1,6 @@
 SigninLogs
 | where RiskLevelDuringSignIn in ("high")  and ResultType == 50074
+| where RiskState !in ("dismissed","remediated")
 | where AuthenticationRequirementPolicies has "riskBasedPolicy"
 | where Status has "Redirected to external provider for MFA"
+| project ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement
