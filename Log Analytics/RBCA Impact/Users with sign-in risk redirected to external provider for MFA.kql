@@ -1,3 +1,5 @@
+//MFA requirement satisfied by claim provided by external provider
+//this is what we expect from ping and okta if enforceMfaByFederatedIdp
 SigninLogs
 | where RiskLevelDuringSignIn in ("high")  and ResultType == 50074
 | where RiskState !in ("dismissed","remediated")
