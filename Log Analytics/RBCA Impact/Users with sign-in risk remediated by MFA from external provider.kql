@@ -4,7 +4,7 @@
 SigninLogs
 | where ResultType == 0
 | where RiskLevelDuringSignIn in ("high")
-| where RiskState in ("remediated")
-| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| where RiskState in ("remediated") and RiskDetail == "userPassedMFADrivenByRiskBasedPolicy"
 | where Status has "MFA requirement satisfied by claim provided by external provider"
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
 | project ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,RiskEventType, ConditionalAccessStatus, AuthenticationRequirement
