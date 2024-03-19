@@ -1,0 +1,4 @@
+SigninLogs
+| where RiskLevelDuringSignIn in ("high")  and ResultType == 50074
+| where AuthenticationRequirementPolicies has "riskBasedPolicy"
+| where Status has "Redirected to external provider for MFA"
