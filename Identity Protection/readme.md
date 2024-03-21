@@ -1,10 +1,4 @@
-# How to successfully implement Entra ID Protection.
-
- * Requirement:  Entra ID (Azure AD)  logs need to be integrated with Azure monitor.  [Integrate Azure AD logs with Azure Monitor logs](https://learn.microsoft.com/en-us/azure/active-directory/reports-monitoring/howto-integrate-activity-logs-with-azure-monitor-logs)
-
-## Trusted Locations
-
-## Existing risk cleanup
+# Microsoft.Graph PowerShell examples.
 ### Export existing risk to a file
 ```
 install-module Microsoft.Graph.Beta.Identity.SignIns
@@ -31,8 +25,3 @@ $userid = '2aeedc43-2ad4-4a18-b78e-5b4511076146'
 
 Invoke-MgBetaDismissRiskyUser -BodyParameter $body
 ```
-
-## Look at current potential impact.
-
-## Setting up Conditional Access Policies
-
