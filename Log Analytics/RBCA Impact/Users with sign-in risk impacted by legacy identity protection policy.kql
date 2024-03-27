@@ -1,5 +1,6 @@
 SigninLogs
 | where ResultType in (0)
+| where RiskLevelDuringSignIn in ("high","medium")
 | where AuthenticationRequirementPolicies has "riskBasedPolicy"
 | where AuthenticationRequirementPolicies has "tenantSessionRiskPolicy"
 | mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
