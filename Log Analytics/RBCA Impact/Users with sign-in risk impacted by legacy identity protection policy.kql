@@ -1,0 +1,7 @@
+SigninLogs
+| where ResultType in (0)
+| where AuthenticationRequirementPolicies has "riskBasedPolicy"
+| where AuthenticationRequirementPolicies has "tenantSessionRiskPolicy"
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct UserPrincipalName, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState
+| project UserPrincipalName, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState
