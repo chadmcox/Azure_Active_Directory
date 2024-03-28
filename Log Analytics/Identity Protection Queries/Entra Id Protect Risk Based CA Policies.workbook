@@ -68,7 +68,7 @@
     {
       "type": 1,
       "content": {
-        "json": "**Guide:** This workbook allows you to view the users and service principals impacted if a risk-based access policy were to be enabled WITHOUT the need for creating any policies or having policies in report-only mode. For example, you can see which users would have been impacted over the past 30 days if you had enabled a risk-based Conditional Access policy where high risk users are blocked. Note: Utilize the filters to manage the amount of historical data evaluated for impact. \r\n\r\nThere are two main sections in this workbook: \r\n1. The impact summary section is a high level view of the count of users, sign-ins or IP addresses that would be impacted if the associated policy was enabled in your environment.\r\n2. The impact details section will list out pertinent details of the users, sign-ins or IP addresses.\r\n\r\n**Prerequisite:** The only prerequisite is that you are capturing sign-in logs in Log Analytics. No Conditional Access policies need to be in place to run this workbook.\r\n\r\n**Additional Resources:** To learn more about deployment and configuring policies, please follow the links below: \r\n1. [Step 1: Review existing reports](https://learn.microsoft.com/en-us/entra/id-protection/how-to-deploy-identity-protection#step-1-review-existing-reports)\r\n2. [Step 2: Plan for Conditional Access risk policies](https://learn.microsoft.com/en-us/entra/id-protection/how-to-deploy-identity-protection#step-2-plan-for-conditional-access-risk-policies)\r\n3. [Step 3: Configure your policies](https://learn.microsoft.com/en-us/entra/id-protection/how-to-deploy-identity-protection#step-3-configure-your-policies)\r\n\r\n\r\n"
+        "json": "**Guide:** This workbook allows you to view the users and service principals impacted if a risk-based access policy were to be enabled WITHOUT the need for creating any policies or having policies in report-only mode. For example, you can see which users would have been impacted over the past 30 days if you had enabled a risk-based Conditional Access policy where high risk users are blocked. Note: Utilize the filters to manage the amount of historical data evaluated for impact. \r\n\r\nThere are two main sections in this workbook: \r\n1. The impact summary section is a high level view of the count of users, sign-ins or IP addresses that would be impacted if the associated policy was enabled in your environment.\r\n2. The impact details section will list out pertinent details of the users, sign-ins or IP addresses.\r\n\r\n**Prerequisite:** The only prerequisite is that you are capturing sign-in logs in Log Analytics. No Conditional Access policies need to be in place to run this workbook. \r\n\r\n**Additional Resources:** To learn more about deployment and configuring policies, please follow the links below: \r\n1. [Step 1: Review existing reports](https://learn.microsoft.com/en-us/entra/id-protection/how-to-deploy-identity-protection#step-1-review-existing-reports)\r\n2. [Step 2: Plan for Conditional Access risk policies](https://learn.microsoft.com/en-us/entra/id-protection/how-to-deploy-identity-protection#step-2-plan-for-conditional-access-risk-policies)\r\n3. [Step 3: Configure your policies](https://learn.microsoft.com/en-us/entra/id-protection/how-to-deploy-identity-protection#step-3-configure-your-policies)\r\n\r\n\r\n"
       },
       "conditionalVisibility": {
         "parameterName": "Guide",
@@ -143,7 +143,7 @@
               "durationMs": 86400000
             },
             "value": {
-              "durationMs": 1209600000
+              "durationMs": 7776000000
             }
           }
         ],
@@ -324,10 +324,10 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "let strauthreq = SigninLogs \r\n| where ResultType in (50074)| where RiskLevelDuringSignIn in (\"high\") | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId; \r\nSigninLogs | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") | where CorrelationId !in (strauthreq) | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" | distinct UserPrincipalName = tolower(UserPrincipalName)\r\n| count",
+              "query": "let strauthreq = SigninLogs \r\n| where ResultType in (50074)| where RiskLevelDuringSignIn in (\"high\",\"medium\") | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId; \r\nSigninLogs | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\",\"medium\") | where CorrelationId !in (strauthreq) | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" | distinct UserPrincipalName = tolower(UserPrincipalName)\r\n| count",
               "size": 3,
               "showAnalytics": true,
-              "title": "2. High risk sign-ins not remediated using multifactor authentication",
+              "title": "2. Medium or high risk sign-ins not remediated using multifactor authentication",
               "timeContextFromParameter": "TimeRange",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces",
@@ -450,7 +450,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs  | where RiskDetail == \"userPassedMFADrivenByRiskBasedPolicy\" | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\" | distinct TimeGenerated, UserPrincipalName\r\n|count",
+              "query": "SigninLogs  \r\n| where RiskDetail == \"userPassedMFADrivenByRiskBasedPolicy\" \r\n| where ResultType in (0) \r\n| where AuthenticationRequirementPolicies !has \"tenantSessionRiskPolicy\"\r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| distinct TimeGenerated, UserPrincipalName\r\n|count",
               "size": 3,
               "showAnalytics": true,
               "title": "3. Risky sign-ins remediated by multifactor authentication",
@@ -637,6 +637,168 @@
             },
             "customWidth": "25",
             "name": "Count of IP addresses with multiple user not trusted that might impact sign-in risk"
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Federated sign-in risk scenarios "
+            },
+            "customWidth": "50",
+            "name": "text - 0 - Copy - Copy",
+            "styleSettings": {
+              "maxWidth": "50"
+            }
+          },
+          {
+            "type": 1,
+            "content": {
+              "json": "## Legacy Identity Protection policies"
+            },
+            "customWidth": "50",
+            "name": "text - 0 - Copy - Copy - Copy",
+            "styleSettings": {
+              "maxWidth": "50"
+            }
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") and ResultType == 50074\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where AuthenticationRequirementPolicies has \"riskBasedPolicy\"\r\n| where Status has \"Redirected to external provider for MFA\"\r\n| distinct UserPrincipalName=tolower(UserPrincipalName)\r\n|summarize count(UserPrincipalName)",
+              "size": 3,
+              "showAnalytics": true,
+              "title": "1. Sign-in risk redirected to external identity provider",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "tiles",
+              "tileSettings": {
+                "titleContent": {},
+                "leftContent": {
+                  "columnMatch": "count_UserPrincipalName",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "style": "decimal",
+                      "maximumFractionDigits": 2,
+                      "maximumSignificantDigits": 3
+                    }
+                  }
+                },
+                "showBorder": false
+              }
+            },
+            "customWidth": "25",
+            "name": "Count of Users with sign-in risk redirected to external provider for MFA"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where ResultType == 0\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\")\r\n| where RiskState in (\"remediated\") and RiskDetail == \"userPassedMFADrivenByRiskBasedPolicy\"\r\n| where Status has \"MFA requirement satisfied by claim provided by external provider\"\r\n| distinct UserPrincipalName=tolower(UserPrincipalName)\r\n|summarize count(UserPrincipalName)",
+              "size": 3,
+              "showAnalytics": true,
+              "title": "2. Sign-in risk remediated by external identity provider",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "tiles",
+              "tileSettings": {
+                "titleContent": {},
+                "leftContent": {
+                  "columnMatch": "count_UserPrincipalName",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "style": "decimal",
+                      "maximumFractionDigits": 2,
+                      "maximumSignificantDigits": 3
+                    }
+                  }
+                },
+                "showBorder": false
+              }
+            },
+            "customWidth": "25",
+            "name": "Count of Users withsign-in risk remediated by MFA from external provider"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where ResultType in (50135)\r\n| where AuthenticationRequirementPolicies has \"riskBasedPolicy\"\r\n| where AuthenticationRequirementPolicies has \"tenantSessionRiskPolicy\" or AuthenticationRequirementPolicies has \"accountCompromisePolicies\"\r\n| distinct UserPrincipalName=tolower(UserPrincipalName)\r\n|summarize count(UserPrincipalName)",
+              "size": 3,
+              "showAnalytics": true,
+              "title": "1. Impacted by legacy user risk policy",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "tiles",
+              "tileSettings": {
+                "titleContent": {},
+                "leftContent": {
+                  "columnMatch": "count_UserPrincipalName",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "style": "decimal",
+                      "maximumFractionDigits": 2,
+                      "maximumSignificantDigits": 3
+                    }
+                  }
+                },
+                "showBorder": false
+              }
+            },
+            "customWidth": "25",
+            "name": "Users with user risk impacted by legacy identity protection policy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where ResultType in (0)\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\")\r\n| where AuthenticationRequirementPolicies has \"riskBasedPolicy\"\r\n| where AuthenticationRequirementPolicies has \"tenantSessionRiskPolicy\"\r\n| distinct UserPrincipalName=tolower(UserPrincipalName)\r\n|summarize count(UserPrincipalName)",
+              "size": 3,
+              "showAnalytics": true,
+              "title": "2. Impacted by legacy sign-in risk policy",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "tiles",
+              "tileSettings": {
+                "titleContent": {},
+                "leftContent": {
+                  "columnMatch": "count_UserPrincipalName",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "style": "decimal",
+                      "maximumFractionDigits": 2,
+                      "maximumSignificantDigits": 3
+                    }
+                  }
+                },
+                "showBorder": false
+              }
+            },
+            "customWidth": "25",
+            "name": "Users with sign-in risk impacted by legacy identity protection policy"
           }
         ]
       },
@@ -659,7 +821,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where ResultType == 0  \r\n| where RiskLevelAggregated == 'high' and RiskState == \"atRisk\"\r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"],Applications",
+              "query": "SigninLogs \r\n| where ResultType == 0  \r\n| where RiskLevelAggregated == 'high' and RiskState !in (\"dismissed\",\"remediated\")\r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,tostring(RiskEventType)\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventType)\r\n by UserDisplayName,UserPrincipalName, UserType\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"],Applications",
               "size": 3,
               "title": "1. High risk users not being blocked by risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -678,7 +840,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where ResultType == 0  \r\n| where RiskState == \"atRisk\" and RiskLevelAggregated == 'high' \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType\r\n| project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"],Applications",
+              "query": "SigninLogs \r\n| where ResultType == 0  \r\n| where RiskState == \"atRisk\" and RiskState !in (\"dismissed\",\"remediated\")\r\n| where AppDisplayName <> \"Microsoft Authentication Broker\" \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,tostring(RiskEventType)\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventType)\r\n by UserDisplayName,UserPrincipalName, UserType\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"],Applications",
               "size": 3,
               "title": "2. High risk users not being prompted to change password by risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -695,7 +857,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where AuthenticationRequirementPolicies has \"riskBasedPolicy\" \r\n| where ResultType == 50142 \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName,UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2\r\n| summarize  Applications=make_list(AppDisplayName) by [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"] = RiskLevelAggregated,  [\"Sign-in risk level\"] = RiskLevelDuringSignIn,   [\"Risk types\"] = RiskEventTypes_V2, [\"Result type\"] = ResultType, [\"Result description\"] = ResultDescription",
+              "query": "SigninLogs \r\n| where AuthenticationRequirementPolicies has \"riskBasedPolicy\" \r\n| where ResultType == 50142 \r\n| extend [\"Device trust type\"] = tostring(parse_json(DeviceDetail).trustType) \r\n| extend [\"Device is compliant\"] = tostring(parse_json(DeviceDetail).isCompliant) \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName,UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, [\"Device trust type\"], [\"Device is compliant\"]\r\n| summarize  Applications=make_list(AppDisplayName) by [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"] = RiskLevelAggregated,  [\"Sign-in risk level\"] = RiskLevelDuringSignIn, [\"Result type\"] = ResultType, [\"Result description\"] = ResultDescription, [\"Device trust type\"], [\"Device is compliant\"]",
               "size": 3,
               "title": "3. Users that changed password due to risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -713,7 +875,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where ResultType !in (0,50074,50140,50097) \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\"   \r\n| where RiskState == \"atRisk\" and RiskLevelAggregated in (\"high\") and ConditionalAccessStatus <> \"notApplied\"\r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| where authRequirement <> \"riskBasedPolicy\"\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2,RiskDetail\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType, RiskDetail,ResultType, ResultDescription\r\n| project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"], [\"Risk detail\"] = RiskDetail,Applications, [\"Result type\"] = ResultType, [\"Result description\"] = ResultDescription",
+              "query": "SigninLogs \r\n| where ResultType !in (0,50074,50140,50097) \r\n| where AppDisplayName <> \"Microsoft Authentication Broker\"   \r\n| where RiskState !in (\"dismissed\",\"remediated\") and RiskLevelAggregated in (\"high\") and ConditionalAccessStatus <> \"notApplied\"\r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) \r\n| where authRequirement <> \"riskBasedPolicy\"\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2,RiskDetail\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType, RiskDetail,ResultType, ResultDescription\r\n| project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"], [\"Risk detail\"] = RiskDetail,Applications, [\"Result type\"] = ResultType, [\"Result description\"] = ResultDescription",
               "size": 3,
               "title": "4. Risky users not successfully signing-in due to risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -907,7 +1069,8 @@
     }
   ],
   "fallbackResourceIds": [
-    "/subscriptions/ab48f397-fc82-4634-aa52-62dd91b3ebaa/resourceGroups/woodgrove-rg/providers/Microsoft.OperationalInsights/workspaces/woodgrove-loganalyiticsworkspace"
+    "/subscriptions/0292f9d1-2712-4325-98ba-fbc2b5058169/resourcegroups/rg-aadlogs/providers/microsoft.operationalinsights/workspaces/new-azuread"
   ],
+  "fromTemplateId": "community-Workbooks/Microsoft Entra ID Protection/ImpactAnalysis",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
 }
