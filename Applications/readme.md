@@ -73,16 +73,15 @@ Get-MgServicePrincipal -all -ExpandProperty owners | select `
 ## Get a list of Applications that allow any user to log into them.
 ```
 Connect-MgGraph -scopes Application.Read.All, Directory.Read.All, Reports.Read.All
-Select-MgProfile -Name beta
 
 #get a list of applications users are signing into
-$appids = (Get-MgReportAzureAdApplicationSignInSummary -Period 'D30' | where {$_.SuccessfulSignInCount -gt 0}).id
+$appids = (Get-MgBetaReportAzureAdApplicationSignInSummary -Period 'D30' | where {$_.SuccessfulSignInCount -gt 0}).id
 
 #get apps because it has created time
-$hashapps = Get-MgApplication -Property appId,createdDateTime -all | select appId,createdDateTime | group appid -AsHashTable -AsString
+$hashapps = Get-MgBetaApplication -Property appId,createdDateTime -all | select appId,createdDateTime | group appid -AsHashTable -AsString
 
 #retrieve list of applications that allow any account to sign into it.
-Get-mgServicePrincipal -filter "servicePrincipalType eq 'Application' and accountEnabled eq true" -all `
+Get-mgBetaServicePrincipal -filter "servicePrincipalType eq 'Application' and accountEnabled eq true" -all `
     -Property tags,appId,id,displayName,appRoleAssignmentRequired,signInAudience,publisherName,appOwnerOrganizationId, preferredSingleSignOnMode,KeyCredentials -ExpandProperty owners  | `
     where {$_.PublisherName -notlike "*Microsoft*" -and $_.appOwnerOrganizationId -ne 'f8cdef31-a31e-4b4a-93e4-5f571e91255a'} | `
     where {$_.tags -contains "WindowsAzureActiveDirectoryIntegratedApp" -and $_.appRoleAssignmentRequired -ne $true -and $_.appId -in $appids} | select `
