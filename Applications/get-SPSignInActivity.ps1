@@ -45,6 +45,8 @@ $sps_lastsignin_hash = $sps_lastsignin | select appid,signInActivityType -Expand
     select appid, @{N="LastSignInDateTime";E={$_.LastSignInDateTime}},signInActivityType | `
     group appid -AsHashTable -AsString
 
+#preferredSingleSignOnMode
+
 write-host "Getting all service principals and create the report"
 Get-MgBetaServicePrincipal -Filter "serviceprincipaltype eq 'Application' and AccountEnabled eq true" -all -ExpandProperty owners | `
     where {!($_.PublisherName -like "*Microsoft*") -or $_.PublisherName -eq "Microsoft Accounts" -and !($_.AppOwnerOrganizationId -eq 'f8cdef31-a31e-4b4a-93e4-5f571e91255a')} | select `
