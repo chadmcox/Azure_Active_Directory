@@ -17,6 +17,15 @@ let riskusers = risk | distinct UserPrincipalName = tolower(UserPrincipalName);
 SigninLogs
 | where ResultType == 0
 | where tolower(UserPrincipalName) in (riskusers) 
+| where AppDisplayName !in ("Windows Sign In","Microsoft Authentication Broker")
+| extend ["Device trust type"] = tostring(parse_json(DeviceDetail).trustType) 
+| extend ["Device is compliant"] = tostring(parse_json(DeviceDetail).isCompliant) 
 | join kind=leftouter (risk) on UserPrincipalName
 | where ((TimeGenerated <= RemediatedDateTime) or (isnull(RemediatedDateTime))) and (TimeGenerated >= RiskDateTime)
-| project TimeGenerated,RiskDateTime,RemediatedDateTime, UserPrincipalName, ResultType, ResultDescription,riskuserRiskLevelAggregated,AppDisplayName
+| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, riskuserRiskLevelAggregated,["Device trust type"], ["Device is compliant"]
+| summarize  Applications=make_set(AppDisplayName),
+["User risk level"]=make_set(riskuserRiskLevelAggregated),
+["Device trust type"] = make_set(["Device trust type"]),
+["Device is compliant"] = make_set(["Device is compliant"])
+ by UserDisplayName,UserPrincipalName, UserType
+ | project ["User display name"] = UserDisplayName,["User principal name"] = UserPrincipalName, ["User type"] = UserType, ["User risk level"], Applications,["Device trust type"], ["Device is compliant"]
