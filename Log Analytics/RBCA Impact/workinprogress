@@ -1,0 +1,22 @@
+let risklevel = pack_array("high");
+let riskeventsid = SigninLogs
+| where RiskLevelAggregated in (risklevel)
+| distinct OriginalRequestId;
+let remediated = SigninLogs
+| where RiskState !in ("none")
+| where OriginalRequestId in (riskeventsid)
+| where RiskState !in ("atRisk","none")
+| project OriginalRequestId,RemediatedDateTime = TimeGenerated, UserPrincipalName, RiskState;
+let risk = SigninLogs
+| where RiskState !in ("none")
+| where OriginalRequestId in (riskeventsid)
+| where RiskState in ("atRisk") and RiskLevelAggregated in (risklevel)
+| join kind=leftouter (remediated) on OriginalRequestId
+| project RiskDateTime = TimeGenerated, UserPrincipalName = tolower(UserPrincipalName), RemediatedDateTime,riskuserRiskLevelAggregated = RiskLevelAggregated, ResultType;
+let riskusers = risk | distinct UserPrincipalName = tolower(UserPrincipalName);
+SigninLogs
+| where ResultType == 0
+| where tolower(UserPrincipalName) in (riskusers) 
+| join kind=leftouter (risk) on UserPrincipalName
+| where ((TimeGenerated <= RemediatedDateTime) or (isnull(RemediatedDateTime))) and (TimeGenerated >= RiskDateTime)
+| project TimeGenerated,RiskDateTime,RemediatedDateTime, UserPrincipalName, ResultType, ResultDescription,riskuserRiskLevelAggregated,AppDisplayName
