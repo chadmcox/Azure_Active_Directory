@@ -4,6 +4,8 @@ AuditLogs
 | extend extracted_Id = extract(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", 0, Id)
 | extend Target =  tostring(TargetResources[0].userPrincipalName)
 | project TimeGenerated,Target,extracted_Id, ResultDescription, OperationName
-| summarize results = make_set(ResultDescription) by extracted_Id, Target, OperationName
+| summarize 
+    results = make_set(ResultDescription), 
+    attempts = count() by extracted_Id, Target, OperationName
 | extend Success = tostring(iff(results contains 'success', 'True',''))
-| project extracted_Id, Target, OperationName, results, Success
+| project extracted_Id, Target, OperationName,attempts, results, Success
