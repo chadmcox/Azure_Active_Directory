@@ -1,3 +1,4 @@
+//this shows if user was able to change in the same session
 AuditLogs 
 | where OperationName in ("Reset password (self-service)")
 | extend extracted_Id = extract(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", 0, Id)
