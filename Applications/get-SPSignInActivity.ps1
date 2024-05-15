@@ -50,10 +50,11 @@ $sps_lastsignin_hash = $sps_lastsignin | select appid,signInActivityType -Expand
 write-host "Getting all service principals and create the report"
 Get-MgBetaServicePrincipal -Filter "serviceprincipaltype eq 'Application' and AccountEnabled eq true" -all -ExpandProperty owners | `
     where {!($_.PublisherName -like "*Microsoft*") -or $_.PublisherName -eq "Microsoft Accounts" -and !($_.AppOwnerOrganizationId -eq 'f8cdef31-a31e-4b4a-93e4-5f571e91255a')} | select `
-    id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname,AppRoleAssignmentRequired,SignInAudience, `
+    id, displayname, servicePrincipalType, AccountEnabled, PublisherName, appid, appdisplayname,AppRoleAssignmentRequired,SignInAudience,preferredSingleSignOnMode, `
     @{N="createdDateTime";E={[datetime]$_.AdditionalProperties.createdDateTime}}, `
     @{N="LastSignInDateTime";E={[datetime]$sps_lastsignin_hash[$_.appid].LastSignInDateTime}}, `
     @{N="SignInActivityType";E={$sps_lastsignin_hash[$_.appid].SignInActivityType}}, `
-    @{N="Owner";E={($_.owners.id | foreach{Get-mgbetauser -userId $_}).UserPrincipalName -join(";")}} | export-csv .\aadsp_activity.csv -notypeinformation
+    #@{N="OwnerId";E={($_.owners).id -join(";")}}, `
+    @{N="Owner";E={($_.owners.id | foreach{Get-MgBetaDirectoryObjectById -ids $_  | select -ExpandProperty AdditionalProperties | ConvertTo-Json | convertfrom-json}).DisplayName -join(";")}} | export-csv .\aadsp_activity.csv -notypeinformation
 
 write-host "finished, results can be found here $($defaultdirectory)\aadsp_activity.csv"
