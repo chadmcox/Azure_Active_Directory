@@ -184,6 +184,7 @@ $Scenarios = "zeroTrust,remoteWork"
         where {$_.conditions.applications.includeApplications -eq 'All'} | `
         where {$_.conditions.users.includeUsers -eq "All"} | `
         where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa")} | `
+        where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
@@ -196,6 +197,7 @@ $found = $null;$found = $all_capolicies | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.grantControls.builtInControls -like "*passwordChange*"} | `
+    where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -350,8 +352,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CISA 2.2.1 MS.AAD.1.1v1 Legacy Authentication SHALL Be Blocked"
-$Scenarios = "CISA"
+$scenarioName = "CISA Legacy Authentication SHALL Be Blocked"
+$Scenarios = "CISA MS AAD 2.2.1"
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
@@ -360,29 +362,31 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CISA MS.AAD.2.1v1 High Risk Users SHALL Be Blocked"
-$Scenarios = "CISA"
+$scenarioName = "CISA High Risk Users SHALL Be Blocked"
+$Scenarios = "CISA MS AAD 3.1.1"
  $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.conditions.userRiskLevels -like "*high*"} | `
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
+    where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CISA 3.1.3 MS.AAD.2.3v1 High Risk Sign-ins SHALL Be Blocked"
-$Scenarios = "CISA"
+$scenarioName = "CISA High Risk Sign-ins SHALL Be Blocked"
+$Scenarios = "CISA MS AAD 3.1.3"
 
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.conditions.signInRiskLevels -like "*high*"} | `
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
+    where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CISA 4.1.1 MS.AAD.3.1v1 Phishing-Resistant Multifactor Authentication SHALL Be Required for All Users"
-$Scenarios = "CISA"
+$scenarioName = "CISA Phishing-Resistant Multifactor Authentication SHALL Be Required for All Users"
+$Scenarios = "CISA MS AAD 4.1.1"
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
@@ -393,8 +397,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CISA 4.1.6 MS.AAD.3.6v1 Phishing-resistant MFA SHALL be required for highly privileged roless"
-$Scenarios = "CISA"
+$scenarioName = "CISA Phishing-resistant MFA SHALL be required for highly privileged roless"
+$Scenarios = "CISA MS AAD 4.1.6"
 $found = $null;$found = $all_capolicies  | `
     where {($_.conditions.users.includeRoles -like "*") -or ($_.conditions.users.includeUsers -eq "All")} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
@@ -421,8 +425,8 @@ $found = $priv_found | where {$_.conditions.users.includeRoles -notcontains "d29
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CISA 4.1.7 MS.AAD.3.7v1 Managed Devices SHOULD Be Required for Authentication"
-$Scenarios = "CISA"
+$scenarioName = "CISA Managed Devices SHOULD Be Required for Authentication"
+$Scenarios = "CISA MS AAD 4.1.7"
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
         where {!($_.grantControls.builtInControls -like "*mfa*")} | `
         where {($_.conditions.applications.includeApplications -eq 'All')} | `
@@ -432,12 +436,12 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CISA 4.1.8 MS.AAD.3.8v1 Managed devices SHOULD be required to register MFA"
-$Scenarios = "CISA"
+$scenarioName = "CISA MS.AAD.3.8v1 Managed devices SHOULD be required to register MFA"
+$Scenarios = "CISA MS AAD Appendix A."
 
 #--------------------------------------------------------------------------
-$scenarioName = "CISA Appendix A. Azure AD Connect SHOULD be restricted to originate from the IP address space of the network hosting the on-premises AD"
-$Scenarios = "CISA"
+$scenarioName = "CISA Azure AD Connect SHOULD be restricted to originate from the IP address space of the network hosting the on-premises AD"
+$Scenarios = "CISA MS AAD Appendix A."
 $role = "d29b2b05-8046-44ba-8758-1e26182fcf32"
 $found = $null;$found = $all_capolicies  | `
     where {$role -in $_.Conditions.users.includeRoles} | `
@@ -447,8 +451,19 @@ $found = $null;$found = $all_capolicies  | `
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CIS  Ensure multifactor authentication is enabled for all users in administrative roles"
-$Scenarios = "CIS Microsoft 365 Foundations 5.2.2.2"
+
+$scenarioName = "CIS Ensure that an exclusionary Geographic Access Policy is considered"
+$Scenarios = "CIS Microsoft Azure Foundations 1.2.2"
+$found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
+    where {$_.grantControls.builtInControls  -like "*Block*"} | `
+    where {$_.conditions.applications.includeApplications -eq 'All'} | `
+    where {($_.conditions.locations.includeLocations | measure-object).count -gt 0}
+
+$scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
+
+#--------------------------------------------------------------------------
+$scenarioName = "CIS Ensure multifactor authentication is enabled for all users in administrative roles"
+$Scenarios = "CIS Microsoft 365 Foundations 5.2.2.1,CIS Microsoft 365 Foundations 5.2.2.5,CIS Microsoft Azure Foundations 1.2.3"
 $found = $null;$found = $all_capolicies  | `
     where {($_.conditions.users.includeRoles -like "*") -or ($_.conditions.users.includeUsers -eq "All")} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
@@ -475,10 +490,10 @@ $found = $priv_found | where {$_.conditions.users.includeRoles -notcontains "d29
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CIS 1.2 Ensure that multi-factor authentication is enabled for all nonprivileged users"
-$Scenarios = "CIS"
+$scenarioName = "CIS Ensure Multifactor Authentication is Required for Windows Azure Service Management API"
+$Scenarios = "CIS Microsoft Azure Foundations 1.26"
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
-    where {$_.conditions.applications.includeApplications -eq 'All'} | `
+    where {($_.conditions.applications.includeApplications -eq 'All') -or ($_.conditions.applications.includeApplications -contains '797f4846-ba00-4fd7-ba43-dac1f8f63013')} | `
     where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
@@ -487,8 +502,20 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
-$scenarioName = "CIS 1.22 Require Multi-Factor Auth to join devices"
-$Scenarios = "CIS"
+$scenarioName = "CIS Ensure Multifactor Authentication is Required to access Microsoft Admin Portals"
+$Scenarios = "CIS Microsoft Azure Foundations 1.27"
+$found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
+    where {($_.conditions.applications.includeApplications -eq 'All') -or ($_.conditions.applications.includeApplications -contains 'MicrosoftAdminPortals')} | `
+    where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+    where {!($_.conditions.signInRiskLevels -like "*")} | `
+    where {!($_.conditions.userRiskLevels -like "*")} | `
+    where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+$scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
+
+#--------------------------------------------------------------------------
+$scenarioName = "CIS Require Multi-Factor Auth to join devices"
+$Scenarios = "CIS Microsoft Azure Foundations 1.21"
 
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
@@ -500,7 +527,7 @@ $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios
 
 #--------------------------------------------------------------------------
 $scenarioName = "CIS Ensure multifactor authentication is enabled for all users"
-$Scenarios = "CIS Microsoft 365 Foundations 5.2.2.2"
+$Scenarios = "CIS Microsoft 365 Foundations 5.2.2.2,CIS Microsoft Azure Foundations 1.2.4"
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
@@ -541,5 +568,31 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {($_.conditions.users.excludeRoles| measure-object).count -ge 14} | `
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
     where {$_.conditions.applications.includeApplications -eq 'MicrosoftAdminPortals'} | `
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+$scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
+
+#--------------------------------------------------------------------------
+$scenarioName = "CIS Enable Entra Identity Protection sign-in risk based conditional access policies"
+$Scenarios = "CIS Microsoft 365 Foundations 5.2.2.7,CIS Microsoft Azure Foundations 1.21"
+
+    $found = $null;$found = $all_capolicies | where {$_.conditions.signInRiskLevels -like "*high*"} | `
+        where {$_.conditions.signInRiskLevels -like "*medium*"} | `
+        where {$_.conditions.applications.includeApplications -eq 'All'} | `
+        where {$_.conditions.users.includeUsers -eq "All"} | `
+        where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa")} | `
+        where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+
+$scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
+
+#--------------------------------------------------------------------------
+$scenarioName = "CIS Enable Entra Identity Protection user risk based conditional access policies"
+$Scenarios = "CIS Microsoft 365 Foundations 5.2.2.6"
+$found = $null;$found = $all_capolicies | `
+    where {$_.conditions.userRiskLevels -like "*high*"} |
+    where {$_.conditions.applications.includeApplications -eq 'All'} | `
+    where {$_.conditions.users.includeUsers -eq "All"} | `
+    where {$_.grantControls.builtInControls -like "*passwordChange*"} | `
+    where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
