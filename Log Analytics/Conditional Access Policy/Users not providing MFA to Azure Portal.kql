@@ -1,4 +1,4 @@
-let includeapps = pack_array("Azure Portal");
+let includeapps = pack_array("Windows Azure Service Management API","Azure Portal");
 SigninLogs
 | where AADTenantId == ResourceTenantId
 | where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
