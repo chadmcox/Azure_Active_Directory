@@ -1,0 +1,6 @@
+SigninLogs
+| where UserType == "Guest"
+//| distinct ResultType, ResultDescription
+| where AADTenantId == ResourceTenantId
+| where ResultType in (50181)
+| project UserPrincipalName, ResultType, ResultDescription
