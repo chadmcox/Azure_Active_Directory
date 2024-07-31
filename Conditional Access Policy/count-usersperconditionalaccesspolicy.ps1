@@ -132,3 +132,5 @@ $all_capolicies | foreach {$cap="";$cap=$_
         TokenProtection
     
 } | export-csv .\usercountscopedforeachconditionalaccesspolicy.csv -NoTypeInformation
+
+write-host "results found here:  $path"
