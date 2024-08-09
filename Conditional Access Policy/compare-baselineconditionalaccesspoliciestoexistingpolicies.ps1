@@ -127,8 +127,15 @@ $scenarioName = "Require multifactor authentication for admins"
 $Scenarios = "secureFoundation,zeroTrust,protectAdmins"
 $description = "Require multifactor authentication for privileged administrative accounts to reduce risk of compromise."
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-conditional-access-policy-admin-mfa"
-
-$found = findadminmfa
+$found = $null;$found = $all_capolicies | where {($_.conditions.users.includeRoles| measure-object).count -ge 14} | `
+    where {$_.conditions.applications.includeApplications -eq 'All'} | `
+    where {!($_.conditions.signInRiskLevels -like "*")} | `
+    where {!($_.conditions.userRiskLevels -like "*")} | `
+    where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
+    where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -138,7 +145,15 @@ $Scenarios = "remoteWork,protectAdmins"
 $description = "Require privileged administrators to only access resources when using a compliant or hybrid Azure AD joined device."
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-conditional-access-policy-compliant-device-admin"
 
-$found = findadmindevice
+$found = $null;$found = $all_capolicies | where {($_.conditions.users.includeRoles| measure-object).count -ge 14} | `
+    where {$_.conditions.applications.includeApplications -eq 'All'} | `
+    where {!($_.conditions.signInRiskLevels -like "*")} | `
+    where {!($_.conditions.userRiskLevels -like "*")} | `
+    where {($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+
 
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -165,6 +180,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.conditions.clientAppTypes -eq "other"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -180,6 +197,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
     where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -190,10 +209,15 @@ $description = "Require guest users perform multifactor authentication when acce
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-policy-guest-mfa"
 
 $found = $null;$found = $all_capolicies  | `
-    where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers"} | `
+    where {$_.conditions.users.includeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*" -or $_.conditions.users.includeUsers -eq "GuestsOrExternalUsers" -or $_.conditions.users.includeUsers -eq "All"} | `
+    where {!($_.conditions.users.excludeGuestsOrExternalUsers.guestOrExternalUserTypes -like "*otherExternalUser*") -and !($_.conditions.users.excludeUsers -eq "GuestsOrExternalUsers")} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
-    where {$_.GrantControls.builtincontrols -eq "MFA"} | `
+    where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
     where {!($_.conditions.signInRiskLevels -like "*")} | `
+    where {!($_.conditions.userRiskLevels -like "*")} | `
+    where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -209,6 +233,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
     where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -218,10 +244,12 @@ $Scenarios = "zeroTrust,remoteWork"
 $description = "Require multifactor authentication if the sign-in risk is detected to be medium or high. (Requires a Microsoft Entra ID P2 license)"
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-conditional-access-policy-risk"
 
-    $found = $null;$found = $all_capolicies | where {$_.conditions.signInRiskLevels -like "*high*"} | `
+        $found = $null;$found = $all_capolicies | where {$_.conditions.signInRiskLevels -like "*high*"} | `
         where {$_.conditions.signInRiskLevels -like "*medium*"} | `
         where {$_.conditions.applications.includeApplications -eq 'All'} | `
         where {$_.conditions.users.includeUsers -eq "All"} | `
+        where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+        where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
         where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa")} | `
         where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
@@ -239,6 +267,8 @@ $found = $null;$found = $all_capolicies | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.grantControls.builtInControls -like "*passwordChange*"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
@@ -248,6 +278,12 @@ $scenarioName = "Block access for unknown or unsupported device platform"
 $Scenarios = "zeroTrust,remoteWork"
 $description = "Users will be blocked from accessing company resources when the device type is unknown or unsupported."
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-policy-unknown-unsupported-device"
+
+$found = $null;$found = $all_capolicies | where {($_.conditions.applications.includeApplications -eq 'All')} | `
+    where {$_.conditions.users.includeUsers -eq "All"} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -gt 1) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -gt 1)} | `
+    where {$_.grantControls.builtInControls  -like "*Block*"}
+
 
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -263,6 +299,7 @@ $found = $null;$found = $all_capolicies | where {($_.conditions.applications.inc
     where {$_.conditions.devices.deviceFilter.rule -eq 'device.isCompliant -ne True -and device.trustType -ne "ServerAD"'} | `
     where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} 
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
+
 $scenarioName = "No persistent browser session (persistentBrowser)"
 $found = $null;$found = $all_capolicies | where {($_.conditions.applications.includeApplications -eq 'All')} | `
     where {$_.conditions.users.includeUsers -eq "All"} | `
@@ -270,6 +307,7 @@ $found = $null;$found = $all_capolicies | where {($_.conditions.applications.inc
     where {$_.conditions.devices.deviceFilter.rule -eq 'device.isCompliant -ne True -and device.trustType -ne "ServerAD"'} | `
     where {$_.sessionControls.persistentBrowser.isEnabled -eq "True"}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
+
 #--------------------------------------------------------------------------
 $scenarioName = "Require approved client apps or app protection policies"
 $Scenarios = "zeroTrust,remoteWork"
@@ -301,8 +339,11 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
         where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
         where {!($_.conditions.signInRiskLevels -like "*")} | `
         where {!($_.conditions.userRiskLevels -like "*")} | `
+        where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
         where {$_.grantControls.builtInControls -contains "compliantDevice" -or $_.grantControls.builtInControls -contains "domainJoinedDevice"} | `
-        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+        where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0} | `
+        where {$_.grantControls.operator -eq "OR"}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
@@ -312,9 +353,9 @@ $description = "Block or limit access to O365 apps, including SharePoint Online,
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-policy-app-enforced-restriction"
 
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
-        where {$_.conditions.clientAppTypes -eq "browser"} | `
         where {($_.conditions.applications.includeApplications -eq 'All') -or ($_.conditions.applications.includeApplications -eq 'Office365') -or $_.conditions.applications.includeApplications -like "*00000003-0000-0ff1-ce00-000000000000*"} | `
         where {$_.sessionControls.applicationEnforcedRestrictions.isEnabled -eq "True"} | `
+        where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -323,29 +364,16 @@ $scenarioName = "Require phishing-resistant multifactor authentication for admin
 $Scenarios = "protectAdmins,emergingThreats"
 $description = "Require phishing-resistant multifactor authentication for privileged administrative accounts to reduce risk of compromise and phishing attacks. This policy requires admins to have at least one phishing resistant authentication method registered."
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/how-to-policy-phish-resistant-admin-mfa"
-$found = $null;$found = $all_capolicies  | `
-    where {($_.conditions.users.includeRoles -like "*") -or ($_.conditions.users.includeUsers -eq "All")} | `
+
+$found = $null;$found = $all_capolicies | where {($_.conditions.users.includeRoles| measure-object).count -ge 14 -or $_.conditions.users.includeUsers -eq "All"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
-    where {($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -and ($_.grantControls.authenticationStrength.allowedCombinations -contains "fido2")} | `
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
-    where {!($_.grantControls.builtInControls -contains "compliantDevice") -and !($_.grantControls.builtInControls -contains "domainJoinedDevice")} | `
+    where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {$_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa" -and ($_.grantControls.authenticationStrength.allowedCombinations -contains "fido2")} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
-#is all user defined?
-#$priv_found = @()
-#$priv_found = $found | where {$_.conditions.users.includeUsers -eq "All"}  | `
-#    where {!($_.conditions.users.excludeRoles | foreach{$_ -in $critical_role_template_guids})} 
-#if all isnt found is each privileged role defined 
-if(!($priv_found)){
-    $priv_found = $found
-    $critical_role_template_guids | foreach{
-        if(!($found.conditions.users.includeRoles -contains $_)){
-               
-            $priv_found = $null
-        }
-    }
-}
-$found = $priv_found | where {$_.conditions.users.includeRoles -notcontains "d29b2b05-8046-44ba-8758-1e26182fcf32"}
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
@@ -359,6 +387,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
     where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -371,6 +401,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {($_.conditions.applications.includeApplications -eq 'Office365')} | `
     where {($_.conditions.insiderRiskLevels -eq 'elevated')}| `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {$_.grantControls.builtInControls  -like "*Block*"}
 
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
@@ -387,6 +419,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
     where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -gt 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -400,7 +434,10 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")}  | `
-    where {$_.conditions.applications.includeApplications -eq 'd4ebce55-015a-49b5-a083-c84d1797ae8c'}
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
+    where {$_.conditions.applications.includeApplications -eq 'd4ebce55-015a-49b5-a083-c84d1797ae8c' -or $_.conditions.applications.includeApplications -eq 'All'}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
@@ -436,6 +473,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.conditions.clientAppTypes -eq "other"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -449,13 +488,15 @@ $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/how
     where {$_.conditions.userRiskLevels -like "*high*"} | `
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
     where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
 $scenarioName = "CISA High Risk Sign-ins SHALL Be Blocked"
 $Scenarios = "CISA MS AAD 3.1.3"
-$description = " This prevents compromised accounts from accessing the tenant."
+$description = "This prevents compromised accounts from accessing the tenant."
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-conditional-access-policy-risk"
 
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
@@ -463,6 +504,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {$_.conditions.signInRiskLevels -like "*high*"} | `
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
     where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -474,10 +517,12 @@ $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/how
 
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
-    where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+    where {$_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa"} | `
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
     where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -487,7 +532,15 @@ $Scenarios = "CISA MS AAD 4.1.6"
 $description = "Require multifactor authentication for privileged administrative accounts to reduce risk of compromise."
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-conditional-access-policy-admin-mfa"
 
-$found = findadminmfa
+$found = $null;$found = $all_capolicies | where {($_.conditions.users.includeRoles| measure-object).count -ge 14 -or $_.conditions.users.includeUsers -eq "All"} | `
+    where {$_.conditions.applications.includeApplications -eq 'All'} | `
+    where {!($_.conditions.signInRiskLevels -like "*")} | `
+    where {!($_.conditions.userRiskLevels -like "*")} | `
+    where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
+    where {$_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa" -and ($_.grantControls.authenticationStrength.allowedCombinations -contains "fido2")} | `
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
@@ -498,6 +551,8 @@ $link = ""
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
         where {!($_.grantControls.builtInControls -like "*mfa*")} | `
         where {($_.conditions.applications.includeApplications -eq 'All')} | `
+        where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+        where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
         where {($_.grantControls.builtInControls -contains "compliantDevice") -or ($_.grantControls.builtInControls -contains "domainJoinedDevice")} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 
@@ -512,7 +567,10 @@ $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/how
 $found = $null;$found = $all_capolicies  | `
     where {($_.conditions.users.includeUsers -eq "All")} | `
     where {($_.grantControls.builtInControls -contains "compliantDevice") -or ($_.grantControls.builtInControls -contains "domainJoinedDevice")} | `
-    where {$_.conditions.applications.includeUserActions -eq 'urn:user:registersecurityinfo'}
+    where {$_.conditions.applications.includeUserActions -eq 'urn:user:registersecurityinfo'} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -549,8 +607,16 @@ $scenarioName = "CIS Ensure multifactor authentication is enabled for all users 
 $Scenarios = "CIS Microsoft 365 Foundations 5.2.2.1,CIS Microsoft 365 Foundations 5.2.2.5,CIS Microsoft Azure Foundations 1.2.3"
 $description = "Require multifactor authentication for privileged administrative accounts to reduce risk of compromise."
 $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/howto-conditional-access-policy-admin-mfa"
+$found = $null;$found = $all_capolicies | where {($_.conditions.users.includeRoles| measure-object).count -ge 14} | `
+    where {$_.conditions.applications.includeApplications -eq 'All'} | `
+    where {!($_.conditions.signInRiskLevels -like "*")} | `
+    where {!($_.conditions.userRiskLevels -like "*")} | `
+    where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
+    where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
 
-$found = findadminmfa
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
@@ -565,6 +631,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
     where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -579,8 +647,11 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
+    
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
 #--------------------------------------------------------------------------
@@ -591,8 +662,9 @@ $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/how
 
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa") -or ($_.grantControls.grantcontrols.customAuthenticationFactors -ne $null)} | `
+    where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0} | `
     where {!($_.conditions.signInRiskLevels -like "*")} | `
-    where {!($_.conditions.userRiskLevels -like "*")}  | `
+    where {!($_.conditions.userRiskLevels -like "*")} | `
     where {($_.conditions.applications.includeUserActions -eq 'urn:user:registerdevice')}
 
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
@@ -609,6 +681,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {!($_.conditions.signInRiskLevels -like "*")} | `
     where {!($_.conditions.userRiskLevels -like "*")} | `
     where {!($_.grantControls.builtInControls -contains "compliantDevice")} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -618,9 +692,11 @@ $Scenarios = "CIS Microsoft 365 Foundations 5.2.2.4"
 $description = "Forcing a time out for MFA will help ensure that sessions are not kept alive for an indefinite period of time, ensuring that browser sessions are not persistent will help in prevention of drive-by attacks in web browsers, this also prevents creation and saving of session cookies leaving nothing for an attacker to take."
 $link = ""
 
-$found = $null;$found = $all_capolicies | where {($_.conditions.users.excludeRoles| measure-object).count -ge 14} | `
+$found = $null;$found = $all_capolicies | where {($_.conditions.users.includeRoles| measure-object).count -ge 14} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
-    where {$_.sessionControls.persistentBrowser.isEnabled -eq "True"}
+    where {$_.sessionControls.persistentBrowser.isEnabled -eq "True"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} 
 
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
@@ -636,6 +712,8 @@ $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUser
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.conditions.clientAppTypes -eq "other"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
 
@@ -647,8 +725,10 @@ $description = "By default, users can sign into the various portals but are rest
 $link = ""
 
 $found = $null;$found = $all_capolicies | where {$_.conditions.users.includeUsers -eq "All"} | `
-    where {($_.conditions.users.excludeRoles| measure-object).count -ge 14} | `
+    where {($_.conditions.users.excludeRoles | measure-object).count -ge 14} | `
     where {$_.grantControls.builtInControls  -like "*Block*"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {$_.conditions.applications.includeApplications -eq 'MicrosoftAdminPortals'} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
@@ -663,6 +743,8 @@ $link = "https://learn.microsoft.com/en-us/entra/identity/conditional-access/how
         where {$_.conditions.signInRiskLevels -like "*medium*"} | `
         where {$_.conditions.applications.includeApplications -eq 'All'} | `
         where {$_.conditions.users.includeUsers -eq "All"} | `
+        where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+        where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
         where {$_.grantControls.builtInControls -like "*mfa*" -or ($_.grantControls.authenticationStrength.requirementsSatisfied -eq "mfa")} | `
         where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
         where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
@@ -679,6 +761,8 @@ $found = $null;$found = $all_capolicies | `
     where {$_.conditions.applications.includeApplications -eq 'All'} | `
     where {$_.conditions.users.includeUsers -eq "All"} | `
     where {$_.grantControls.builtInControls -like "*passwordChange*"} | `
+    where {($_.conditions.platforms.deviceFilter | measure-object).count -eq 0} | `
+    where {(($_.conditions.platforms.includePlatforms | measure-object).count -eq 0) -or (($_.conditions.platforms.includePlatforms -contains "all") -and ($_.conditions.platforms.excludePlatforms | measure-object).count -le 1)} | `
     where {$_.sessionControls.signInFrequency.isEnabled -eq "True"} | `
     where {($_.conditions.locations.ExcludeLocations | measure-object).count -eq 0}
     write-host "Comparing - $scenarioName"; $scenarioName | select @{n='scenarioName';e={$_}}, @{n='Scenarios';e={$Scenarios}},@{n='Description';e={$Description}},@{n='Link';e={$link}}, @{n='Policy Found';e={($($found).DisplayName -join(" | "))}}
@@ -688,3 +772,5 @@ $found = $null;$found = $all_capolicies | `
 $report = "compare_against_common_conditional_access_policy_report.csv"
 Write-host "Finished - Report is $report"
 run | export-csv ".\$report" -NoTypeInformation
+
+write-host "results are here $path"
