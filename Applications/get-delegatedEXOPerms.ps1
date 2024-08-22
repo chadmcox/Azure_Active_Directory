@@ -10,8 +10,10 @@ $appids = "00000003-0000-0000-c000-000000000000","00000002-0000-0ff1-ce00-000000
 $sps = Get-MGBetaServicePrincipal -filter "servicePrincipalType eq 'Application'" -all | `
     where {!($_.PublisherName -like "*Microsoft*") -or $_.PublisherName -eq "Microsoft Accounts" -and !($_.AppOwnerOrganizationId -eq 'f8cdef31-a31e-4b4a-93e4-5f571e91255a')-and $_.appDisplayname -ne "Microsoft Assessments"}
 
-$sps | where{$sp=$null; $sp=$_
-   Get-MgBetaServicePrincipalOauth2PermissionGrant -ServicePrincipalId $sp.id -PipelineVariable AADOPG | foreach{
-        $_.scope -split " " | where {$_ -in $permissions}
-   }
-} | select appid,id, displayname, PublisherName, AccountEnabled | export-csv .\exo_delegated_permissions.csv -NoTypeInformation
+$count = $sps.count; $i=0
+$sps | where{$sp=$null; $sp=$_; $perms = $null; $perms = $null
+   write-host "$($sp.displayname) remaining: $($count - $i) of $count"; $i++
+   $perms = Get-MgBetaServicePrincipalOauth2PermissionGrant -ServicePrincipalId $sp.id -PipelineVariable AADOPG | foreach{
+        $_.scope -split " " | where {$_ -in $permissions}} | select -unique
+    $perms
+} | select appid,id, displayname, PublisherName, AccountEnabled, @{n='Permissions';e={($perms -join(" / "))}} | export-csv .\exo_delegated_permissions.csv -NoTypeInformation
