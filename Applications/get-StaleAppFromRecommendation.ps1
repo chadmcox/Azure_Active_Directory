@@ -5,5 +5,5 @@ if(!(Get-MgContext)){
 cd $defaultpath
 
 Get-MgBetaDirectoryRecommendation -all | where {$_.status -eq "active" -and $_.displayname -eq "Remove unused applications"} | foreach{
-    Get-MgBetaDirectoryRecommendationImpactedResource -RecommendationId $_.id | where {$_.status -eq "active"} | select Id, Displayname
+    Get-MgBetaDirectoryRecommendationImpactedResource -RecommendationId $_.id -all | where {$_.status -eq "active"} | select Id, Displayname
 } | export-csv .\recommendation_remove_unused_applications.csv -NoTypeInformation
