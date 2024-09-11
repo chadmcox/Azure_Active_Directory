@@ -38,6 +38,6 @@ Get-MgBetaServicePrincipal -Filter "serviceprincipaltype eq 'Application' and Ac
 
 $updated_recommendations_report = ".\entra_updated_recommendation_remove_unused_applications.csv"
 write-host "creating a updated stale application recommendations report: $updated_recommendations_report"
-import-csv $sp_report | where {$_.id -in $recommendedsps_stale} | export-csv $updated_recommendations_report -NoTypeInformation
+import-csv $sp_report | where {$_.appid -in $recommendedsps_stale} | export-csv $updated_recommendations_report -NoTypeInformation
 
 write-host "finished, results can be found here $($defaultdirectory)"
