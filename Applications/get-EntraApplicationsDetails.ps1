@@ -16,7 +16,7 @@ $sps_lastsignin_hash = $sps_lastsignin | select appid,signInActivityType -Expand
     group appid -AsHashTable -AsString
 write-host "Build a hash table for entra recommended stale apps"
 $sps_recommemded_stale_hash = Get-MgBetaDirectoryRecommendation -all | where {$_.status -eq "active" -and $_.displayname -eq "Remove unused applications"} | foreach{
-    Get-MgBetaDirectoryRecommendationImpactedResource -RecommendationId $_.id -all | where {$_.status -eq "active"} | select id, displayname, owner
+    Get-MgBetaDirectoryRecommendationImpactedResource -RecommendationId $_.id -all | where {$_.status -eq "active"} | select id, displayname, owner, AddedDateTime
 } | group id -AsHashTable -AsString
 write-host "Build a hash table for to determin if app is oauth2"
 $apps_flow_hash = Get-MgBetaApplication -all | Select-Object DisplayName, AppId, `
@@ -35,7 +35,7 @@ $servicePricipals | where {$_.preferredSingleSignOnMode -in ('saml','oidc','pass
     @{N="SignInActivityType";E={$sps_lastsignin_hash[$_.appid].SignInActivityType}}, `
     @{N="ReplyUrls";E={[string]$($_.ReplyUrls)}}, @{N="tags";E={[string]$($_ | select -expandproperty tags)}}, `
     @{N="AzureAppService";E={$_.tags -contains "AppServiceIntegratedApp"}}, `
-    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash.containskey($_.appid)}}, `
+    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash[$_.appid].AddedDateTime}}, `
     @{N="30DSuccessfulSignInCount";E={$30daySignInCount[$_.appid].SuccessfulSignInCount}}, `
     @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}}, `
     @{N="Owner";E={($_.owners.id | foreach{Get-MgBetaDirectoryObjectById -ids $_  | select -ExpandProperty AdditionalProperties | ConvertTo-Json | convertfrom-json}).DisplayName -join(";")}} | `
