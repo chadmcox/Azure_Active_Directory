@@ -50,7 +50,7 @@ $servicePricipals | where {$_.ReplyUrls -like "*urn:ietf:wg:oauth:2.0:oob*"} | `
     @{N="SignInActivityType";E={$sps_lastsignin_hash[$_.appid].SignInActivityType}}, `
     @{N="ReplyUrls";E={[string]$($_.ReplyUrls)}}, @{N="tags";E={[string]$($_ | select -expandproperty tags)}}, `
     @{N="AzureAppService";E={$_.tags -contains "AppServiceIntegratedApp"}}, `
-    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash.containskey($_.appid)}}, `
+    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash[$_.appid].AddedDateTime}}, `
     @{N="30DSuccessfulSignInCount";E={$30daySignInCount[$_.appid].SuccessfulSignInCount}}, `
     @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}}, `
     @{N="Owner";E={($_.owners.id | foreach{Get-MgBetaDirectoryObjectById -ids $_  | select -ExpandProperty AdditionalProperties | ConvertTo-Json | convertfrom-json}).DisplayName -join(";")}} | `
@@ -68,7 +68,7 @@ $servicePricipals | where {!($_.ReplyUrls -like "*urn:ietf:wg:oauth:2.0:oob*")} 
     @{N="SignInActivityType";E={$sps_lastsignin_hash[$_.appid].SignInActivityType}}, `
     @{N="ReplyUrls";E={[string]$($_.ReplyUrls)}}, @{N="tags";E={[string]$($_ | select -expandproperty tags)}}, `
     @{N="AzureAppService";E={$_.tags -contains "AppServiceIntegratedApp"}}, `
-    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash.containskey($_.appid)}}, `
+    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash[$_.appid].AddedDateTime}}, `
     @{N="30DSuccessfulSignInCount";E={$30daySignInCount[$_.appid].SuccessfulSignInCount}}, `
     @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}}, `
     @{N="Owner";E={($_.owners.id | foreach{Get-MgBetaDirectoryObjectById -ids $_  | select -ExpandProperty AdditionalProperties | ConvertTo-Json | convertfrom-json}).DisplayName -join(";")}} | `
@@ -85,7 +85,7 @@ $servicePricipals | where {$_.Tags -Contains "WindowsAzureActiveDirectoryOnPremA
     @{N="SignInActivityType";E={$sps_lastsignin_hash[$_.appid].SignInActivityType}}, `
     @{N="ReplyUrls";E={[string]$($_.ReplyUrls)}}, @{N="tags";E={[string]$($_ | select -expandproperty tags)}}, `
     @{N="AzureAppService";E={$_.tags -contains "AppServiceIntegratedApp"}}, `
-    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash.containskey($_.appid)}}, `
+    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash[$_.appid].AddedDateTime}}, `
     @{N="30DSuccessfulSignInCount";E={$30daySignInCount[$_.appid].SuccessfulSignInCount}}, `
     @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}}, `
     @{N="Owner";E={($_.owners.id | foreach{Get-MgBetaDirectoryObjectById -ids $_  | select -ExpandProperty AdditionalProperties | ConvertTo-Json | convertfrom-json}).DisplayName -join(";")}} | `
@@ -102,7 +102,7 @@ $servicePricipals | where {$_.id -notin $classified} | `
     @{N="SignInActivityType";E={$sps_lastsignin_hash[$_.appid].SignInActivityType}}, `
     @{N="ReplyUrls";E={[string]$($_.ReplyUrls)}}, @{N="tags";E={[string]$($_ | select -expandproperty tags)}}, `
     @{N="NotificationEmailAddresses";E={[string]$_.NotificationEmailAddresses}}, `
-    @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash.containskey($_.appid)}}, `
+   @{N="EntraRecommendedStale";E={$sps_recommemded_stale_hash[$_.appid].AddedDateTime}}, `
     @{N="30DSuccessfulSignInCount";E={$30daySignInCount[$_.appid].SuccessfulSignInCount}}, `
     @{N="AzureAppService";E={$_.tags -contains "AppServiceIntegratedApp"}}, `
     @{N="Owner";E={($_.owners.id | foreach{Get-MgBetaDirectoryObjectById -ids $_  | select -ExpandProperty AdditionalProperties | ConvertTo-Json | convertfrom-json}).DisplayName -join(";")}} | `
