@@ -1,0 +1,6 @@
+// https://www.linkedin.com/pulse/detect-device-code-authentication-phishing-kloudynet-i0rpc/
+
+SigninLogs
+| where AuthenticationProtocol=="deviceCode"
+| where ResourceDisplayName=="Microsoft Graph"
+| project TimeGenerated, UserPrincipalName,ResultType, ResultDescription,UserAgent, IPAddress, Location,AppDisplayName,ResourceDisplayName, AuthenticationProtocol, AuthenticationRequirement 
