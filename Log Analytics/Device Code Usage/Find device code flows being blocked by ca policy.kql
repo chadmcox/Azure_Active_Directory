@@ -1,0 +1,9 @@
+//https://www.linkedin.com/pulse/detect-device-code-authentication-phishing-kloudynet-i0rpc/
+
+SigninLogs
+| where ResultType==53003
+| mv-expand ConditionalAccessPolicies
+| extend CAPolicyName=ConditionalAccessPolicies.displayName
+| extend CAenforcedGrantControl=ConditionalAccessPolicies.enforcedGrantControls
+| extend CAResult=ConditionalAccessPolicies.result
+| where CAResult=="failure" and CAPolicyName contains "BlockDeviceCodeAuthFlow"
