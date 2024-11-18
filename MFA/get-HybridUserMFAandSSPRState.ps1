@@ -15,7 +15,7 @@ $hash_enabledusers = @{}
 $enabledusers | foreach{$hash_enabledusers.Add($_.id,$true)}
 write-host "getting all auth method registration details"
 $UserRegistrationDetail = Get-MgBetaReportAuthenticationMethodUserRegistrationDetail -Filter "UserType eq 'member'" -all | where {$hash_enabledusers.containskey($_.id)} | select UserDisplayName, UserPrincipalName, IsMfaCapable, IsMfaRegistered, IsSsprCapable, IsSsprRegistered, IsSsprEnabled
-write-host "Total enabled synced users: $($enabledusers.count)"
+write-host "Total enabled hybrid users: $($enabledusers.count)"
 write-host "IsMfaCapable: $(($UserRegistrationDetail | where {$_.IsMfaCapable -eq $true}).count)"
 write-host "IsMfaRegistered: $(($UserRegistrationDetail | where {$_.IsMfaRegistered -eq $true}).count)"
 write-host "IsSsprCapable: $(($UserRegistrationDetail | where {$_.IsSsprCapable -eq $true}).count)"
