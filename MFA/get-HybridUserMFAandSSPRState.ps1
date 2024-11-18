@@ -1,3 +1,4 @@
+#Requires -RunAsAdministrator
 param($path="$env:USERPROFILE\downloads")
 cd $path
 
