@@ -114,7 +114,7 @@ function return-securescore{
                 @{N="Rank";E={"$($ssprofiles[$ss.controlName].rank)"}}, `
                 @{N="Recommended action";E={"$($ssprofiles[$ss.controlName].Title)"}}, `
                 @{N="Score impact";E={"$("{0:P2}" -f ([int]$ssprofiles[$ss.controlName].maxscore / [int]$possibleMaxScore))"}}, `
-                @{N="Points achieved";E={"$($ss.score) / $($ssprofiles[$ss.controlName].maxscore)"}}, `
+                @{N="Points achieved";E={"$($ss.score) out of $($ssprofiles[$ss.controlName].maxscore)"}}, `
                 @{N="Status";E={if($ss.score -ge $ssprofiles[$ss.controlName].maxscore){"Completed"}else{"To address"}}}, `
                 @{N="Regress";E={"NA"}}, `
                 @{N="Have license?";E={"NA"}}, `
@@ -129,7 +129,7 @@ function return-securescore{
                 @{N="Rank";E={"$($_.rank)"}}, `
                 @{N="Recommended action";E={"$($_.Title)"}}, `
                 @{N="Score impact";E={"$("{0:P2}" -f ([int]$_.maxscore / [int]$possibleMaxScore))"}}, `
-                @{N="Points achieved";E={"$($ss.score) / $($_.maxscore)"}}, `
+                @{N="Points achieved";E={"$($ss.score) out of $($_.maxscore)"}}, `
                 @{N="Status";E={if($ss.score -ge $_.maxscore){"Completed"}else{"To address"}}}, `
                 @{N="Regress";E={"NA"}}, `
                 @{N="Have license?";E={"NA"}}, `
