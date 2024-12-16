@@ -19,7 +19,7 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-
+url:  How to manage hardware OATH tokens in Microsoft Entra ID (Preview) - https://learn.microsoft.com/en-us/entra/identity/authentication/how-to-mfa-manage-oath-tokens
 #>
 
 param($defaultdirectory="$env:USERPROFILE\Downloads")
