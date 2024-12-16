@@ -25,6 +25,7 @@ url:  How to manage hardware OATH tokens in Microsoft Entra ID (Preview) - https
 param($defaultdirectory="$env:USERPROFILE\Downloads")
 cd $defaultdirectory
 
+cls
 
 Disconnect-MgGraph
 #display a list of clouds for the user to select and sign-in to.
