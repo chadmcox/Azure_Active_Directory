@@ -39,7 +39,7 @@ $mg_env = Get-MgEnvironment | where {$_.name -eq $selection}
 #this variable is used for the uri.
 $graphendpoint = $mg_env.GraphEndpoint
 
-Connect-MgGraph -Scopes "UserAuthenticationMethod.ReadWrite.All","Policy.ReadWrite.AuthenticationMethod" -Environment $mg_env.name
+Connect-MgGraph -Scopes "UserAuthenticationMethod.ReadWrite.All","Policy.ReadWrite.AuthenticationMethod","user.read.all" -Environment $mg_env.name
 
 function getuserid{
     param($upn)
