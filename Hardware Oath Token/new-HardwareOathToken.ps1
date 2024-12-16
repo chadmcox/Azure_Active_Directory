@@ -27,6 +27,8 @@ cd $defaultdirectory
 
 cls
 
+Start-Transcript -path $env:USERPROFILE\Downloads\transcript-newhardwaretoken
+
 Disconnect-MgGraph
 #display a list of clouds for the user to select and sign-in to.
 Get-MgEnvironment | select name | out-host
@@ -99,3 +101,5 @@ if(!(get-module Microsoft.Graph.Authentication -ListAvailable)){
         uploadtoken -serialNumber $input_serialNumber -manufacturer $input_manufacturer -model $input_model -secretKey $input_secretKey -timeIntervalInSeconds $input_timeIntervalInSeconds -upn $input_upn
     }
 }
+
+Stop-Transcript
