@@ -27,7 +27,7 @@ cd $defaultdirectory
 
 cls
 
-Start-Transcript -path $env:USERPROFILE\Downloads\transcript-newhardwaretoken
+Start-Transcript -path $env:USERPROFILE\Downloads\transcript-newhardwaretoken.txt
 
 Disconnect-MgGraph
 #display a list of clouds for the user to select and sign-in to.
@@ -103,3 +103,4 @@ if(!(get-module Microsoft.Graph.Authentication -ListAvailable)){
 }
 
 Stop-Transcript
+write-host "Transcripts can be found here $env:USERPROFILE\Downloads\transcript-newhardwaretoken.txt"
