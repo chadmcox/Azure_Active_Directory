@@ -27,7 +27,7 @@ function getuserid{
 
 function getuserhardwareoathtokens{
     param($userid)
-    $uri = "$graphendpoint/beta/users/8f7859a3-3739-4b9c-a248-5e049b46e45a/authentication/hardwareOathMethods"
+    $uri = "$graphendpoint/beta/users/$userid/authentication/hardwareOathMethods"
     $results = Invoke-MgGraphRequest -Uri $uri -Method GET -OutputType PSObject
     foreach($oathtoken in $results.value.id){
         $uri = "$graphendpoint/beta/directory/authenticationMethodDevices/hardwareOathDevices/$oathtoken"
