@@ -84,7 +84,7 @@ cls
 
 getuserhardwareoathtokens -userid $user_id
 
-$input_token_id_to_activate = Read-Host "Scroll up, then copy the id of the token you want to activate and paste here, then press enter"
+$input_token_id_to_activate = Read-Host "Scroll up, then copy the id of the token you want to delete and paste here, then press enter"
 cls
 deleteUserHardwareOathToken -userid $user_id -oathtokenid $input_token_id_to_activate
 Stop-Transcript
