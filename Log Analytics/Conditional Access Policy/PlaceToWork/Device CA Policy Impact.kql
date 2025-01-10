@@ -13,10 +13,11 @@ SigninLogs
 | extend result = tostring(ConditionalAccessPolicies["result"])
 | where result !in ("reportOnlyNotApplied","NotApplied")
 | project-away ConditionalAccessPolicies
-| distinct AppDisplayName, ResourceDisplayName, result, UserPrincipalName, os, browser,ClientAppUsed,UserDisplayName 
+| distinct AppDisplayName, ResourceDisplayName, result, UserPrincipalName, os, browser,ClientAppUsed,UserDisplayName ,IPAddress, trustType
 | summarize 
     officelist = make_set(AppDisplayName),
     oslist = make_set(os),
     browserlist = make_set(browser),
-    clientapplist = make_set(ClientAppUsed)
-     by UserDisplayName,UserPrincipalName
+    clientapplist = make_set(ClientAppUsed),
+    ip = make_set(IPAddress)
+     by UserDisplayName,UserPrincipalName, trustType, result
