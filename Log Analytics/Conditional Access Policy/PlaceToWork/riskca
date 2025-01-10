@@ -1,0 +1,16 @@
+let strauthreq = SigninLogs 
+| where ResultType in (50074)
+| where RiskLevelDuringSignIn in ("high", "medium")
+| where AuthenticationRequirementPolicies !has "riskBasedPolicy" | distinct CorrelationId;
+SigninLogs | where RiskState !in ("dismissed","remediated") | where ResultType in (0) | where AppDisplayName <> "Microsoft Authentication Broker"  
+| where RiskLevelDuringSignIn in ("high", "medium") | where CorrelationId !in (strauthreq) 
+| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> "riskBasedPolicy" 
+//| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+//| extend RiskEventTypes_V2 = tostring(RiskEventType)
+| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2
+| summarize  Applications=make_set(AppDisplayName),
+["User risk level"]=make_set(RiskLevelAggregated), 
+["Sign-in risk level"] = make_set(RiskLevelDuringSignIn),
+["Risk types"]=make_set(RiskEventTypes_V2)
+ by UserDisplayName,UserPrincipalName, UserType
+ | project ["User display name"] = UserDisplayName,["User principal name"] = UserPrincipalName, ["User type"] = UserType, ["User risk level"], ["Sign-in risk level"], ["Risk types"],Applications
