@@ -11,8 +11,8 @@ SigninLogs
 | where AADTenantId == ResourceTenantId
 | where UserType <> "Guest"
 | mv-apply ca=todynamic(ConditionalAccessPolicies) on (
-    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
-    condition2 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice')
+    summarize condition1 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice')
 )
 | where condition1 == 0 and condition2 == 0
 | distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
