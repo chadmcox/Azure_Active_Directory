@@ -1,1 +1,4 @@
 
+AADServicePrincipalSignInLogs
+| where ConditionalAccessStatus <> "notApplied"
+| distinct ServicePrincipalName
