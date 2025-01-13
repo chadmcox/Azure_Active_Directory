@@ -1,4 +1,0 @@
-//7000112: Application is disabled
-AADServicePrincipalSignInLogs  
-| where ResultType == 7000112
-| distinct ResourceDisplayName, ServicePrincipalName, ResultType, ConditionalAccessStatus
