@@ -1,4 +1,5 @@
 //7000112: Application is disabled
+//Total workload identities that are disabled still trying to sign in
 AADServicePrincipalSignInLogs  
 | where ResultType == 7000112
 | extend City = tostring(parse_json(LocationDetails).city)
