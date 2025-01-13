@@ -1,0 +1,13 @@
+//Details of workload identities conditional access policy status
+AADServicePrincipalSignInLogs 
+| where ResultType in (0,53003)
+| mv-expand parse_json(ConditionalAccessPolicies)
+| extend policyname = tostring(ConditionalAccessPolicies["displayName"])
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| project-away ConditionalAccessPolicies
+| extend City = tostring(parse_json(LocationDetails).city)
+| extend State = tostring(parse_json(LocationDetails).state)
+| extend Country = tostring(parse_json(LocationDetails).countryOrRegion)
+| distinct policyname, result, ServicePrincipalId, ServicePrincipalName, IPAddress, City, State, Country, ResultType
+| project policyname, result, ServicePrincipalId, ServicePrincipalName, IPAddress, City, State, Country, ResultType
+| sort by policyname asc 
