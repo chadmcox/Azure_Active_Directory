@@ -1,4 +1,0 @@
-//53003: Access has been blocked by Conditional Access policies. The access policy does not allow token issuance.
-AADServicePrincipalSignInLogs  
-| where ResultType == 53003
-| distinct ResourceDisplayName, ServicePrincipalName, ResultType, ConditionalAccessStatus

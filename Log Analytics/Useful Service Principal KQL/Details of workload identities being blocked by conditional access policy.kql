@@ -1,0 +1,10 @@
+//53003: Access has been blocked by Conditional Access policies. The access policy does not allow token issuance.
+//Summary of workload identities conditional access policy status
+AADServicePrincipalSignInLogs  
+| where ResultType == 53003
+| extend City = tostring(parse_json(LocationDetails).city)
+| extend State = tostring(parse_json(LocationDetails).state)
+| extend Country = tostring(parse_json(LocationDetails).countryOrRegion)
+| distinct ServicePrincipalId, ServicePrincipalName, IPAddress, City, State, Country, ResultType
+| project ServicePrincipalId, ServicePrincipalName, IPAddress, City, State, Country, ResultType
+| sort by ServicePrincipalName asc 
