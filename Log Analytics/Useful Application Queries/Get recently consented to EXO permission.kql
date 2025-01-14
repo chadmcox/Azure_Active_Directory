@@ -1,5 +1,5 @@
 let perms =  pack_array("Mail.Read","Mail.Read.Shared","Mail.ReadBasic","Mail.ReadBasic.All","Mail.ReadWrite","Mail.ReadWrite.Shared","Mail.Send", 
-    "Mail.Send.Shared","MailboxSettings.Read","MailboxSettings.ReadWrite","email","EWS.AccessAsUser.All","Exchange.Manage");
+    "Mail.Send.Shared","MailboxSettings.Read","MailboxSettings.ReadWrite","email","EWS.AccessAsUser.All","Exchange.Manage","EAS.AccessAsUser.All");
 AuditLogs
   | where LoggedByService =~ "Core Directory"
   | where TimeGenerated > ago(60d)
