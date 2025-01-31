@@ -103,7 +103,7 @@ $graphApiHeader = @{ Authorization = "Bearer $graphApiToken" }
 #https://docs.microsoft.com/en-us/graph/api/resources/user?view=graph-rest-beta
 $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest' and accountEnabled eq true&`$select=id,displayName,signInActivity,userPrincipalName,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,onPremisesSyncEnabled&`$expand=memberOf"
 return-AADMSGraph -Uri $uri -pv user | where {!($user.onPremisesSyncEnabled -eq $true)} | `
-    where {($user.signInActivity.lastSuccessfulSignInDateTime -eq $null) -or ((New-TimeSpan -Start $user.signInActivity.lastSuccessfulSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
+    where {if($user.signInActivity.lastSuccessfulSignInDateTime){$start = $user.signInActivity.lastSuccessfulSignInDateTime}else{$start = $user.createdDateTime};($user.signInActivity.lastSuccessfulSignInDateTime -eq $null) -or ((New-TimeSpan -Start $start -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
     where {((New-TimeSpan -Start $user.createdDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
     where {$user.externalUserState -ne 'PendingAcceptance'} | where {!($user.memberOf.groupTypes -contains "Unified")} | `
         select id,displayName,signInActivity,userPrincipalName -first $removalthreshold | foreach{
