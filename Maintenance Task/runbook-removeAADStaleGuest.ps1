@@ -107,7 +107,7 @@ return-AADMSGraph -Uri $uri -pv user | where {!($user.onPremisesSyncEnabled -eq 
     where {((New-TimeSpan -Start $user.createdDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
     where {$user.externalUserState -ne 'PendingAcceptance'} | where {!($user.memberOf.groupTypes -contains "Unified")} | `
         select id,displayName,signInActivity,userPrincipalName -first $removalthreshold | foreach{
-            Write-Output "Deleting - $($user.userPrincipalName) : lastSignInDateTime $($user.signInActivity.lastSignInDateTime)"
+            Write-Output "Deleting - $($user.userPrincipalName) : lastSignInDateTime $($user.signInActivity.lastSuccessfulSignInDateTime)"
             #!!!!!!!!! when you are ready remove the pound / hashtag in front of the next line !!!!!!!!!!
            # remove-AADGuestUser -guestid $user.id
             #the restore is not needed
