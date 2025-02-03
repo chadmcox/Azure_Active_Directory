@@ -74,7 +74,7 @@ if(!(get-module Microsoft.Graph.Authentication -ListAvailable)){
     
 }else{
 
-    $selection = Read-Host "To add a single token type a and press enter or type b and press enter to bulk upload"
+    $selection = Read-Host "To add a single token press a and press enter or press b and press enter to bulk upload"
 
     if($selection -eq "b"){
         cls
