@@ -1,6 +1,6 @@
 SigninLogs
 | where ResultType == 0 and TimeGenerated >= ago(5d)
-| where HomeTenantId == ResourceTenantId
+| where HomeTenantId == ResourceTenantId  and UserPrincipalName <> "Guest"
 | extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
 | extend trustType = tostring(parse_json(DeviceDetail).trustType) 
 | extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
