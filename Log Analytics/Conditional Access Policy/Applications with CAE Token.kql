@@ -1,0 +1,8 @@
+SigninLogs
+| where TimeGenerated > ago(1d) and ResultType == 0
+| where AppDisplayName <> "Windows Sign In"
+| mv-apply item = todynamic(AuthenticationProcessingDetails) on (
+ where item.key == "Is CAE Token"
+| project CAETokenValue = item.value
+)
+| distinct AppDisplayName, tostring(CAETokenValue)
