@@ -1,0 +1,34 @@
+let lastsomanydays = ago(30d);
+let risklevel = pack_array("high","medium","low");
+let riskeventsid = SigninLogs
+| where TimeGenerated >= lastsomanydays
+| where RiskLevelAggregated in (risklevel)
+| distinct OriginalRequestId;
+let remediated = SigninLogs
+| where TimeGenerated >= lastsomanydays
+| where RiskState !in ("none")
+| where OriginalRequestId in (riskeventsid)
+| where RiskState !in ("atRisk","none")
+| project OriginalRequestId,RemediatedDateTime = TimeGenerated, UserPrincipalName, RiskState;
+let risk = SigninLogs
+| where TimeGenerated >= lastsomanydays
+| where RiskState !in ("none")
+| where OriginalRequestId in (riskeventsid)
+| where RiskState in ("atRisk") and RiskLevelAggregated in (risklevel)
+| where not(ResultType == 53003 and ResultDescription == "Access has been blocked due to conditional access policies.")
+| join kind=leftouter (remediated) on OriginalRequestId
+| project RiskDateTime = TimeGenerated, UserPrincipalName = tolower(UserPrincipalName), RemediatedDateTime,riskuserRiskLevelAggregated = RiskLevelAggregated, riskResultType=ResultType,riskResultDescription=ResultDescription;
+let riskusers = risk | distinct UserPrincipalName = tolower(UserPrincipalName);
+SigninLogs
+| where TimeGenerated >= lastsomanydays
+| where ResultType == 0 or (ResultType == 50142 and AuthenticationRequirementPolicies has "riskBasedPolicy" )
+| where tolower(UserPrincipalName) in (riskusers) 
+| where AppDisplayName !in ("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2")
+| extend ["Device trust type"] = tostring(parse_json(DeviceDetail).trustType) 
+| extend ["Device is compliant"] = tostring(parse_json(DeviceDetail).isCompliant) 
+| join kind=leftouter (risk) on UserPrincipalName
+| where ((TimeGenerated <= RemediatedDateTime) or (isnull(RemediatedDateTime))) and (TimeGenerated >= RiskDateTime)
+| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, riskuserRiskLevelAggregated,RiskLevelDuringSignIn,["Device trust type"], ["Device is compliant"],riskResultType,riskResultDescription,HomeTenantId, AADTenantId
+| summarize 
+    Members = countif(AADTenantId == HomeTenantId), 
+    Guest = countif(AADTenantId <> HomeTenantId) by riskuserRiskLevelAggregated
