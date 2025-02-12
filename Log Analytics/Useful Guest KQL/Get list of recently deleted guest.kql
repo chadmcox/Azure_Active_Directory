@@ -1,0 +1,9 @@
+AuditLogs
+| where TimeGenerated > ago (60d)
+| where OperationName in ("Delete user")
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| where Actor !contains "Sync_"
+| where Actor <> "Microsoft Substrate Management"
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| where Target has "#EXT#"
+| project TimeGenerated, Actor, Target, ActivityDisplayName
