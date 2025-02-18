@@ -1,5 +1,6 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
 SigninLogs
-| where ResultType == 0 and TimeGenerated >= ago(10d) and HomeTenantId == ResourceTenantId  and UserType <> "Guest"
+| where ResultType == 0 and TimeGenerated >= ago(10d) and HomeTenantId == ResourceTenantId  and UserType <> "Guest" and AppDisplayName !in (excludeapps)
 | where isnotnull(ConditionalAccessPolicies)
 | extend Day = startofday(TimeGenerated)
 | mv-apply ca=todynamic(ConditionalAccessPolicies) on (
@@ -7,6 +8,5 @@ SigninLogs
 )
 | summarize
     ['Total Signin Count']=count(),
-    ['No Policy Applied']=countif(condition1 == 0) by Day  
-| project Day,NoCaAppliedPercentage=(todouble(['No Policy Applied']) * 100 / todouble(['Total Signin Count']))
-
+    ['No Policy Applied']=countif(condition1 == 0) by Day, AppDisplayName  
+| project Day, AppDisplayName ,NoCaAppliedPercentage=(todouble(['No Policy Applied']) * 100 / todouble(['Total Signin Count']))
