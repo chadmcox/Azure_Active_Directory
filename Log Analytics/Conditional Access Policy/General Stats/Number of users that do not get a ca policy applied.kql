@@ -1,5 +1,5 @@
 SigninLogs
-| where ResultType == 0 and TimeGenerated >= ago(10d) and HomeTenantId == ResourceTenantId  and UserPrincipalName <> "Guest"
+| where ResultType == 0 and TimeGenerated >= ago(10d) and HomeTenantId == ResourceTenantId  and UserType <> "Guest"
 | where isnotnull(ConditionalAccessPolicies)
 | extend Day = startofday(TimeGenerated)
 | mv-apply ca=todynamic(ConditionalAccessPolicies) on (
