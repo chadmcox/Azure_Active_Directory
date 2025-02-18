@@ -4,5 +4,4 @@ let excludeapps = pack_array("Windows Sign In","Microsoft Authenticator App","Mi
 union SigninLogs, AADNonInteractiveUserSignInLogs
 | where TimeGenerated >= ago(60d) and AppDisplayName !in (excludeapps)
 | where AuthenticationProtocol=="deviceCode"
-| distinct UserPrincipalName
-//| project TimeGenerated, UserPrincipalName,ResultType, ResultDescription,UserAgent, IPAddress, Location,AppDisplayName,ResourceDisplayName, AuthenticationProtocol, AuthenticationRequirement 
+| project TimeGenerated, UserPrincipalName,ResultType, ResultDescription,UserAgent, IPAddress, Location,AppDisplayName,ResourceDisplayName, AuthenticationProtocol, AuthenticationRequirement 
