@@ -1,7 +1,6 @@
-union SigninLogs
-| where TimeGenerated > ago(30d)
-| where ResultType == 0
-| where UserType == "Member"
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+SigninLogs
+| where TimeGenerated > ago(30d) and AppDisplayName !in (excludeapps) and ResultType == 0 and UserType == "Member"
 | extend Day = startofday(TimeGenerated)
 | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
 | summarize
