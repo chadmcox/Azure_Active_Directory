@@ -1,4 +1,4 @@
-iskSigninLogs
+SigninLogs
 | where TimeGenerated > ago(30d) and RiskState !in ("dismissed","remediated")
 | where RiskLevelDuringSignIn in ("high","medium","low") or RiskLevelAggregated in ("high","medium","low")
 | extend Day = startofday(TimeGenerated)
