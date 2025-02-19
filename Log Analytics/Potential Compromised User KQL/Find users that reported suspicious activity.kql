@@ -2,6 +2,10 @@ SigninLogs
 | where AuthenticationDetails has "SuspiciousActivityReported"
 | project TimeGenerated, UserPrincipalName, AuthenticationDetails, AppDisplayName, ResultType, ResultDescription, IPAddress
 
-//can also use this one
+//can also use this one -------------------
 //AuditLogs
 //| where OperationName == "Suspicious activity reported"
+
+//or this one ----------------
+//AADUserRiskEvents 
+//| where RiskEventType == "userReportedSuspiciousActivity"
