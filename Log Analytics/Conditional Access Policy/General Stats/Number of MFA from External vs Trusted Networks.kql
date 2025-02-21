@@ -1,0 +1,16 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+SigninLogs
+| where TimeGenerated > ago(30d) and AppDisplayName !in (excludeapps) and ResultType == 0 and UserType == "Member"
+| extend Day = startofday(TimeGenerated)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| summarize
+    ['Total Signin Count']=count(),
+    ['Total External Signin Count']=count(TrustedLocation <> 'trustedNamedLocation'),
+    ['Total Trusted Signin Count']=count(TrustedLocation == 'trustedNamedLocation'),
+    ['Total Trusted multiFactorAuthentication Count']=countif(AuthenticationRequirement == "multiFactorAuthentication" and TrustedLocation == 'trustedNamedLocation'),
+    ['Total External multiFactorAuthentication Count']=countif(AuthenticationRequirement == "multiFactorAuthentication" and TrustedLocation <> 'trustedNamedLocation'),
+    ['Total multiFactorAuthentication Count']=countif(AuthenticationRequirement == "multiFactorAuthentication"),
+    ['Total singleAuthentication Count']=countif(AuthenticationRequirement == "singleFactorAuthentication") by Day  
+| project Day,MFAPercentage=(todouble(['Total multiFactorAuthentication Count']) * 100 / todouble(['Total Signin Count'])),
+ExtMFAPercentage=(todouble(['Total External multiFactorAuthentication Count']) * 100 / todouble(['Total External Signin Count'])),
+TrustMFAPercentage=(todouble(['Total Trusted multiFactorAuthentication Count']) * 100 / todouble(['Total Trusted Signin Count']))
