@@ -29,7 +29,7 @@ Get-MgBetaGroup -ExpandProperty transitiveMemberOf -all | foreach{$o=$null;$o=$_
         @{Name="groupName";Expression={$grp_hash[$_].displayName}}, `
         @{Name="groupSecurityEnabled";Expression={$grp_hash[$_].securityEnabled}}, `
         @{Name="onPremisesGroup";Expression={$grp_hash[$_].onPremisesSyncEnabled}}
-} | export-csv ".\group_membership_groups.csv" -NoTypeInformation
+} | export-csv ".\groupmembershipgroups.csv" -NoTypeInformation
 
 write-host "Starting user transitiveMemberOf export $(get-date)"
 Get-MgBetaUser -filter "userType eq 'Member' and AccountEnabled eq true" -ExpandProperty transitiveMemberOf -all | foreach{$o=$null;$o=$_
@@ -41,7 +41,7 @@ Get-MgBetaUser -filter "userType eq 'Member' and AccountEnabled eq true" -Expand
         @{Name="groupName";Expression={$grp_hash[$_].displayName}}, `
         @{Name="groupSecurityEnabled";Expression={$grp_hash[$_].securityEnabled}}, `
         @{Name="onPremisesGroup";Expression={$grp_hash[$_].onPremisesSyncEnabled}}
-} | export-csv ".\group_membership_users.csv" -NoTypeInformation
+} | export-csv ".\groupmembershipusers.csv" -NoTypeInformation
 
 write-host "Starting guest transitiveMemberOf export $(get-date)"
 Get-MgBetaUser -filter "userType eq 'Guest' and AccountEnabled eq true" -ExpandProperty transitiveMemberOf -all | foreach{$o=$null;$o=$_
@@ -53,7 +53,7 @@ Get-MgBetaUser -filter "userType eq 'Guest' and AccountEnabled eq true" -ExpandP
         @{Name="groupName";Expression={$grp_hash[$_].displayName}}, `
         @{Name="groupSecurityEnabled";Expression={$grp_hash[$_].securityEnabled}}, `
         @{Name="onPremisesGroup";Expression={$grp_hash[$_].onPremisesSyncEnabled}}
-} | export-csv ".\group_membership_guests.csv" -NoTypeInformation
+} | export-csv ".\groupmembershipguests.csv" -NoTypeInformation
 
 write-host "Starting device transitiveMemberOf export $(get-date)"
 Get-MgBetaDevice -filter "AccountEnabled eq true" -ExpandProperty transitiveMemberOf -all | foreach{$o=$null;$o=$_
@@ -65,7 +65,7 @@ Get-MgBetaDevice -filter "AccountEnabled eq true" -ExpandProperty transitiveMemb
         @{Name="groupName";Expression={$grp_hash[$_].displayName}}, `
         @{Name="groupSecurityEnabled";Expression={$grp_hash[$_].securityEnabled}}, `
         @{Name="onPremisesGroup";Expression={$grp_hash[$_].onPremisesSyncEnabled}}
-} | export-csv ".\group_membership_devices.csv" -NoTypeInformation
+} | export-csv ".\groupmembershipdevices.csv" -NoTypeInformation
 
 write-host "Starting sp transitiveMemberOf export $(get-date)"
 Get-MgBetaServicePrincipal -filter "AccountEnabled eq true" -ExpandProperty transitiveMemberOf -all | foreach{$o=$null;$o=$_
@@ -77,4 +77,4 @@ Get-MgBetaServicePrincipal -filter "AccountEnabled eq true" -ExpandProperty tran
         @{Name="groupName";Expression={$grp_hash[$_].displayName}}, `
         @{Name="groupSecurityEnabled";Expression={$grp_hash[$_].securityEnabled}}, `
         @{Name="onPremisesGroup";Expression={$grp_hash[$_].onPremisesSyncEnabled}}
-} | export-csv ".\group_membership_serviceprincipals.csv" -NoTypeInformation
+} | export-csv ".\groupmembershipserviceprincipals.csv" -NoTypeInformation
