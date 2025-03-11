@@ -25,7 +25,7 @@ from the use or distribution of the Sample Code..
 #>
 param($defaultpath = ".")
 cd $defaultpath
-connect-az
+connect-azaccount
 Get-AzSubscription -pv sub | set-azcontext | foreach{
     write-host "Enumerating: $($sub.name)"
     Get-AzRoleAssignment -IncludeClassicAdministrators -pv assignment | foreach{
