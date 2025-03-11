@@ -15,3 +15,9 @@ function login-MSGraph{
 
 #login
 login-MSGraph
+
+Get-MgBetaServicePrincipal -all -ExpandProperty appRoleAssignedTo | select appid,id, displayname, appRoleAssignedTo | foreach{$sp=$null;$sp=$_
+    $_.appRoleAssignedTo | select @{N="spId";E={$sp.id}},
+        @{N="appId";E={$sp.appid}},
+        @{N="spDisplayName";E={$sp.displayname}},PrincipalId,PrincipalDisplayName,PrincipalType
+} | where {!($_.PrincipalType -eq "ServicePrincipal")} | export-csv approleassignment.csv -NoTypeInformation
