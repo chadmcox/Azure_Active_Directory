@@ -16,8 +16,12 @@ function login-MSGraph{
 #login
 login-MSGraph
 
+$approles = @{}
+Get-MgBetaServicePrincipal -Filter "serviceprincipaltype eq 'Application' and AccountEnabled eq true" -all | select -ExpandProperty approles | foreach{
+    try{$approles.add($_.id,$_.value)}catch{}
+}
 Get-MgBetaServicePrincipal -all -ExpandProperty appRoleAssignedTo | select appid,id, displayname, appRoleAssignedTo | foreach{$sp=$null;$sp=$_
     $_.appRoleAssignedTo | select @{N="spId";E={$sp.id}},
         @{N="appId";E={$sp.appid}},
-        @{N="spDisplayName";E={$sp.displayname}},PrincipalId,PrincipalDisplayName,PrincipalType
-} | where {!($_.PrincipalType -eq "ServicePrincipal")} | export-csv approleassignment.csv -NoTypeInformation
+        @{N="spDisplayName";E={$sp.displayname}},PrincipalId,PrincipalDisplayName,PrincipalType,AppRoleId,@{N="permission";E={$approles[$_.AppRoleId]}}
+} | export-csv approleassignment.csv -NoTypeInformation
