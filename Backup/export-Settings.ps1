@@ -1,21 +1,3 @@
-param($defaultpath="$env:USERPROFILE\downloads",$pwdnochangedindays = 480)
-cd $defaultpath
-
-function login-MSGraph{
-    Get-MgEnvironment | select name | out-host
-    $selection = Read-Host "Type the name of the azure environment that you would like to connect to:  (example Global)"
-    if($selection -notin "Global","China","USGov","Germany","USGovDoD"){$selection = "Global"}
-    $mg_env = Get-MgEnvironment | where {$_.name -eq $selection}
-
-    $script:graphendpoint = $mg_env.GraphEndpoint
-
-    Connect-MgGraph -Scopes "Policy.Read.All","User.ReadBasic.All", "User.Read.All","Directory.Read.All","Directory.AccessAsUser.All","Group.Read.All","Application.Read.All", "AuditLog.Read.All","PrivilegedAccess.Read.AzureAD", `
-        "PrivilegedAccess.Read.AzureADGroup","PrivilegedAccess.Read.AzureResources","RoleManagement.Read.All","OnPremDirectorySynchronization.Read.All","IdentityRiskyUser.Read.All" -Environment $mg_env.name
-}
-
-#login
-login-MSGraph
-
 "FeatureRolloutPolicy" | out-file .\configuration.txt
 Get-MgPolicyFeatureRolloutPolicy -all | out-file .\configuration.txt -Append
 
@@ -53,6 +35,30 @@ Get-MgBetaPolicyAuthenticationMethodPolicy | select  -ExpandProperty SystemCrede
 Get-MgBetaPolicyAuthenticationMethodPolicy | select PolicyMigrationState,PolicyVersion,ReconfirmationInDays -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
 
 "AuthenticationStrengthPolicy" | out-file .\configuration.txt -Append
-Get-MgPolicyAuthenticationStrengthPolicy | select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+Get-MgBetaPolicyAuthenticationStrengthPolicy | select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
 
-Get-MgPolicyCrossTenantAccessPolicyDefault | convertto-json -depth 99 | out-filter .\CrossTenantAccessPolicyDefault.txt
+Get-MgBetaPolicyCrossTenantAccessPolicyDefault | convertto-json -depth 99 | out-file .\CrossTenantAccessPolicyDefault.txt
+
+"FederationConfiguration" | out-file .\configuration.txt -Append
+Get-MgDirectoryFederationConfiguration -all | select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"ActivityBasedTimeoutPolicy" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyActivityBasedTimeoutPolicy | select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"AuthorizationPolicy" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyAuthorizationPolicy | select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"DeviceRegistrationPolicy LocalAdminPassword" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyDeviceRegistrationPolicy | select DisplayName,MultiFactorAuthConfiguration,UserDeviceQuota |  out-file .\configuration.txt -Append
+
+"DeviceRegistrationPolicy AzureAdJoin" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyDeviceRegistrationPolicy | select -ExpandProperty AzureAdJoin |  out-file .\configuration.txt -Append
+
+"DeviceRegistrationPolicy azureADRegistration" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyDeviceRegistrationPolicy | select -ExpandProperty azureADRegistration |  out-file .\configuration.txt -Append
+
+"DeviceRegistrationPolicy LocalAdminPassword" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyDeviceRegistrationPolicy | select -ExpandProperty LocalAdminPassword |  out-file .\configuration.txt -Append
+
+"SecurityDefaultEnforcementPolicy" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyIdentitySecurityDefaultEnforcementPolicy | select * -ExcludeProperty AdditionalProperties  | fl |  out-file .\configuration.txt -Append
