@@ -10,11 +10,49 @@ function login-MSGraph{
     $script:graphendpoint = $mg_env.GraphEndpoint
 
     Connect-MgGraph -Scopes "Policy.Read.All","User.ReadBasic.All", "User.Read.All","Directory.Read.All","Directory.AccessAsUser.All","Group.Read.All","Application.Read.All", "AuditLog.Read.All","PrivilegedAccess.Read.AzureAD", `
-        "PrivilegedAccess.Read.AzureADGroup","PrivilegedAccess.Read.AzureResources","RoleManagement.Read.All" -Environment $mg_env.name
+        "PrivilegedAccess.Read.AzureADGroup","PrivilegedAccess.Read.AzureResources","RoleManagement.Read.All","OnPremDirectorySynchronization.Read.All","IdentityRiskyUser.Read.All" -Environment $mg_env.name
 }
 
 #login
 login-MSGraph
 
-Get-MgPolicyFeatureRolloutPolicy -all | export-csv .\featurerolloutpolicy.csv -NoTypeInformation
+"FeatureRolloutPolicy" | out-file .\configuration.txt
+Get-MgPolicyFeatureRolloutPolicy -all | out-file .\configuration.txt -Append
 
+"License" | out-file .\configuration.txt -Append
+Get-MgBetaSubscribedSku -all | select SkuPartNumber,ConsumedUnits, @{Name="PrepaidUnits Enabled";Expression={$_.PrepaidUnits.Enabled}} | select * -ExcludeProperty AdditionalProperties | fl | out-file .\configuration.txt -Append
+
+"OnPremiseSynchronization Feature" | out-file .\configuration.txt -Append
+Get-MgBetaDirectoryOnPremiseSynchronization | select -ExpandProperty Features | convertto-json -Depth 99 | ConvertFrom-json |select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"OnPremiseSynchronization Configuration" | out-file .\configuration.txt -Append
+Get-MgBetaDirectoryOnPremiseSynchronization | select -ExpandProperty configuration | convertto-json -Depth 99 | ConvertFrom-json |select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"Organization Info" | out-file .\configuration.txt -Append
+Get-MgBetaOrganization | select BusinessPhones, city, country, countryletter, createddatetime, defaultusagelocation, displayname, onpremise*, postalcode, prefferedlanguage, state, street, TenantType |select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"AdminConsentRequestPolicy" | out-file .\configuration.txt -Append
+Get-MgPolicyAdminConsentRequestPolicy |select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"AuthenticationMethodConfigurationsy" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyAuthenticationMethodPolicy | select -ExpandProperty AuthenticationMethodConfigurations |select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"MicrosoftAuthenticatorPlatformSettings" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyAuthenticationMethodPolicy | select  -ExpandProperty MicrosoftAuthenticatorPlatformSettings | select -ExpandProperty EnforceAppPin |select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"AuthenticationMethodsRegistrationCampaign" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyAuthenticationMethodPolicy | select  -ExpandProperty RegistrationEnforcement | select -ExpandProperty AuthenticationMethodsRegistrationCampaign |select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"ReportSuspiciousActivitySettings" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyAuthenticationMethodPolicy | select  -ExpandProperty ReportSuspiciousActivitySettings |select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"SystemCredentialPreferences" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyAuthenticationMethodPolicy | select  -ExpandProperty SystemCredentialPreferences | select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"PolicyMigrationState" | out-file .\configuration.txt -Append
+Get-MgBetaPolicyAuthenticationMethodPolicy | select PolicyMigrationState,PolicyVersion,ReconfirmationInDays -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+"AuthenticationStrengthPolicy" | out-file .\configuration.txt -Append
+Get-MgPolicyAuthenticationStrengthPolicy | select * -ExcludeProperty AdditionalProperties | fl |  out-file .\configuration.txt -Append
+
+Get-MgPolicyCrossTenantAccessPolicyDefault | convertto-json -depth 99 | out-filter .\CrossTenantAccessPolicyDefault.txt
