@@ -1,0 +1,5 @@
+SigninLogs
+| where TimeGenerated >= ago(30d)
+| where AuthenticationDetails has "SuspiciousActivityReported"
+| project day = startofday(TimeGenerated), UserPrincipalName, AuthenticationDetails, AppDisplayName, ResultType, ResultDescription, IPAddress
+| summarize totalReportedSuspicious = count() by day
