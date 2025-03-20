@@ -1,5 +1,5 @@
 let csvData = externaldata(
-    ASN: string,
+    AutonomousSystemNumber: string,
     Owner: string
 )
 [
