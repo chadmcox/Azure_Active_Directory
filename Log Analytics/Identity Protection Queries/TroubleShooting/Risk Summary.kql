@@ -6,7 +6,4 @@ SigninLogs
 | summarize
     ['High user risk']=countif(RiskLevelAggregated == "high"),
     ['High sign-in risk']=countif(RiskLevelDuringSignIn == "high"),
-    ['Medium user risk']=countif(RiskLevelAggregated == "medium"),
-    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == "medium"),
-    ['Low user risk']=countif(RiskLevelAggregated == "low"),
-    ['Low sign-in risk']=countif(RiskLevelDuringSignIn == "low") by Day  
+    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == "medium") by Day  
