@@ -12,4 +12,4 @@ SigninLogs
     kind=unstacked,
     xtitle="Week",
     ytitle="Signin Count",
-    title="Password vs WH4B signins per week")
+    title="WH4B number of users per day")
