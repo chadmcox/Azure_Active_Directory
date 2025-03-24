@@ -1176,6 +1176,57 @@
           {
             "type": 1,
             "content": {
+              "json": "## Impact details: Conditional access policy results with user or sign-in risk"
+            },
+            "name": "Impact details: Legacy"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where ResultType == 0 or ResultType == 53003\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n| where ['CA Policy Name'] contains \"risk\"\r\n| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name']\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'])",
+              "size": 3,
+              "title": "1. Impacted by conditional access policy",
+              "timeContextFromParameter": "TimeRange",
+              "showExportToExcel": true,
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 15,
+                "sortBy": [
+                  {
+                    "itemKey": "CA Policy Name",
+                    "sortOrder": 2
+                  }
+                ]
+              },
+              "sortBy": [
+                {
+                  "itemKey": "CA Policy Name",
+                  "sortOrder": 2
+                }
+              ]
+            },
+            "name": "Impacted by conditional access policy"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "settab",
+        "comparison": "isEqualTo",
+        "value": "troubleshooting"
+      },
+      "name": "Legacy Identity Protection policy scenarios  - Copy"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
               "json": "## Impact details: Trusted network\r\n\r\nConfigured trusted network locations are used by Identity Protection in some risk detections to reduce false positives.\r\n\r\nSummary of IP addresses that are not listed as a trusted network that could be due to the number of unique users signing in from the IP. Use the autonomous system number (ASN) to help identify the owner of the network to determine if it should be listed as trusted for Conditional Access policies."
             },
             "name": "Impact details: Trusted Network Title"
