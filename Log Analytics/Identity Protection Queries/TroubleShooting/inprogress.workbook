@@ -870,6 +870,20 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend Day = startofday(TimeGenerated)\r\n| distinct Day, UserPrincipalName,RiskLevelAggregated\r\n| summarize\r\n    ['High user risk']=countif(RiskLevelAggregated == \"high\") by Day  ",
+              "size": 0,
+              "title": "Daily total of unique users with high user risk",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "name": "Daily total of unique users with high user risk"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
               "query": "let risklevel = pack_array(\"high\");\r\nlet riskeventsid = SigninLogs\r\n| where RiskLevelAggregated in (risklevel)\r\n| distinct OriginalRequestId;\r\nlet remediated = SigninLogs\r\n| where RiskState !in (\"none\")\r\n| where OriginalRequestId in (riskeventsid)\r\n| where RiskState !in (\"atRisk\",\"none\")\r\n| project OriginalRequestId,RemediatedDateTime = TimeGenerated, UserPrincipalName, RiskState;\r\nlet risk = SigninLogs\r\n| where RiskState !in (\"none\")\r\n| where OriginalRequestId in (riskeventsid)\r\n| where RiskState in (\"atRisk\") and RiskLevelAggregated in (risklevel)\r\n| where not(ResultType == 53003 and ResultDescription == \"Access has been blocked due to conditional access policies.\")\r\n| join kind=leftouter (remediated) on OriginalRequestId\r\n| project RiskDateTime = TimeGenerated, UserPrincipalName = tolower(UserPrincipalName), RemediatedDateTime,riskuserRiskLevelAggregated = RiskLevelAggregated, ResultType;\r\nlet riskusers = risk | distinct UserPrincipalName = tolower(UserPrincipalName);\r\nSigninLogs\r\n| where ResultType == 0\r\n| where tolower(UserPrincipalName) in (riskusers) \r\n| where AppDisplayName !in (\"Windows Sign In\",\"Microsoft Authentication Broker\",\"Microsoft Account Controls V2\")\r\n| extend [\"Device trust type\"] = tostring(parse_json(DeviceDetail).trustType) \r\n| extend [\"Device is compliant\"] = tostring(parse_json(DeviceDetail).isCompliant) \r\n| join kind=leftouter (risk) on UserPrincipalName\r\n| where ((TimeGenerated <= RemediatedDateTime) or (isnull(RemediatedDateTime))) and (TimeGenerated >= RiskDateTime)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, riskuserRiskLevelAggregated,RiskLevelDuringSignIn,[\"Device trust type\"], [\"Device is compliant\"]\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(riskuserRiskLevelAggregated),\r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Device trust type\"] = make_set([\"Device trust type\"]),\r\n[\"Device is compliant\"] = make_set([\"Device is compliant\"])\r\n by UserDisplayName,UserPrincipalName, UserType\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"],[\"Sign-in risk level\"], Applications,[\"Device trust type\"], [\"Device is compliant\"]",
               "size": 3,
               "title": "1. High risk users not being blocked by risk-based access policy",
@@ -943,7 +957,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where RiskState == \"remediated\" | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskDetail == \"userChangedPasswordOnPremises\" \r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| extend RiskEventTypes_V2 = tostring(RiskEventType)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2,RiskDetail\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType, RiskDetail,ResultType, ResultDescription\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk detail\"] = RiskDetail,Applications",
+              "query": "SigninLogs \r\n| where RiskState == \"remediated\" | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\" | where RiskDetail == \"userChangedPasswordOnPremises\" \r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| extend RiskEventTypes_V2 = tostring(RiskEventType)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2,RiskDetail\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType, RiskDetail,ResultType, ResultDescription\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName,[\"Risk detail\"] = RiskDetail",
               "size": 3,
               "title": "5. Users risk remediated by on-premise password reset",
               "noDataMessage": "The query returned no results. Consider on-premises password reset to remediate user risk.",
@@ -956,13 +970,14 @@
                 "rowLimit": 15
               }
             },
+            "customWidth": "50",
             "name": "Users Risk remediated by on-premise password reset"
           },
           {
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where RiskState == \"remediated\" | where ResultType in (0) | where RiskDetail in (\"userPerformedSecuredPasswordReset\",\"userPerformedSecuredPasswordChange\") \r\n| extend [\"Device trust type\"] = tostring(parse_json(DeviceDetail).trustType) \r\n| extend [\"Device is compliant\"] = tostring(parse_json(DeviceDetail).isCompliant) \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2,RiskDetail,[\"Device trust type\"], [\"Device is compliant\"]\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType, RiskDetail,[\"Device trust type\"], [\"Device is compliant\"]\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk detail\"] = RiskDetail,Applications, [\"Device trust type\"], [\"Device is compliant\"]",
+              "query": "SigninLogs \r\n| where RiskState == \"remediated\" | where ResultType in (0) | where RiskDetail in (\"userPerformedSecuredPasswordReset\",\"userPerformedSecuredPasswordChange\") \r\n| extend [\"Device trust type\"] = tostring(parse_json(DeviceDetail).trustType) \r\n| extend [\"Device is compliant\"] = tostring(parse_json(DeviceDetail).isCompliant) \r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2,RiskDetail,[\"Device trust type\"], [\"Device is compliant\"]\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType, RiskDetail,[\"Device trust type\"], [\"Device is compliant\"]\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"Risk detail\"] = RiskDetail",
               "size": 3,
               "title": "6. Users risk remediated by password reset",
               "noDataMessage": "The query returned no results. Consider password reset to remediate user risk.",
@@ -976,6 +991,7 @@
               },
               "sortBy": []
             },
+            "customWidth": "50",
             "name": "Users risk remediated by password reset"
           }
         ]
@@ -999,6 +1015,20 @@
               "json": "## Impact details: Sign-in risk policy scenarios"
             },
             "name": "Impact details: Sign-ins"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend Day = startofday(TimeGenerated)\r\n| distinct Day, UserPrincipalName,RiskLevelDuringSignIn\r\n| summarize\r\n    ['High sign-in risk']=countif(RiskLevelDuringSignIn == \"high\"),\r\n    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == \"medium\") by Day  ",
+              "size": 0,
+              "title": "Daily total of users with high sign-in risk",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "name": "Daily total of users with high sign-in risk"
           },
           {
             "type": 3,
@@ -1146,47 +1176,6 @@
           {
             "type": 1,
             "content": {
-              "json": "## Chart: Daily Identity Protection Risk\r\n"
-            },
-            "name": "Impact details: Trusted Network Title"
-          },
-          {
-            "type": 3,
-            "content": {
-              "version": "KqlItem/1.0",
-              "query": "SigninLogs\r\n| where TimeGenerated > ago(30d) and RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend Day = startofday(TimeGenerated)\r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))\r\n| distinct Day, RiskLevelDuringSignIn,RiskLevelAggregated, UserPrincipalName\r\n| summarize\r\n    ['High user risk']=countif(RiskLevelAggregated == \"high\"),\r\n    ['High sign-in risk']=countif(RiskLevelDuringSignIn == \"high\"),\r\n    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == \"medium\") by Day  ",
-              "size": 3,
-              "showAnalytics": true,
-              "title": "5. Daily breakdown of user risk and sign-in risk",
-              "timeContextFromParameter": "TimeRange",
-              "showExportToExcel": true,
-              "queryType": 0,
-              "resourceType": "microsoft.operationalinsights/workspaces",
-              "visualization": "unstackedbar",
-              "gridSettings": {
-                "rowLimit": 10
-              }
-            },
-            "name": "Trusted network"
-          }
-        ]
-      },
-      "conditionalVisibility": {
-        "parameterName": "settab",
-        "comparison": "isEqualTo",
-        "value": "troubleshooting"
-      },
-      "name": "Impact details: Trusted network - Copy"
-    },
-    {
-      "type": 12,
-      "content": {
-        "version": "NotebookGroup/1.0",
-        "groupType": "editable",
-        "items": [
-          {
-            "type": 1,
-            "content": {
               "json": "## Impact details: Trusted network\r\n\r\nConfigured trusted network locations are used by Identity Protection in some risk detections to reduce false positives.\r\n\r\nSummary of IP addresses that are not listed as a trusted network that could be due to the number of unique users signing in from the IP. Use the autonomous system number (ASN) to help identify the owner of the network to determine if it should be listed as trusted for Conditional Access policies."
             },
             "name": "Impact details: Trusted Network Title"
@@ -1213,6 +1202,23 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where TimeGenerated > ago(30d) and RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| where HomeTenantId == ResourceTenantId and UserType <> \"Guest\"\r\n| extend NetworkLocation = tostring(parse_json(NetworkLocationDetails)[0].networkNames[0]) \r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))\r\n| distinct UserPrincipalName, NetworkLocation, AutonomousSystemNumber,RiskLevelAggregated,RiskLevelDuringSignIn\r\n| summarize \r\n    NetworkLocations = makeset(NetworkLocation),\r\n    InstanceCount = count(),\r\n    ['High user risk']=countif(RiskLevelAggregated == \"high\"),\r\n    ['High sign-in risk']=countif(RiskLevelDuringSignIn == \"high\"),\r\n    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == \"medium\") by AutonomousSystemNumber\r\n| sort by InstanceCount desc",
+              "size": 0,
+              "title": "AutonomousSystemNumber risk breakdown",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 15
+              }
+            },
+            "customWidth": "100",
+            "name": "AutonomousSystemNumber risk breakdown"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
               "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") or RiskLevelAggregated in (\"high\")\r\n| where isnotnull(RiskEventTypes_V2)\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| project TimeGenerated, ResultType, ResultDescription,AppDisplayName,UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskEventType\r\n| summarize risktypecount = count() by tostring(RiskEventType),RiskLevelDuringSignIn,RiskLevelAggregated",
               "size": 0,
               "title": "Impact details:  User Risk and Sign-in Risk - Riskeventtypes",
@@ -1222,6 +1228,7 @@
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces"
             },
+            "customWidth": "100",
             "name": "Impact details: User Risk and Sign-in Risk - Riskeventtypes"
           }
         ]
@@ -1292,7 +1299,7 @@
     }
   ],
   "fallbackResourceIds": [
-    "/subscriptions/2509a955-812f-4b59-871e-ab1e52042cbf/resourceGroups/AAD-LogAnalytics/providers/Microsoft.OperationalInsights/workspaces/aad-logs-agcompany"
+    "/subscriptions/f365c4f8-69b0-4f28-bd9b-ca885182bad6/resourceGroups/dps-csa-security-engineering-rg/providers/Microsoft.OperationalInsights/workspaces/HON-Central-LA-Prod"
   ],
   "fromTemplateId": "community-Workbooks/Microsoft Entra ID Protection/ImpactAnalysis",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
