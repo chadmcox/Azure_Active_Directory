@@ -255,7 +255,8 @@
                   "columnMatch": "Blocked high risk users",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "greenRed"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -303,7 +304,8 @@
                   "columnMatch": "count_UserPrincipalName",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "greenRed"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -343,7 +345,8 @@
                   "columnMatch": "Count",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "greenRed"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -387,7 +390,8 @@
                   "columnMatch": "Count",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "greenRed"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -423,7 +427,8 @@
                   "columnMatch": "count_UserPrincipalName",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "redGreen"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -508,7 +513,8 @@
                   "columnMatch": "Count",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "redGreen"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -580,7 +586,8 @@
                   "columnMatch": "count_UserPrincipalName",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "redGreen"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -616,7 +623,8 @@
                   "columnMatch": "count_UserPrincipalName",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "redGreen"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -792,7 +800,8 @@
                   "columnMatch": "count_UserPrincipalName",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "greenRed"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -827,7 +836,8 @@
                   "columnMatch": "count_UserPrincipalName",
                   "formatter": 12,
                   "formatOptions": {
-                    "palette": "auto"
+                    "min": 1,
+                    "palette": "greenRed"
                   },
                   "numberFormat": {
                     "unit": 17,
@@ -1350,7 +1360,7 @@
     }
   ],
   "fallbackResourceIds": [
-    "/subscriptions/f365c4f8-69b0-4f28-bd9b-ca885182bad6/resourceGroups/dps-csa-security-engineering-rg/providers/Microsoft.OperationalInsights/workspaces/HON-Central-LA-Prod"
+    "/subscriptions/2509a955-812f-4b59-871e-ab1e52042cbf/resourceGroups/AAD-LogAnalytics/providers/Microsoft.OperationalInsights/workspaces/aad-logs-agcompany"
   ],
   "fromTemplateId": "community-Workbooks/Microsoft Entra ID Protection/ImpactAnalysis",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
