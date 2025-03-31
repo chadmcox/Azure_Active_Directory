@@ -1,7 +1,7 @@
 param($defaultdirectory="$env:USERPROFILE\Downloads")
 cd $defaultdirectory
 
-connect-mggraph -scope 'Application.Read.All', 'Directory.Read.All', 'AuditLog.Read.All'
+connect-mggraph -scope 'Application.Read.All', 'Directory.Read.All', 'AuditLog.Read.All','DirectoryRecommendations.Read.All'
 
 $sps_lastsignin = Get-MgBetaReportServicePrincipalSignInActivity -all | where {$_.LastSignInActivity.LastSignInDateTime} | select appid, LastSignInActivity, `
         @{N="SignInActivityType";E={if($_.delegatedClientSignInActivity.lastSignInDateTime){"delegatedClient"
