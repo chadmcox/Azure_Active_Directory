@@ -190,7 +190,7 @@
             "id": "b30396d4-e383-4278-a1e3-25363bf82b6f",
             "cellValue": "settab",
             "linkTarget": "parameter",
-            "linkLabel": "Troubleshooting",
+            "linkLabel": "Other Details",
             "subTarget": "troubleshooting",
             "style": "link"
           }
@@ -1265,9 +1265,9 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "let anslookuptable = datatable(AutonomousSystemNumber:int, PotentialASNOwner:string)\r\n[\r\n22616,\"Zscaler\",\r\n53813,\"Zscaler\",\r\n62044,\"Zscaler\",\r\n53444,\"Zscaler\",\r\n62907,\"Zscaler\",\r\n9067,\"Microsoft\",\r\n5761,\"Microsoft\",\r\n45139,\"Microsoft\",\r\n8070,\"Microsoft\",\r\n12076,\"Microsoft\",\r\n35106,\"Microsoft\",\r\n6584,\"Microsoft\",\r\n3598,\"Microsoft\",\r\n8068,\"Microsoft\",\r\n8075,\"Microsoft\",\r\n8069,\"Microsoft\",\r\n8862,\"Microsoft\",\r\n36692,\"Cisco Umbrella\",\r\n55256,\"Netskope\",\r\n7598,\"Forcepoint\",\r\n44444,\"Forcepoint\",\r\n42465,\"Forcepoint\",\r\n271244,\"Fortinet\",\r\n40934,\"Fortinet\",\r\n25885,\"Fortinet\",\r\n200589,\"Fortinet\",\r\n53928,\"Fortinet\",\r\n132361,\"Citrix\",\r\n62795,\"Citrix\",\r\n60825,\"Citrix\",\r\n394536,\"Cloudflare\",\r\n139242,\"Cloudflare\",\r\n203898,\"Cloudflare\",\r\n202623,\"Cloudflare\",\r\n132892,\"Cloudflare\",\r\n395747,\"Cloudflare\",\r\n209242,\"Cloudflare\",\r\n13335,\"Cloudflare\",\r\n14789,\"Cloudflare\",\r\n271017,\"Amazon\",\r\n8987,\"Amazon\",\r\n266122,\"Amazon\",\r\n271047,\"Amazon\",\r\n262486,\"Amazon\",\r\n264509,\"Amazon\",\r\n264344,\"Amazon\",\r\n61577,\"Amazon\",\r\n267242,\"Amazon\",\r\n274698,\"Amazon\",\r\n14618,\"Amazon\",\r\n16509,\"Amazon\",\r\n801,\"Amazon\",\r\n264167,\"Amazon\",\r\n266194,\"Amazon\",\r\n7224,\"Amazon\",\r\n62785,\"Amazon\",\r\n52994,\"Amazon\",\r\n263639,\"Amazon\",\r\n15169,\"Google\",\r\n41264,\"Google\",\r\n32381,\"Google\",\r\n24424,\"Google\",\r\n139070,\"Google\",\r\n139190,\"Google\",\r\n19527,\"Google\",\r\n36492,\"Google\",\r\n16591,\"Google\",\r\n43515,\"Google\",\r\n36385,\"Google\",\r\n45566,\"Google\",\r\n15169,\"Google\",\r\n395973,\"Google\",\r\n36384,\"Google\",\r\n396982,\"Google\",\r\n394082,\"Google\",\r\n214611,\"Google\",\r\n214609,\"Google\",\r\n16550,\"Google\"\r\n];\r\nSigninLogs\r\n| where TimeGenerated > ago(30d) and RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| where HomeTenantId == ResourceTenantId and UserType <> \"Guest\"\r\n| extend NetworkLocation = tostring(parse_json(NetworkLocationDetails)[0].networkNames[0]) \r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))\r\n| extend AutonomousSystemNumber = toint(AutonomousSystemNumber)\r\n| join kind=leftouter (anslookuptable) on AutonomousSystemNumber\r\n| distinct UserPrincipalName, NetworkLocation, AutonomousSystemNumber,RiskLevelAggregated,RiskLevelDuringSignIn,PotentialASNOwner\r\n| summarize \r\n    NetworkLocations = makeset(NetworkLocation),\r\n    [\"Total risk count\"] = count(),\r\n    ['High user risk']=countif(RiskLevelAggregated == \"high\"),\r\n    ['High sign-in risk']=countif(RiskLevelDuringSignIn == \"high\"),\r\n    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == \"medium\") by AutonomousSystemNumber,PotentialASNOwner\r\n| sort by [\"Total risk count\"] desc",
+              "query": "let anslookuptable = datatable(AutonomousSystemNumber:int, PotentialASNOwner:string)\r\n[\r\n22616,\"Zscaler\",\r\n53813,\"Zscaler\",\r\n62044,\"Zscaler\",\r\n53444,\"Zscaler\",\r\n62907,\"Zscaler\",\r\n9067,\"Microsoft\",\r\n5761,\"Microsoft\",\r\n45139,\"Microsoft\",\r\n8070,\"Microsoft\",\r\n12076,\"Microsoft\",\r\n35106,\"Microsoft\",\r\n6584,\"Microsoft\",\r\n3598,\"Microsoft\",\r\n8068,\"Microsoft\",\r\n8075,\"Microsoft\",\r\n8069,\"Microsoft\",\r\n8862,\"Microsoft\",\r\n36692,\"Cisco Umbrella\",\r\n55256,\"Netskope\",\r\n7598,\"Forcepoint\",\r\n44444,\"Forcepoint\",\r\n42465,\"Forcepoint\",\r\n271244,\"Fortinet\",\r\n40934,\"Fortinet\",\r\n25885,\"Fortinet\",\r\n200589,\"Fortinet\",\r\n53928,\"Fortinet\",\r\n132361,\"Citrix\",\r\n62795,\"Citrix\",\r\n60825,\"Citrix\",\r\n394536,\"Cloudflare\",\r\n139242,\"Cloudflare\",\r\n203898,\"Cloudflare\",\r\n202623,\"Cloudflare\",\r\n132892,\"Cloudflare\",\r\n395747,\"Cloudflare\",\r\n209242,\"Cloudflare\",\r\n13335,\"Cloudflare\",\r\n14789,\"Cloudflare\",\r\n271017,\"Amazon\",\r\n8987,\"Amazon\",\r\n266122,\"Amazon\",\r\n271047,\"Amazon\",\r\n262486,\"Amazon\",\r\n264509,\"Amazon\",\r\n264344,\"Amazon\",\r\n61577,\"Amazon\",\r\n267242,\"Amazon\",\r\n274698,\"Amazon\",\r\n14618,\"Amazon\",\r\n16509,\"Amazon\",\r\n801,\"Amazon\",\r\n264167,\"Amazon\",\r\n266194,\"Amazon\",\r\n7224,\"Amazon\",\r\n62785,\"Amazon\",\r\n52994,\"Amazon\",\r\n263639,\"Amazon\",\r\n15169,\"Google\",\r\n41264,\"Google\",\r\n32381,\"Google\",\r\n24424,\"Google\",\r\n139070,\"Google\",\r\n139190,\"Google\",\r\n19527,\"Google\",\r\n36492,\"Google\",\r\n16591,\"Google\",\r\n43515,\"Google\",\r\n36385,\"Google\",\r\n45566,\"Google\",\r\n15169,\"Google\",\r\n395973,\"Google\",\r\n36384,\"Google\",\r\n396982,\"Google\",\r\n394082,\"Google\",\r\n214611,\"Google\",\r\n214609,\"Google\",\r\n16550,\"Google\"\r\n];\r\nSigninLogs\r\n| where TimeGenerated > ago(30d) and RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| where HomeTenantId == ResourceTenantId and UserType <> \"Guest\"\r\n| extend NetworkLocation = tostring(parse_json(NetworkLocationDetails)[0].networkNames[0]) \r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))\r\n| extend AutonomousSystemNumber = toint(AutonomousSystemNumber)\r\n| join kind=leftouter (anslookuptable) on AutonomousSystemNumber\r\n| distinct UserPrincipalName, NetworkLocation, AutonomousSystemNumber,RiskLevelAggregated,RiskLevelDuringSignIn,PotentialASNOwner\r\n| summarize \r\n    [\"Named location\"] = makeset(NetworkLocation),\r\n    [\"Total risk count\"] = count(),\r\n    ['High user risk']=countif(RiskLevelAggregated == \"high\"),\r\n    ['High sign-in risk']=countif(RiskLevelDuringSignIn == \"high\"),\r\n    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == \"medium\") by [\"Autonomous system number (ASN)\"] = AutonomousSystemNumber,[\"Possible ASN owner\"] = PotentialASNOwner\r\n| sort by [\"Total risk count\"] desc",
               "size": 0,
-              "title": "AutonomousSystemNumber risk summary",
+              "title": "Autonomous system number risk summary",
               "timeContextFromParameter": "TimeRange",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces",
@@ -1276,7 +1276,29 @@
               }
             },
             "customWidth": "100",
-            "name": "AutonomousSystemNumber risk breakdown"
+            "name": "Autonomous System Number risk breakdown"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "settab",
+        "comparison": "isEqualTo",
+        "value": "troubleshooting"
+      },
+      "name": "Impact details: Trusted network"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 1,
+            "content": {
+              "json": "## Impact details: Other"
+            },
+            "name": "Impact details: Legacy"
           },
           {
             "type": 3,
@@ -1284,7 +1306,7 @@
               "version": "KqlItem/1.0",
               "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") or RiskLevelAggregated in (\"high\")\r\n| where isnotnull(RiskEventTypes_V2)\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| project TimeGenerated, ResultType, ResultDescription,AppDisplayName,UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskEventType\r\n| summarize [\"Risk type count\"] = count(),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn) by [\"Risk event type\"] = tostring(RiskEventType)",
               "size": 0,
-              "title": "User risk and sign-in risk - riskeventtypes",
+              "title": "Risk event types count",
               "timeContextFromParameter": "TimeRange",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces",
@@ -1301,13 +1323,13 @@
               "version": "KqlItem/1.0",
               "query": "AuditLogs\r\n| where OperationName == \"Suspicious activity reported\"\r\n| extend InitiatedBy = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)\r\n| extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)\r\n| extend targetResources=parse_json(TargetResources)\r\n| extend targetResources=parse_json(TargetResources)\r\n| project TimeGenerated, OperationName, UserPrincipalName, ResultReason",
               "size": 0,
-              "title": "Impact details:  Users reporting suspiciuos sign-ins",
+              "title": "Users reporting suspiciuos sign-ins",
               "timeContextFromParameter": "TimeRange",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces"
             },
             "customWidth": "50",
-            "name": "Impact details:  Users reporting suspiciuos sign-ins"
+            "name": "Users reporting suspiciuos sign-ins"
           }
         ]
       },
@@ -1316,7 +1338,7 @@
         "comparison": "isEqualTo",
         "value": "troubleshooting"
       },
-      "name": "Impact details: Trusted network"
+      "name": "Random"
     },
     {
       "type": 12,
