@@ -1196,7 +1196,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs\r\n| where ResultType == 0 or ResultType == 53003\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n| where ['CA Policy Name'] contains \"risk\"\r\n| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name']\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'])",
+              "query": "SigninLogs\r\n| where ResultType == 0 or ResultType in (53003,530032)\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n| where ['CA Policy Name'] contains \"risk\"\r\n| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name']\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'])",
               "size": 3,
               "title": "Risk user or sign-in impact by conditional access policy",
               "timeContextFromParameter": "TimeRange",
@@ -1207,14 +1207,14 @@
                 "rowLimit": 15,
                 "sortBy": [
                   {
-                    "itemKey": "CA Policy Name",
+                    "itemKey": "failure",
                     "sortOrder": 2
                   }
                 ]
               },
               "sortBy": [
                 {
-                  "itemKey": "CA Policy Name",
+                  "itemKey": "failure",
                   "sortOrder": 2
                 }
               ]
