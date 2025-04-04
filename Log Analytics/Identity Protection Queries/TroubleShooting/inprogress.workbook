@@ -327,7 +327,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") | distinct UserPrincipalName = tolower(UserPrincipalName)\r\n| count",
+              "query": "SigninLogs \r\n| where RiskState !in (\"dismissed\", \"remediated\")\r\n| where ResultType in (0) and AuthenticationRequirementPolicies !contains \"riskBasedPolicy\"\r\n| where AppDisplayName !in (\"Windows Sign In\", \"Microsoft Authentication Broker\", \"Microsoft Account Controls V2\", \"Azure Virtual Desktop Client\", \"Windows 365 Client\")\r\n| where RiskLevelDuringSignIn in (\"high\")\r\n| distinct UserPrincipalName = tolower(UserPrincipalName)\r\n| count",
               "size": 3,
               "showAnalytics": true,
               "title": "1. High risk sign-ins not being blocked",
@@ -371,7 +371,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "let strauthreq = SigninLogs \r\n| where ResultType in (50074)| where RiskLevelDuringSignIn in (\"high\",\"medium\") | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId; \r\nSigninLogs | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\",\"medium\") | where CorrelationId !in (strauthreq) | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" | where RiskState !in (\"dismissed\",\"remediated\")| distinct UserPrincipalName = tolower(UserPrincipalName)\r\n| count",
+              "query": "let strauthreq = SigninLogs \r\n| where ResultType in (50074)| where RiskLevelDuringSignIn in (\"high\",\"medium\") | where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId; \r\nSigninLogs | where ResultType in (0) | where AppDisplayName !in (\"Windows Sign In\",\"Microsoft Authentication Broker\",\"Microsoft Account Controls V2\",\"Azure Virtual Desktop Client\",\"Windows 365 Client\")  | where RiskLevelDuringSignIn in (\"high\",\"medium\") | where CorrelationId !in (strauthreq) | extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" | where RiskState !in (\"dismissed\",\"remediated\")| distinct UserPrincipalName = tolower(UserPrincipalName)\r\n| count",
               "size": 3,
               "showAnalytics": true,
               "title": "2. Medium or high risk sign-ins not remediated using multifactor authentication",
@@ -1044,7 +1044,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs \r\n| where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  | where RiskLevelDuringSignIn in (\"high\") \r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| extend RiskEventTypes_V2 = tostring(RiskEventType)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType,  [\"Sign-in risk level\"] = RiskLevelDuringSignIn\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"],Applications",
+              "query": "SigninLogs \r\n| where ResultType in (0) | where RiskLevelDuringSignIn in (\"high\") \r\n| where AppDisplayName !in (\"Windows Sign In\",\"Microsoft Authentication Broker\",\"Microsoft Account Controls V2\",\"Azure Virtual Desktop Client\",\"Windows 365 Client\")\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| extend RiskEventTypes_V2 = tostring(RiskEventType)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType,  [\"Sign-in risk level\"] = RiskLevelDuringSignIn\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"],Applications",
               "size": 3,
               "title": "1. High risk sign-ins not being blocked by risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -1061,7 +1061,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "let strauthreq = SigninLogs \r\n| where ResultType in (50074)\r\n| where RiskLevelDuringSignIn in (\"high\", \"medium\")\r\n| where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId;\r\nSigninLogs | where RiskState !in (\"dismissed\",\"remediated\") | where ResultType in (0) | where AppDisplayName <> \"Microsoft Authentication Broker\"  \r\n| where RiskLevelDuringSignIn in (\"high\", \"medium\") | where CorrelationId !in (strauthreq) \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" \r\n//| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n//| extend RiskEventTypes_V2 = tostring(RiskEventType)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"],Applications",
+              "query": "let strauthreq = SigninLogs \r\n| where ResultType in (50074)\r\n| where RiskLevelDuringSignIn in (\"high\", \"medium\")\r\n| where AuthenticationRequirementPolicies !has \"riskBasedPolicy\" | distinct CorrelationId;\r\nSigninLogs | where RiskState !in (\"dismissed\",\"remediated\") | where ResultType in (0)\r\n| where AppDisplayName !in (\"Windows Sign In\",\"Microsoft Authentication Broker\",\"Microsoft Account Controls V2\",\"Azure Virtual Desktop Client\",\"Windows 365 Client\")\r\n| where RiskLevelDuringSignIn in (\"high\", \"medium\") | where CorrelationId !in (strauthreq) \r\n| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> \"riskBasedPolicy\" \r\n//| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n//| extend RiskEventTypes_V2 = tostring(RiskEventType)\r\n| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2\r\n| summarize  Applications=make_set(AppDisplayName),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn),\r\n[\"Risk types\"]=make_set(RiskEventTypes_V2)\r\n by UserDisplayName,UserPrincipalName, UserType\r\n | project [\"User display name\"] = UserDisplayName,[\"User principal name\"] = UserPrincipalName, [\"User type\"] = UserType, [\"User risk level\"], [\"Sign-in risk level\"], [\"Risk types\"],Applications",
               "size": 3,
               "title": "2. Medium and high risk sign-ins not self-remediating using multifactor authentication by risk-based access policy",
               "timeContextFromParameter": "TimeRange",
@@ -1198,7 +1198,7 @@
               "version": "KqlItem/1.0",
               "query": "SigninLogs\r\n| where ResultType == 0 or ResultType == 53003\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n| where ['CA Policy Name'] contains \"risk\"\r\n| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name']\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'])",
               "size": 3,
-              "title": "1. Impacted by conditional access policy",
+              "title": "Risk user or sign-in impact by conditional access policy",
               "timeContextFromParameter": "TimeRange",
               "showExportToExcel": true,
               "queryType": 0,
@@ -1282,17 +1282,32 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") or RiskLevelAggregated in (\"high\")\r\n| where isnotnull(RiskEventTypes_V2)\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| project TimeGenerated, ResultType, ResultDescription,AppDisplayName,UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskEventType\r\n| summarize risktypecount = count(),\r\nRiskLevelAggregated = makeset(RiskLevelAggregated),\r\nRiskLevelDuringSignIn = makeset(RiskLevelDuringSignIn) by tostring(RiskEventType)",
+              "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") or RiskLevelAggregated in (\"high\")\r\n| where isnotnull(RiskEventTypes_V2)\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| project TimeGenerated, ResultType, ResultDescription,AppDisplayName,UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskEventType\r\n| summarize [\"Risk type count\"] = count(),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn) by [\"Risk event type\"] = tostring(RiskEventType)",
               "size": 0,
-              "title": "Impact details:  User Risk and Sign-in Risk - Riskeventtypes",
-              "timeContext": {
-                "durationMs": 86400000
-              },
+              "title": "User risk and sign-in risk - riskeventtypes",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 15
+              }
+            },
+            "customWidth": "50",
+            "name": "User risk and sign-in risk - riskeventtypes"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "AuditLogs\r\n| where OperationName == \"Suspicious activity reported\"\r\n| extend InitiatedBy = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)\r\n| extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)\r\n| extend targetResources=parse_json(TargetResources)\r\n| extend targetResources=parse_json(TargetResources)\r\n| project TimeGenerated, OperationName, UserPrincipalName, ResultReason",
+              "size": 0,
+              "title": "Impact details:  Users reporting suspiciuos sign-ins",
+              "timeContextFromParameter": "TimeRange",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces"
             },
-            "customWidth": "100",
-            "name": "Impact details: User Risk and Sign-in Risk - Riskeventtypes"
+            "customWidth": "50",
+            "name": "Impact details:  Users reporting suspiciuos sign-ins"
           }
         ]
       },
