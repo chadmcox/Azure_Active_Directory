@@ -255,7 +255,7 @@
                   "columnMatch": "Blocked high risk users",
                   "formatter": 12,
                   "formatOptions": {
-                    "min": 1,
+                    "min": 0,
                     "palette": "greenRed"
                   },
                   "numberFormat": {
@@ -427,7 +427,7 @@
                   "columnMatch": "count_UserPrincipalName",
                   "formatter": 12,
                   "formatOptions": {
-                    "min": 1,
+                    "min": 0,
                     "palette": "redGreen"
                   },
                   "numberFormat": {
@@ -1349,7 +1349,7 @@
               "version": "KqlItem/1.0",
               "query": "AuditLogs\r\n| where OperationName == \"Suspicious activity reported\"\r\n| extend InitiatedBy = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)\r\n| extend UserPrincipalName = tostring(TargetResources[0].userPrincipalName)\r\n| extend targetResources=parse_json(TargetResources)\r\n| extend targetResources=parse_json(TargetResources)\r\n| project TimeGenerated, OperationName, UserPrincipalName, ResultReason",
               "size": 0,
-              "title": "Users reporting suspiciuos sign-ins",
+              "title": "Users reporting suspiciuos sign-ins increases user risk to high",
               "timeContextFromParameter": "TimeRange",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces"
