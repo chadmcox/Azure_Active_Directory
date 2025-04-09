@@ -880,7 +880,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelAggregated in (\"high\")\r\n| extend Day = startofday(TimeGenerated)\r\n| distinct Day, UserPrincipalName,RiskLevelAggregated\r\n| summarize\r\n ['High user risk']=countif(RiskLevelAggregated == \"high\") by format_datetime(Day, 'MM-dd-yyyy')\r\n| sort by Day asc",
+              "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelAggregated in (\"high\")\r\n| extend Day = startofday(TimeGenerated)\r\n| distinct Day, UserPrincipalName,RiskLevelAggregated\r\n| summarize\r\n ['High user risk']=countif(RiskLevelAggregated == \"high\") by Day\r\n| sort by Day asc",
               "size": 0,
               "title": "Daily total of unique users with high user risk attempting to sign-in",
               "timeContextFromParameter": "TimeRange",
