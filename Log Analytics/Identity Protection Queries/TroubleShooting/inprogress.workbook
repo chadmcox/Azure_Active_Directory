@@ -1203,7 +1203,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs\r\n| where ResultType == 0 or ResultType in (53003,530032)\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n| where ['CA Policy Name'] contains \"risk\"\r\n| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name']\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'])",
+              "query": "SigninLogs\r\n| where ResultType == 0 or ResultType in (53003,530032,50074,53004)\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend [\"User Type\"] = \r\n    iff(UserType == \"Member\", \"Member\",\r\n    iff(AADTenantId == HomeTenantId and HomeTenantId <> ResourceTenantId and UserType == \"Guest\" and CrossTenantAccessType == 'b2bCollaboration' , \"Member\",\"Guest\"))\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n| where ['CA Policy Name'] contains \"risk\"\r\n| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name'],[\"User Type\"]\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'], [\"User Type\"])",
               "size": 3,
               "title": "Risk user or sign-in impact by conditional access policy",
               "timeContextFromParameter": "TimeRange",
@@ -1425,7 +1425,7 @@
     }
   ],
   "fallbackResourceIds": [
-    "/subscriptions/2509a955-812f-4b59-871e-ab1e52042cbf/resourceGroups/AAD-LogAnalytics/providers/Microsoft.OperationalInsights/workspaces/aad-logs-agcompany"
+    "/subscriptions/f365c4f8-69b0-4f28-bd9b-ca885182bad6/resourcegroups/dps-csa-security-engineering-rg/providers/microsoft.operationalinsights/workspaces/hon-central-la-prod"
   ],
   "fromTemplateId": "community-Workbooks/Microsoft Entra ID Protection/ImpactAnalysis",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
