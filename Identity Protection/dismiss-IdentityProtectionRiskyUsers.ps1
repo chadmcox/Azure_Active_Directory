@@ -14,12 +14,12 @@ The default critiria is older than 120 days and are low and medium risk.
 
 #>
 param($resultslocation = "$env:USERPROFILE\Downloads",
-$riskolderthanindays = 120, #in days
-$risklevel = @("low","medium"), #low, medium, high
+$riskolderthanindays = 30, #in days
+$risklevel = @("low","medium","high"), #low, medium, high
 $log = ".\dismissedriskyuser.log")
 
-Connect-MgGraph -Scopes "Policy.Read.All","Reports.Read.All","AuditLog.Read.All","Directory.Read.All","Directory.Read.All","User.Read.All", `
-    "AuditLog.Read.All","IdentityRiskyUser.Read.All","IdentityRiskEvent.Read.All","IdentityRiskyUser.ReadWrite.All"
+Connect-MgGraph -Scopes "Policy.Read.All","Reports.Read.All","AuditLog.Read.All","Directory.Read.All","User.Read.All", `
+    "IdentityRiskEvent.Read.All","IdentityRiskyUser.ReadWrite.All"
 cd $resultslocation
 function getAADRiskyUsers{
     [cmdletbinding()] 
@@ -66,7 +66,7 @@ function dismissRiskyUsers{
     }
 }
 
-write-host "Going to dismiss on any risky user older than $riskolderthanindays"
+write-host "Going to dismiss any risky user older than $riskolderthanindays"
 
 
 getAADRiskyUsers -pv riskyuser | where {$_.riskState -eq "atRisk"} | where {if($_.riskLastUpdatedDateTime){((New-TimeSpan -Start $_.riskLastUpdatedDateTime -end $(get-date)).TotalDays -gt $riskolderthanindays) -and ($_.riskLevel -in $risklevel)}} | foreach{
