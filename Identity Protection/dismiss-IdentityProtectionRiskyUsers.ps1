@@ -14,7 +14,7 @@ The default critiria is older than 120 days and are low and medium risk.
 
 #>
 param($resultslocation = "$env:USERPROFILE\Downloads",
-$riskolderthanindays = 120, #in days
+$riskolderthanindays = 120 #in days
 $risklevel = @("low","medium"), #low, medium, high
 $log = ".\dismissedriskyuser.log")
 
