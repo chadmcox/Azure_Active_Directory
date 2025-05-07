@@ -25,6 +25,7 @@ function getAADRiskyUsers{
 $uri = "https://graph.microsoft.com/beta/riskyUsers"
     do{$results = $null
         for($i=0; $i -le 3; $i++){
+            Start-Sleep -Seconds 2
             try{
                 $results = Invoke-MgGraphRequest -Uri $uri -Method GET -OutputType PSObject
                 break
