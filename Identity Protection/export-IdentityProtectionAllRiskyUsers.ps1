@@ -22,7 +22,7 @@ function getAADRiskyUsers{
     [cmdletbinding()] 
     param()
     write-host "Exporting all riskyusers to: $resultslocation, this may take a while"
-$uri = "https://graph.microsoft.com/beta/riskyUsers"
+$uri = "https://graph.microsoft.com/beta/riskyUsers?`$filter=riskState eq 'atRisk'"
     do{$results = $null
         for($i=0; $i -le 3; $i++){
             Start-Sleep -Seconds 2
