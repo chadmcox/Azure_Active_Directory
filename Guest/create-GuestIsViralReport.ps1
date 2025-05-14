@@ -47,8 +47,7 @@ function getAADGuest{
 }
 
 
-getAADGuest | where {$_.externalUserState -ne 'PendingAcceptance' -and !($_.onPremisesSyncEnabled -eq $true)} | `
-    where {!(($_.signInActivity.lastSignInDateTime -eq $null)) -or (!($_.signInActivity.lastNonInteractiveSignInDateTime -eq $null))} | `
+getAADGuest | where {!($_.onPremisesSyncEnabled -eq $true) -and ($_.identities | where {$_.SignInType -eq "federated"}).Issuer -eq "ExternalAzureAD"} | `
     foreach{$guest="";$guest = $_; $results=""
         if($guest.Mail){
         $userRealmUriFormat = "https://login.microsoftonline.com/common/userrealm?user={urlEncodedMail}&api-version=2.1"
@@ -65,4 +64,4 @@ getAADGuest | where {$_.externalUserState -ne 'PendingAcceptance' -and !($_.onPr
         @{Name="lastPasswordChangeDateTime";Expression={if($_.createdDateTime -ne $_.lastPasswordChangeDateTime){(get-date $_.lastPasswordChangeDateTime).tostring('yyyy-MM-dd')}}}, `
         @{Name="lastSignInDateTime";Expression={(get-date $_.signInActivity.lastSignInDateTime).tostring('yyyy-MM-dd')}}, `
         @{Name="lastNonInteractiveSignInDateTime";Expression={(get-date $_.signInActivity.lastNonInteractiveSignInDateTime).tostring('yyyy-MM-dd')}}
-} | where {$_.IsViral -eq $true -and $_.SignInType -eq "ExternalAzureAD"}  | export-csv .\aad_guest_isviral.csv -NoTypeInformation
+} | where {$_.IsViral -eq $true}  | export-csv .\aad_guest_isviral.csv -NoTypeInformation
