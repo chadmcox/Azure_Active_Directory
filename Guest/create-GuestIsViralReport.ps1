@@ -27,7 +27,7 @@ function getAADGuest{
     [cmdletbinding()] 
     param()
     write-host "Exporting all Guest to: $resultslocation, this may take a while"
-    $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime"
+    $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Guest'&`$select=displayName,signInActivity,userPrincipalName,userType,onPremisesSyncEnabled,externalUserState,externalUserStateChangeDateTime,creationType,createdDateTime,accountEnabled,mail,lastPasswordChangeDateTime,SignInType"
     do{$results = $null
         for($i=0; $i -le 3; $i++){
             try{
@@ -60,6 +60,7 @@ getAADGuest | where {$_.externalUserState -ne 'PendingAcceptance' -and !($_.onPr
             @{Name="DomainName";Expression={if($results){($results.Content | ConvertFrom-Json).DomainName}else{"NA"}}}, `
             @{Name="FederationBrandName";Expression={if($results){($results.Content | ConvertFrom-Json).FederationBrandName}}}, `
             @{Name="IsViral";Expression={if($results){($results.Content | ConvertFrom-Json).IsViral}}}, `
+            @{Name="SignInType";Expression={($_.identities | where {$_.SignInType -eq "federated"}).Issuer}}, `
         @{Name="createdDateTime";Expression={(get-date $_.createdDateTime).tostring('yyyy-MM-dd')}}, `
         @{Name="lastPasswordChangeDateTime";Expression={if($_.createdDateTime -ne $_.lastPasswordChangeDateTime){(get-date $_.lastPasswordChangeDateTime).tostring('yyyy-MM-dd')}}}, `
         @{Name="lastSignInDateTime";Expression={(get-date $_.signInActivity.lastSignInDateTime).tostring('yyyy-MM-dd')}}, `
