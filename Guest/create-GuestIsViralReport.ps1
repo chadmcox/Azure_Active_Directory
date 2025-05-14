@@ -60,9 +60,9 @@ getAADGuest | where {$_.externalUserState -ne 'PendingAcceptance' -and !($_.onPr
             @{Name="DomainName";Expression={if($results){($results.Content | ConvertFrom-Json).DomainName}else{"NA"}}}, `
             @{Name="FederationBrandName";Expression={if($results){($results.Content | ConvertFrom-Json).FederationBrandName}}}, `
             @{Name="IsViral";Expression={if($results){($results.Content | ConvertFrom-Json).IsViral}}}, `
-            @{Name="SignInType";Expression={(($results.Content | ConvertFrom-Json).identities | where {$_.SignInType -eq "federated"}).Issuer}}, `
+            @{Name="SignInType";Expression={($_.identities | where {$_.SignInType -eq "federated"}).Issuer}}, `
         @{Name="createdDateTime";Expression={(get-date $_.createdDateTime).tostring('yyyy-MM-dd')}}, `
         @{Name="lastPasswordChangeDateTime";Expression={if($_.createdDateTime -ne $_.lastPasswordChangeDateTime){(get-date $_.lastPasswordChangeDateTime).tostring('yyyy-MM-dd')}}}, `
         @{Name="lastSignInDateTime";Expression={(get-date $_.signInActivity.lastSignInDateTime).tostring('yyyy-MM-dd')}}, `
         @{Name="lastNonInteractiveSignInDateTime";Expression={(get-date $_.signInActivity.lastNonInteractiveSignInDateTime).tostring('yyyy-MM-dd')}}
-} | where {$_.IsViral -eq $true} | export-csv .\aad_guest_isviral.csv -NoTypeInformation
+} | where {$_.IsViral -eq $true -and $_.SignInType -notin ("MicrosoftAccount","Mail")}  | export-csv .\aad_guest_isviral.csv -NoTypeInformation
