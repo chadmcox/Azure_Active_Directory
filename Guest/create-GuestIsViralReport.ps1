@@ -65,4 +65,4 @@ getAADGuest | where {$_.externalUserState -ne 'PendingAcceptance' -and !($_.onPr
         @{Name="lastPasswordChangeDateTime";Expression={if($_.createdDateTime -ne $_.lastPasswordChangeDateTime){(get-date $_.lastPasswordChangeDateTime).tostring('yyyy-MM-dd')}}}, `
         @{Name="lastSignInDateTime";Expression={(get-date $_.signInActivity.lastSignInDateTime).tostring('yyyy-MM-dd')}}, `
         @{Name="lastNonInteractiveSignInDateTime";Expression={(get-date $_.signInActivity.lastNonInteractiveSignInDateTime).tostring('yyyy-MM-dd')}}
-} | where {$_.IsViral -eq $true -and $_.SignInType -notin ("MicrosoftAccount","Mail")}  | export-csv .\aad_guest_isviral.csv -NoTypeInformation
+} | where {$_.IsViral -eq $true -and $_.SignInType -eq "ExternalAzureAD"}  | export-csv .\aad_guest_isviral.csv -NoTypeInformation
