@@ -187,6 +187,14 @@
             "style": "link"
           },
           {
+            "id": "7b7b0c6c-d8f7-4820-9c45-b708cb425e6b",
+            "cellValue": "settab",
+            "linkTarget": "parameter",
+            "linkLabel": "Investigate User",
+            "subTarget": "investigate",
+            "style": "link"
+          },
+          {
             "id": "b30396d4-e383-4278-a1e3-25363bf82b6f",
             "cellValue": "settab",
             "linkTarget": "parameter",
@@ -1203,7 +1211,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs\r\n| where ResultType == 0 or ResultType in (53003,530032,50074,53004)\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend [\"User Type\"] = \r\n    iff(UserType == \"Member\", \"Member\",\r\n    iff(AADTenantId == HomeTenantId and HomeTenantId <> ResourceTenantId and UserType == \"Guest\" and CrossTenantAccessType == 'b2bCollaboration' , \"Member\",\"Guest\"))\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n| where ['CA Policy Name'] contains \"risk\"\r\n| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name'],[\"User Type\"]\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'], [\"User Type\"])",
+              "query": "SigninLogs\r\n| where ResultType == 0 or ResultType in (53003,530032,50074,53004,50142,70043,530031,70046)\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend [\"User Type\"] = \r\n    iff(UserType == \"Member\", \"Member\",\r\n    iff(AADTenantId == HomeTenantId and HomeTenantId <> ResourceTenantId and UserType == \"Guest\" and CrossTenantAccessType == 'b2bCollaboration' , \"Member\",\"Guest\"))\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n| where ['CA Policy Name'] contains \"risk\"\r\n| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name'],[\"User Type\"]\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'], [\"User Type\"])",
               "size": 3,
               "title": "Risk user or sign-in impact by conditional access policy",
               "timeContextFromParameter": "TimeRange",
@@ -1422,10 +1430,83 @@
         "value": "troubleshooting"
       },
       "name": "Legacy Identity Protection policy scenarios "
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "title": "User Investigate",
+        "items": [
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "parameters": [
+                {
+                  "id": "43486def-8e28-40b0-afee-3128903368d2",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "UserPrincipalName",
+                  "label": "Select UserPrincipalName",
+                  "type": 2,
+                  "isRequired": true,
+                  "isGlobal": true,
+                  "query": "SigninLogs\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| distinct UserPrincipalName | sort by UserPrincipalName asc",
+                  "typeSettings": {
+                    "additionalResourceOptions": []
+                  },
+                  "timeContext": {
+                    "durationMs": 86400000
+                  },
+                  "queryType": 0,
+                  "resourceType": "microsoft.operationalinsights/workspaces",
+                  "value": "brian.marovich@corteva.com"
+                }
+              ],
+              "style": "pills",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "parameters - 0"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where UserPrincipalName == '{UserPrincipalName}'\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") or RiskLevelAggregated in (\"high\")\r\n| where isnotnull(RiskEventTypes_V2)\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| project TimeGenerated, ResultType, ResultDescription,AppDisplayName,UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskEventType\r\n| summarize [\"Risk type count\"] = count(),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn) by [\"Risk\"] = tostring(RiskEventType)",
+              "size": 0,
+              "title": "Sign-ins",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "customWidth": "50",
+            "name": "Signins"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where UserPrincipalName == '{UserPrincipalName}'\r\n| extend city = tostring(parse_json(LocationDetails).city), countryOrRegion = tostring(parse_json(LocationDetails).countryOrRegion), state = tostring(parse_json(LocationDetails).state)\r\n| project TimeGenerated, AppDisplayName, IPAddress,AutonomousSystemNumber, Location, city, state, countryOrRegion, ResultType, ResultDescription",
+              "size": 0,
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "query - 2"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "settab",
+        "comparison": "isEqualTo",
+        "value": "investigate"
+      },
+      "name": "Investigate"
     }
   ],
   "fallbackResourceIds": [
-    "/subscriptions/f365c4f8-69b0-4f28-bd9b-ca885182bad6/resourcegroups/dps-csa-security-engineering-rg/providers/microsoft.operationalinsights/workspaces/hon-central-la-prod"
+    "/subscriptions/2509a955-812f-4b59-871e-ab1e52042cbf/resourceGroups/AAD-LogAnalytics/providers/Microsoft.OperationalInsights/workspaces/aad-logs-agcompany"
   ],
   "fromTemplateId": "community-Workbooks/Microsoft Entra ID Protection/ImpactAnalysis",
   "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
