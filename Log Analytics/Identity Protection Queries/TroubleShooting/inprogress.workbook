@@ -1338,7 +1338,7 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") or RiskLevelAggregated in (\"high\")\r\n| where isnotnull(RiskEventTypes_V2)\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| where tostring(RiskEventType) == \"{EventType}\"\r\n| distinct UserPrincipalName,RiskLevelAggregated, RiskLevelDuringSignIn, tostring(RiskEventType)",
+              "query": "SigninLogs\r\n| where ResultType in (50142,70043,53003,53004,530031,530032,70046)\r\n| summarize ['Attempts'] = count() by UserPrincipalName, ResultType, ResultDescription\r\n| sort by Attempts",
               "size": 0,
               "title": "Risk event types count",
               "timeContextFromParameter": "TimeRange",
@@ -1451,16 +1451,17 @@
                   "type": 2,
                   "isRequired": true,
                   "isGlobal": true,
-                  "query": "SigninLogs\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\",\"low\") or RiskLevelAggregated in (\"high\",\"medium\",\"low\")\r\n| distinct UserPrincipalName | sort by UserPrincipalName asc",
+                  "query": "SigninLogs\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") or RiskLevelAggregated in (\"high\")\r\n| distinct UserPrincipalName | sort by UserPrincipalName asc",
                   "typeSettings": {
-                    "additionalResourceOptions": []
+                    "additionalResourceOptions": [],
+                    "showDefault": false
                   },
                   "timeContext": {
                     "durationMs": 86400000
                   },
                   "queryType": 0,
                   "resourceType": "microsoft.operationalinsights/workspaces",
-                  "value": "brian.marovich@corteva.com"
+                  "value": "rocky.dayvera@corteva.com"
                 }
               ],
               "style": "pills",
@@ -1473,15 +1474,32 @@
             "type": 3,
             "content": {
               "version": "KqlItem/1.0",
-              "query": "SigninLogs\r\n| where UserPrincipalName == '{UserPrincipalName}'\r\n| where RiskState !in (\"dismissed\",\"remediated\")\r\n| where RiskLevelDuringSignIn in (\"high\",\"medium\") or RiskLevelAggregated in (\"high\")\r\n| where isnotnull(RiskEventTypes_V2)\r\n| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)\r\n| project TimeGenerated, ResultType, ResultDescription,AppDisplayName,UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskEventType\r\n| summarize [\"Risk type count\"] = count(),\r\n[\"User risk level\"]=make_set(RiskLevelAggregated), \r\n[\"Sign-in risk level\"] = make_set(RiskLevelDuringSignIn) by [\"Risk\"] = tostring(RiskEventType)",
+              "query": "AADUserRiskEvents\r\n| where UserPrincipalName == '{UserPrincipalName}'\r\n| where RiskEventType == 'unfamiliarFeatures' and RiskState == 'atRisk'\r\n| extend info = tostring(parse_json(AdditionalInfo)[0].Value)\r\n| extend Reason = iff(\r\n    RiskEventType == \"unfamiliarFeatures\", \r\n    strcat_array(parse_json(info), \",\"), \r\n    iff(\r\n        RiskEventType in (\"anonymizedIPAddress\",\"maliciousIPAddress\",\"passwordSpray\"), \r\n        IpAddress, \r\n        iff(\r\n        RiskEventType in (\"mcasImpossibleTravel\"), \r\n        strcat(Location.countryOrRegion, '|', Location.state, '|',Location.city), \r\n        iff(\r\n        RiskEventType in (\"unlikelyTravel\"), \r\n        strcat(tostring(parse_json(AdditionalInfo)[4].Value.countryCode), '|', CountryCode = tostring(Location.countryOrRegion)), \r\n        \"\"\r\n    )\r\n    )\r\n    )\r\n)\r\n| project TimeGenerated,RiskEventType,RiskState,RiskLevel,Reason",
               "size": 0,
-              "title": "Sign-ins",
+              "title": "Risk details",
               "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "gridSettings": {
+                "rowLimit": 5
+              }
+            },
+            "name": "riskDetails"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where UserPrincipalName == '{UserPrincipalName}'\r\n| extend DeviceName = tostring(DeviceDetail.displayName)\r\n| extend OS = tostring(parse_json(DeviceDetail).operatingSystem) \r\n| extend trustType = tostring(parse_json(DeviceDetail).trustType) \r\n| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) \r\n| extend Browser = tostring(parse_json(DeviceDetail).browser)\r\n| summarize ['Authentication Count'] = count() by IPAddress,[\"Device Name\"] = DeviceName,['Operating System'] = OS, ['Trust Type'] = trustType, ['Compliant'] = isCompliant, Browser,UserAgent",
+              "size": 0,
+              "title": "Device Information",
+              "timeContext": {
+                "durationMs": 86400000
+              },
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces"
             },
-            "customWidth": "50",
-            "name": "Signins"
+            "name": "query - 4"
           },
           {
             "type": 3,
@@ -1489,11 +1507,55 @@
               "version": "KqlItem/1.0",
               "query": "SigninLogs\r\n| where UserPrincipalName == '{UserPrincipalName}'\r\n| extend city = tostring(parse_json(LocationDetails).city), countryOrRegion = tostring(parse_json(LocationDetails).countryOrRegion), state = tostring(parse_json(LocationDetails).state)\r\n| project TimeGenerated, AppDisplayName, IPAddress,AutonomousSystemNumber, Location, city, state, countryOrRegion, ResultType, ResultDescription",
               "size": 0,
+              "title": "Sign-in Location Details",
               "timeContextFromParameter": "TimeRange",
               "queryType": 0,
               "resourceType": "microsoft.operationalinsights/workspaces"
             },
             "name": "query - 2"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "search in (AuditLogs) '{UserPrincipalName}'\r\n| project TimeGenerated, OperationName, Category, ResultDescription, Identity, LoggedByService, Result, TargetResources\r\n",
+              "size": 0,
+              "title": "Audit Logs",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces"
+            },
+            "name": "query - 3"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs \r\n| where UserPrincipalName == '{UserPrincipalName}'\r\n| where ResultType in (50126,50076,50053)\r\n| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) \r\n| extend Country = tostring(LocationDetails.countryOrRegion)\r\n| where TrustedLocation != \"trustedNamedLocation\"\r\n| summarize badpwdcount = count() by startofday(TimeGenerated)",
+              "size": 0,
+              "title": "Bad Password Attempts",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "visualization": "unstackedbar"
+            },
+            "customWidth": "50",
+            "name": "passwordSpray"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "SigninLogs\r\n| where UserPrincipalName == '{UserPrincipalName}'\r\n| extend CA = parse_json(ConditionalAccessPolicies)\r\n| mv-expand bagexpansion=array CA\r\n| evaluate bag_unpack(CA)\r\n| extend\r\n    ['CA Outcome']=tostring(column_ifexists('result', \"\")),\r\n    ['CA Policy Name'] = column_ifexists('displayName', \"\")\r\n//| distinct UserPrincipalName,['CA Outcome'],['CA Policy Name']\r\n| evaluate pivot(['CA Outcome'], count(), ['CA Policy Name'])",
+              "size": 0,
+              "title": "Conditional Access Policy Results For User",
+              "timeContextFromParameter": "TimeRange",
+              "queryType": 0,
+              "resourceType": "microsoft.operationalinsights/workspaces",
+              "sortBy": []
+            },
+            "customWidth": "50",
+            "name": "caresults"
           }
         ]
       },
