@@ -13,21 +13,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Scan for unauthorized email addresses
+      - name: Scan for unauthorized email addresses with filenames
         run: |
-          echo "🔍 Scanning for unauthorized emails..."
-
-          # Extract all email-like strings (skip .git directory)
-          matches=$(grep -iEroh --exclude-dir=.git "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" . || true)
+          echo "🔍 Scanning files for unauthorized emails..."
 
           found=0
-          for email in $matches; do
-            if ! echo "$email" | grep -Eiq \
-              "^chadco@microsoft\.com$|^chad\.cox@microsoft\.com$|^authenticationStrength@odata\.context$|^admin@M365x437870\.onmicrosoft\.com$|@contoso\.com$|@([A-Za-z0-9.-]+\.)?chadcolabs\.us$"; then
-              echo "❌ Unauthorized email found: $email"
-              found=1
-            fi
-          done
+
+          # Loop through all files (skip .git directory)
+          while IFS= read -r -d '' file; do
+            while IFS= read -r line; do
+              # Extract email addresses from the line
+              for email in $(echo "$line" | grep -Eo "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"); do
+                if ! echo "$email" | grep -Eiq \
+                  "^chadco@microsoft\.com$|^chad\.cox@microsoft\.com$|^authenticationStrength@odata\.context$|^admin@M365x437870\.onmicrosoft\.com$|@contoso\.com$|@([A-Za-z0-9.-]+\.)?chadcolabs\.us$"; then
+                  echo "❌ Found unauthorized email in $file:"
+                  echo "   → $email"
+                  found=1
+                fi
+              done
+            done < "$file"
+          done < <(find . -type f -not -path "./.git/*" -print0)
 
           if [ "$found" -eq 1 ]; then
             echo "🚫 Commit or PR contains unauthorized email addresses."
