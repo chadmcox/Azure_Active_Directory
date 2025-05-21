@@ -1,0 +1,55 @@
+let BlockList = (externaldata(ip:string)
+[@"https://rules.emergingthreats.net/blockrules/compromised-ips.txt",
+@"https://raw.githubusercontent.com/stamparm/ipsum/master/levels/5.txt",
+@"https://cinsscore.com/list/ci-badguys.txt",
+@"https://infosec.cert-pa.it/analyze/listip.txt",
+@"https://feodotracker.abuse.ch/downloads/ipblocklist_recommended.txt"
+]
+with(format="csv")
+| where ip matches regex "(^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)"
+| distinct ip
+);
+SigninLogs
+| where CreatedDateTime >= ago(30d)
+| where IPAddress in (BlockList)
+| extend DevicetrustType = tostring(DeviceDetail.trustType)
+| project TimeGenerated, UserPrincipalName, OperationName, Category, ResultType, ResultDescription, AppDisplayName, AuthenticationRequirement, IPAddress, DevicetrustType
+
+
+//tor exit nodes
+let BlockList = (externaldata(ip:string)[@"https://raw.githubusercontent.com/SecOps-Institute/Tor-IP-Addresses/master/tor-exit-nodes.lst"]
+with(format="csv")
+| where ip matches regex "(^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)"
+| distinct ip
+);
+SigninLogs
+| where CreatedDateTime >= ago(30d)
+| where IPAddress in (BlockList)
+| extend DevicetrustType = tostring(DeviceDetail.trustType)
+| project TimeGenerated, UserPrincipalName, OperationName, Category, ResultType, ResultDescription, AppDisplayName, AuthenticationRequirement, IPAddress, DevicetrustType
+
+
+//known vps
+//https://github.com/Azure/Azure-Sentinel/blob/master/Hunting%20Queries/SigninLogs/Signins-From-VPS-Providers.yaml
+ let IP_Data = (externaldata(network:string)
+  [@"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Sample%20Data/Feeds/VPS_Networks.csv"] with (format="csv"));
+  SigninLogs
+   | where CreatedDateTime >= ago(30d)
+  | where ResultType == 0
+  | extend additionalDetails = tostring(Status.additionalDetails)
+  | evaluate ipv4_lookup(IP_Data, IPAddress, network, return_unmatched = false)
+  | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+  | summarize make_set(additionalDetails), StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by IPAddress, UserPrincipalName, TrustedLocation
+
+//known nord vpn
+//https://github.com/Azure/Azure-Sentinel/blob/master/Hunting%20Queries/SigninLogs/Signins-From-VPS-Providers.yaml
+ let nord_vpn_feed = (externaldata(id:int,ip_address: string,search_keywords: dynamic,categories:dynamic,name: string,domain:string,price:int,flag:string,country:string,location:dynamic ,load: int ,features:dynamic)
+    [@"https://raw.githubusercontent.com/microsoft/mstic/master/nordvpn-servers.csv"] with (format="csv", ignoreFirstRecord=True));
+  SigninLogs 
+    | where TimeGenerated > ago(4h) 
+    | where ResultType == 0 
+    | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+    | summarize TotalEvents = count(), AppList = make_set(AppDisplayName),  StartTime = min(TimeGenerated), EndTime = max(TimeGenerated) by IPAddress, UserPrincipalName, ClientAppUsed, ConditionalAccessStatus, AuthenticationRequirement, RiskDetail,TrustedLocation
+    | join kind= inner nord_vpn_feed on $left.IPAddress == $right.ip_address
+    | project StartTime , EndTime, IPAddress, UserPrincipalName, AppList, ClientAppUsed, ConditionalAccessStatus, AuthenticationRequirement, RiskDetail, categories, domain, country,TrustedLocation
+    | extend timestamp = StartTime, AccountCustomEntity = UserPrincipalName, IPCustomEntity = IPAddress

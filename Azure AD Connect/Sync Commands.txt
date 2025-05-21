@@ -1,0 +1,5 @@
+Start-ADSyncSyncCycle -PolicyType initial
+
+or
+
+Start-ADSyncSyncCycle -PolicyType delta

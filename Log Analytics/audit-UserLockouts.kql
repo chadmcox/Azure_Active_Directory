@@ -1,0 +1,7 @@
+SigninLogs
+| where CreatedDateTime >= ago(30d)
+| where AppDisplayName in ('*') or '*' in ('*')
+| where UserDisplayName in ('*') or '*' in ('*')
+| extend errorCode = toint(Status.errorCode)
+| where errorCode == 50053
+| summarize Count=count() by UserPrincipalName, ResultDescription, AppDisplayName, IPAddress, ClientAppUsed

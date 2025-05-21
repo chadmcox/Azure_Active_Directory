@@ -1,0 +1,11 @@
+let trustedIPs = SigninLogs | where TimeGenerated > ago(60d) | where NetworkLocationDetails contains"trustedNamedLocation" | distinct IPAddress;
+AADUserRiskEvents
+| where TimeGenerated > ago(60d)
+| where RiskEventType == "unlikelyTravel" and RiskState == "atRisk"
+| extend otherIP = tostring(parse_json(AdditionalInfo)[4].Value.clientIP)
+| extend TrustedLocation = tostring(iff(IpAddress in (trustedIPs), 'True',''))
+| extend OtherTrustedLocation = tostring(iff(otherIP in (trustedIPs), 'True',''))
+| extend otherCountryCode = tostring(parse_json(AdditionalInfo)[4].Value.countryCode)
+| extend CountryCode = tostring(Location.countryOrRegion)
+| distinct TimeGenerated,UserPrincipalName, RiskEventType, OperationName, RiskLevel, otherIP, otherCountryCode,OtherTrustedLocation, IpAddress, CountryCode,TrustedLocation
+| summarize dailycount = count() by startofday(TimeGenerated)

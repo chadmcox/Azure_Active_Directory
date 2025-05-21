@@ -1,0 +1,15 @@
+//for what ever reason azuread, azureadpreview and msol use the same app
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where AppDisplayName == "Azure Active Directory PowerShell"
+| distinct UserPrincipalName
+
+
+//this is a little better of a query that includes graph module and explorer
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where AppId in ("1b730954-1685-4b74-9bfd-dac224a7b894","de8bc8b5-d9f9-48b1-a8ad-b748da725064","14d82eec-204b-4c2f-b7e8-296a70dab67e")
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| distinct UserPrincipalName, AuthenticationRequirement, AppDisplayName,TrustedLocation, RiskLevelDuringSignIn, RiskState

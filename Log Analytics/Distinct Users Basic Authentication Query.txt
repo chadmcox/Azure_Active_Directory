@@ -1,0 +1,83 @@
+SigninLogs
+    | where AppDisplayName in ('*') or '*' in ('*')
+    | where UserDisplayName in ('*') or '*' in ('*')
+    | extend errorCode = toint(Status.errorCode)
+    | extend SigninStatus = case(errorCode == 0, "Success",                       
+        errorCode == 50058, "Interrupt",                       
+        errorCode == 50140, "Interrupt",                       
+        errorCode == 51006, "Interrupt",                       
+        errorCode == 50059, "Interrupt",                       
+        errorCode == 65001, "Interrupt",                       
+        errorCode == 52004, "Interrupt",                       
+        errorCode == 50055, "Interrupt",                       
+        errorCode == 50144, "Interrupt",                       
+        errorCode == 50072, "Interrupt",                       
+        errorCode == 50074, "Interrupt",                       
+        errorCode == 16000, "Interrupt",                       
+        errorCode == 16001, "Interrupt",                       
+        errorCode == 16003, "Interrupt",                       
+        errorCode == 50127, "Interrupt",                       
+        errorCode == 50125, "Interrupt",                       
+        errorCode == 50129, "Interrupt",                       
+        errorCode == 50143, "Interrupt",                       
+        errorCode == 81010, "Interrupt",                       
+        errorCode == 81014, "Interrupt",                       
+        errorCode == 81012, "Interrupt",                       
+        "Failure") 
+    | where SigninStatus == '*' or '*' == '*' or '*' == 'All Sign-ins'    
+    | extend Reason = tostring(Status.failureReason)
+    | extend ClientAppUsed = iff(isempty(ClientAppUsed) == true, "Unknown", ClientAppUsed)  
+    | extend isLegacyAuth = case(ClientAppUsed contains "Browser", "No", ClientAppUsed contains "Mobile Apps and Desktop clients", "No", ClientAppUsed contains "Exchange ActiveSync", "Yes", ClientAppUsed contains "Exchange Online PowerShell","Yes", ClientAppUsed contains "Unknown", "Unknown", "Yes") 
+    | where isLegacyAuth == "Yes"
+    | where AppDisplayName in ('*') or '*' in ('*')
+| where CreatedDateTime >= ago(30d)
+| extend OS = tostring(DeviceDetail.operatingSystem)
+| extend Browser = tostring(DeviceDetail.browser)
+| extend User = UserDisplayName
+| distinct   User, UserPrincipalName, SigninStatus, Browser, AppDisplayName, ClientAppUsed, isLegacyAuth, OS, UserAgent
+
+
+
+----------------------------------------------------------
+//This works to get the same data. but from the noninteractive logs.
+----------------------------------------------------------
+AADNonInteractiveUserSignInLogs
+| where CreatedDateTime >= ago(7d)
+    | where AppDisplayName in ('*') or '*' in ('*')
+    | where UserDisplayName in ('*') or '*' in ('*')
+    | extend newStatus = todynamic(Status)
+    | extend errorCode = toint(newStatus.errorCode)
+    | extend SigninStatus = case(errorCode == 0, "Success",                       
+        errorCode == 50058, "Interrupt",                       
+        errorCode == 50140, "Interrupt",                       
+        errorCode == 51006, "Interrupt",                       
+        errorCode == 50059, "Interrupt",                       
+        errorCode == 65001, "Interrupt",                       
+        errorCode == 52004, "Interrupt",                       
+        errorCode == 50055, "Interrupt",                       
+        errorCode == 50144, "Interrupt",                       
+        errorCode == 50072, "Interrupt",                       
+        errorCode == 50074, "Interrupt",                       
+        errorCode == 16000, "Interrupt",                       
+        errorCode == 16001, "Interrupt",                       
+        errorCode == 16003, "Interrupt",                       
+        errorCode == 50127, "Interrupt",                       
+        errorCode == 50125, "Interrupt",                       
+        errorCode == 50129, "Interrupt",                       
+        errorCode == 50143, "Interrupt",                       
+        errorCode == 81010, "Interrupt",                       
+        errorCode == 81014, "Interrupt",                       
+        errorCode == 81012, "Interrupt",                       
+        "Failure") 
+    | where SigninStatus == '*' or '*' == '*' or '*' == 'All Sign-ins'    
+    | extend Reason = tostring(newStatus.failureReason)
+    | extend ClientAppUsed = iff(isempty(ClientAppUsed) == true, "Unknown", ClientAppUsed)  
+    | extend isLegacyAuth = case(ClientAppUsed contains "Browser", "No", ClientAppUsed contains "Mobile Apps and Desktop clients", "No", ClientAppUsed contains "Exchange ActiveSync", "Yes", ClientAppUsed contains "Exchange Online PowerShell","Yes", ClientAppUsed contains "Unknown", "Unknown", "Yes") 
+    | where isLegacyAuth == "Yes"
+    | where AppDisplayName in ('*') or '*' in ('*')
+| extend newDeviceDetail = todynamic(DeviceDetail)
+| extend OS = tostring(newDeviceDetail.operatingSystem)
+| extend Browser = tostring(newDeviceDetail.browser)
+| extend User = UserDisplayName
+| where errorCode == 0
+| distinct   User, UserPrincipalName, SigninStatus, Browser, AppDisplayName, ClientAppUsed, isLegacyAuth, OS, UserAgent

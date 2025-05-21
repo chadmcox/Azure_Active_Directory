@@ -1,0 +1,22 @@
+SigninLogs
+| where TimeGenerated > ago (14d)
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend os = tostring(DeviceDetail.operatingSystem) 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    where ca.result in ("success","failure")
+    | extend PolicyName = tostring(ca.displayName)
+    //| extend PolicyResult = tostring(ca.result)
+    )
+| summarize
+    ['Total Signin']=count(),
+    ['% of Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),
+    ['Total Blocked']=countif(ResultType == 53003),
+    NumberofApps=dcount(AppDisplayName),NumberofUsers=dcount(UserPrincipalName)
+    by PolicyName
+| project
+    PolicyName,NumberofUsers,NumberofApps,
+    ['Total Signin'],
+    ['Total Trusted Location']=(todouble(['Total Trusted Location']) * 100 / todouble(['Total Signin'])),
+    ['Total Blocked']

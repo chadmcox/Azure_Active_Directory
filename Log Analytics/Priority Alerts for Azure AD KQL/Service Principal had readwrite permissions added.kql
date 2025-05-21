@@ -1,0 +1,12 @@
+let operations = pack_array('Add app role assignment to service principal','Remove app role assignment to service principal');
+AuditLogs 
+//| where TimeGenerated > ago (30d)
+| where OperationName in (operations)
+| extend AppRoleValue = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[1].newValue)
+| extend AppRoleDisplayName = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[2].newValue)
+| extend ServicePrincipalObjectID = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[5].newValue)
+| extend ServicePrincipalName = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[6].newValue)
+| extend API = tostring(parse_json(TargetResources)[0].displayName)
+| extend InitiatedBy = tostring(InitiatedBy.user.userPrincipalName)
+| where AppRoleValue contains "ReadWrite.All"
+| project TimeGenerated, OperationName, InitiatedBy, API, AppRoleValue, AppRoleDisplayName, ServicePrincipalObjectID, ServicePrincipalName

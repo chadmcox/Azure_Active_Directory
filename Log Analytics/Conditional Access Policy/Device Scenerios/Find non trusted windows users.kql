@@ -1,0 +1,21 @@
+let thisTenantId = SigninLogs | take 1 | distinct AADTenantId;
+let guests = AADNonInteractiveUserSignInLogs | union SigninLogs | where TimeGenerated > ago(14d) | where HomeTenantId !in (thisTenantId) and HomeTenantId <> '' | distinct UserId;
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+let OperatingSystem = "Windows";
+AADNonInteractiveUserSignInLogs
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| project-away DeviceDetail
+| union SigninLogs
+| where TimeGenerated > ago(14d) and ResultType == 0
+| where UserType <> "Guest" and UserId !in (guests)
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+//| where ConditionalAccessStatus <> "success"
+| where AADTenantId == ResourceTenantId
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where os startswith(OperatingSystem)
+| where AppDisplayName !in ("Microsoft Authentication Broker","Windows Sign In","Microsoft Device Registration Client")
+| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, trustType,isCompliant,os,Category;

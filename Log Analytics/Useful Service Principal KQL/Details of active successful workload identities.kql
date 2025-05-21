@@ -1,0 +1,6 @@
+//Details of active successful workload identities
+AADServicePrincipalSignInLogs 
+| where ResultType == 0
+| distinct ServicePrincipalId, ServicePrincipalName, ResourceDisplayName
+| project ServicePrincipalId, ServicePrincipalName, ResourceDisplayName
+| sort by ServicePrincipalName asc 

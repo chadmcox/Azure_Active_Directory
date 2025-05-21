@@ -1,0 +1,30 @@
+//first query list every azure role, group, entra id role that is checked out from PIM
+//it then looks at sign-ins within an hour of the check out to see if a user risk is associated
+//goal is to identify privileged accounts with user risk
+let remediated = AADRiskyUsers 
+| where RiskState in ("dismissed","remediated") and OperationName == "Risky user"
+| project RemediatedDateTime = RiskLastUpdatedDateTime, UserPrincipalName, RiskState
+| summarize RemediatedDateTime = max(RemediatedDateTime) by UserPrincipalName;
+let riskusers = AADRiskyUsers 
+| where isnotnull(RiskLastUpdatedDateTime)
+| where RiskState in ("atRisk") and OperationName == "Risky user"
+| join kind=leftouter (remediated) on UserPrincipalName
+| where (RiskLastUpdatedDateTime > RemediatedDateTime) or (isnull(RemediatedDateTime))
+| project RiskLastUpdatedDateTime, UserPrincipalName, RiskState, RemediatedDateTime, RiskLevel, RiskDetail
+| summarize AADRiskyUsersRiskLevel = make_set(RiskLevel) by UserPrincipalName;
+let pim = AuditLogs 
+| where ActivityDisplayName == 'Add member to role completed (PIM activation)'  
+| extend caller = tolower(tostring(InitiatedBy.user.userPrincipalName)) 
+| extend Role = tostring(TargetResources[0].displayName) 
+| extend ActivityTime = bin(TimeGenerated,1h)
+| distinct caller,Role,Category, ActivityTime;
+SigninLogs 
+| where HomeTenantId == ResourceTenantId
+| where ResultType == 0 
+| where RiskLevelAggregated in ("high","medium","low")  or UserPrincipalName in (riskusers)
+| where RiskState !in ("dismissed","remediated")
+| extend ActivityTime = bin(TimeGenerated,1h)
+| project ActivityTime,ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement,RiskLevel
+| join kind=innerunique (pim) on caller, ActivityTime
+//| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct caller,Role,Category, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState

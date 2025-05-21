@@ -1,0 +1,5 @@
+SigninLogs
+| where TimeGenerated > ago(120d)
+| where ResultType == 500532
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement, TrustedLocation, UserId

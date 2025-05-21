@@ -1,0 +1,12 @@
+//this will return the named location, the asn related to the named location and the number of users that have signed in from that location
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == "0"
+| where HomeTenantId == ResourceTenantId and UserType <> "Guest"
+| where NetworkLocationDetails contains "trustedNamedLocation"
+| extend NetworkLocation = tostring(parse_json(NetworkLocationDetails)[0].networkNames[0]) 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| extend isIPv6 = tostring(iff(IPAddress matches regex @"(([\d|\w]{1,4}\:){7}[\d|\w]{1,4})",'Yes','No'))
+| distinct UserPrincipalName,NetworkLocation,AutonomousSystemNumber
+| summarize asn=makeset(AutonomousSystemNumber),uniqueusercountbyip = count() by NetworkLocation
+| project NetworkLocation, uniqueusercountbyip, asn

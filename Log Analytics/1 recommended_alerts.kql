@@ -1,0 +1,128 @@
+//Sign-in Logs
+//BreakGlass Accounts logged in
+SigninLogs
+| project UserId,UserPrincipalName, Location, SourceSystem, TimeGenerated, IPAddress
+| where UserPrincipalName in ('breakglass@contoso.com','breakglass2@contoso.com')
+
+//if break glass is being used
+AuditLogs
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| where Actor in ('breakglass@contoso.com','breakglass2@contoso.com')
+| distinct TimeGenerated, OperationName, Actor
+
+//if changes are made against the breakglass
+AuditLogs
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| where Target in ('breakglass@contoso.com','breakglass2@contoso.com')
+| distinct TimeGenerated, OperationName, Actor, Target
+
+//Audit logs
+//ActivityDisplayName eq 'Enable passthrough authentication'
+AuditLogs
+| where OperationName == "Enable passthrough authentication"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| distinct TimeGenerated, OperationName, Actor
+
+//ActivityDisplayName eq 'Set DirSync feature'
+AuditLogs
+| where OperationName == "Set DirSync feature"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| distinct TimeGenerated, OperationName, Actor
+
+//ActivityDisplayName eq 'Register connector'
+AuditLogs
+| where OperationName == "Register connector"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| distinct TimeGenerated, OperationName, Actor
+
+//ActivityDisplayName eq 'Set domain authentication'
+AuditLogs
+| where OperationName == "Set domain authentication"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| distinct TimeGenerated, OperationName, Actor
+
+//ActivityDisplayName eq 'Set federation settings on domain'
+AuditLogs
+| where OperationName == "Set federation settings on domain"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| distinct TimeGenerated, OperationName, Actor
+
+//ActivityDisplayName eq 'Set password policy'
+AuditLogs
+| where OperationName == "Set password policy"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| distinct TimeGenerated, OperationName, Actor
+
+//ActivityDisplayName eq 'Enable password writeback for directory'
+AuditLogs
+| where OperationName == "Enable password writeback for directory"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| distinct TimeGenerated, OperationName, Actor
+
+//ActivityDisplayName eq 'Add role definition'
+AuditLogs
+| where OperationName == "Add role definition"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| distinct TimeGenerated, OperationName, Actor
+
+//Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role'
+//Category eq 'RoleManagement' and ActivityDisplayName eq 'Add member to role outside of PIM (permanent)'
+AuditLogs
+| where OperationName in ("Add member to role","Add eligible member to role","Add member to role outside of PIM (permanent)")
+| where Result == "success"
+| extend Objecttype = tostring(TargetResources[0].type)
+| extend User = tostring(TargetResources[0].userPrincipalName)
+| extend Role = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| where Objecttype == "User"
+| where Actor <> "MS-PIM"
+| project TimeAdded=TimeGenerated, User, Role, Actor, Objecttype
+
+//ActivityDisplayName eq 'Add conditional access policy'
+//ActivityDisplayName eq 'Update conditional access policy'
+AuditLogs
+| where OperationName == "Add conditional access policy" or OperationName == "Update conditional access policy"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| extend ConditionalAccessPolicy = tostring(TargetResources[0].displayName)
+| project TimeGenerated, Actor, OperationName, ConditionalAccessPolicy, Result, AADOperationType
+
+//Category eq 'ApplicationManagement' and OperationType eq 'Update'
+AuditLogs
+| where OperationName == "n"
+
+//ActivityDisplayName eq 'Add service principal credentials'
+AuditLogs
+| where OperationName == "Add service principal credentials"
+
+//ActivityDisplayName eq 'Add member to group'
+AuditLogs
+| where OperationName == "Add member to group"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| extend group =  tostring(TargetResources[0].modifiedProperties[1].newValue)
+| where Actor !contains "Sync_"
+| distinct TimeGenerated, OperationName, Actor, Target, group
+
+//ActivityDisplayName eq 'Add user'
+AuditLogs
+| where OperationName == "Add user"
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| where Actor !contains "Sync_"
+| where Actor <> "Microsoft Substrate Management"
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| where Target !contains "#EXT#"
+| project TimeGenerated, OperationName, Actor, Target
+
+//ActivityDisplayName eq 'Add app role assignment to service principal'
+AuditLogs
+| where OperationName has "Add app role assignment to service principal"
+| extend UpdatedPermission = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[1].newValue)))
+| extend AppName = tostring(parse_json(tostring(parse_json(tostring(TargetResources[0].modifiedProperties))[4].newValue)))
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| extend AppId = tostring(TargetResources[1].id)
+| project TimeGenerated, OperationName, UpdatedPermission, AppName, AppId, Actor
+
+//ActivityDisplayName eq 'Add app role assignment grant to user'
+AuditLogs
+| where OperationName == "Add app role assignment grant to user"

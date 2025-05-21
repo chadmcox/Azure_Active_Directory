@@ -1,0 +1,12 @@
+let includeapps = pack_array("Windows Azure Service Management API","Azure Portal");
+SigninLogs
+| where AADTenantId == ResourceTenantId
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps)
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
+| distinct AppDisplayName, UPN = tolower(UserPrincipalName), ConditionalAccessStatus, AuthenticationRequirement
+| summarize apps=make_list(AppDisplayName) by UPN, ConditionalAccessStatus, AuthenticationRequirement

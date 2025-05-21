@@ -1,0 +1,3 @@
+AuditLogs
+| where TimeGenerated > ago(90d)
+| where OperationName == "ConfirmSafe"

@@ -1,0 +1,15 @@
+let includeapps = pack_array("Exchange Online","Microsoft 365 Search Service","Microsoft Forms","Microsoft Planner","Microsoft Stream","Microsoft Teams","Microsoft To-Do","Microsoft Flow","Microsoft Office 365 Portal","Microsoft Office client application","Microsoft Stream","Microsoft To-Do WebApp","Microsoft Whiteboard Services","Office Delve","Office Online","OneDrive","Power Apps","Power Automate","Security & compliance portal","SharePoint Online","Skype for Business Online","Skype and Teams Tenant Admin API","Sway","Yammer");
+AADNonInteractiveUserSignInLogs
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| project-away DeviceDetail
+| union SigninLogs
+| where TimeGenerated > ago(14d) and ResultType == 0
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| where AADTenantId == ResourceTenantId
+| where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps)
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, trustType,isCompliant,os,Category;

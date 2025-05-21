@@ -1,0 +1,19 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Users not providing MFA during Intune Enrollmen
+//Link to policy https://learn.microsoft.com/en-us/mem/intune/enrollment/multi-factor-authentication?context=%2Fentra%2Fidentity%2Fconditional-access%2Fcontext%2Fconditional-access-context.json
+SigninLogs 
+| where ResultType == 0
+| where AADTenantId == ResourceTenantId
+| where AppDisplayName == "Microsoft Intune Enrollment"
+| where AuthenticationRequirement == 'singleFactorAuthentication'
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
+| extend os = tostring(DeviceDetail.operatingSystem) 
+| extend trustType = tostring(DeviceDetail.trustType) 
+| extend isCompliant = tostring(DeviceDetail.isCompliant) 
+| extend deviceName = tostring(DeviceDetail.displayName)
+| distinct AppDisplayName, UserPrincipalName, AuthenticationRequirement, deviceName, os, trustType, isCompliant
+| project AppDisplayName, UserPrincipalName, AuthenticationRequirement, deviceName, os, trustType, isCompliant

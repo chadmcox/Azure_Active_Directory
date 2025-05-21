@@ -1,0 +1,9 @@
+let csvData = externaldata(
+    AutonomousSystemNumber: string,
+    Owner: string
+)
+[
+    'https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/refs/heads/master/Log%20Analytics/KnownASN/List.csv'
+]
+with (format='csv');
+csvData

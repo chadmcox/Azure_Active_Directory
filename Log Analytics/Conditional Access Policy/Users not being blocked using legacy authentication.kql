@@ -1,0 +1,10 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Users not being blocked using legacy authentication
+//key to this one is also using the non interactive logs
+AADNonInteractiveUserSignInLogs
+| union SigninLogs
+| where TimeGenerated > ago(14d) and ResultType == 0
+| extend ClientAppUsed = iff(isempty(ClientAppUsed) == true, "Unknown", ClientAppUsed)  
+| extend isLegacyAuth = case(ClientAppUsed contains "Browser", "No", ClientAppUsed contains "Mobile Apps and Desktop clients", "No", ClientAppUsed contains "Exchange ActiveSync", "Yes", ClientAppUsed contains "Exchange Online PowerShell","Yes", ClientAppUsed contains "Authenticated SMTP","Yes", ClientAppUsed contains "Unknown", "Unknown", "Yes") 
+| where isLegacyAuth == "Yes"
+| distinct UserDisplayName, UserPrincipalName=tolower(UserPrincipalName), AppDisplayName, ClientAppUsed, isLegacyAuth, UserAgent

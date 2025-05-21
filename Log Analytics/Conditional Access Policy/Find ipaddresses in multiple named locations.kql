@@ -1,0 +1,8 @@
+SigninLogs
+| where ResultType == 0 and TimeGenerated >= ago(30d)
+| where HomeTenantId == ResourceTenantId and UserPrincipalName <> "Guest"
+| extend NetworkLocation1 = tostring(parse_json(NetworkLocationDetails)[0].networkNames[0]) 
+| extend NetworkLocation2 = tostring(parse_json(NetworkLocationDetails)[1].networkNames[0]) 
+| extend NetworkLocation3 = tostring(parse_json(NetworkLocationDetails)[2].networkNames[0]) 
+| where NetworkLocation2 <> ""
+| distinct NetworkLocation1, NetworkLocation2, NetworkLocation3, IPAddress, AutonomousSystemNumber

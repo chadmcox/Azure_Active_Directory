@@ -1,0 +1,4 @@
+AADUserRiskEvents
+| where TimeGenerated > ago(14d)
+| where RiskEventType == "anonymizedIPAddress" and RiskState == "atRisk"
+| project TimeGenerated, UserPrincipalName, RiskLevel, RiskEventType, IpAddress

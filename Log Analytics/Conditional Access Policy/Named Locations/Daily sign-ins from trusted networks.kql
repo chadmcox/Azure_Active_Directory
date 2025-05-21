@@ -1,0 +1,12 @@
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| where UserType == "Member"
+| extend Day = startofday(TimeGenerated)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| summarize
+    ['Total Signin Count']=count(),
+    ['Total multiFactorAuthentication Count']=countif(AuthenticationRequirement == "multiFactorAuthentication"),
+    ['Total trustednetwork Count']=countif(TrustedLocation == "trustedNamedLocation"),
+    ['Total singleAuthentication Count']=countif(AuthenticationRequirement == "singleFactorAuthentication") by Day  
+| project Day,TrustedNetworkPercentage=(todouble(['Total trustednetwork Count']) * 100 / todouble(['Total Signin Count']))

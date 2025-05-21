@@ -1,0 +1,10 @@
+SigninLogs | where CreatedDateTime >= ago(30d) | where AuthenticationDetails contains 'Windows Hello For Business' | distinct UserPrincipalName
+
+
+
+
+AuditLogs
+| where TimeGenerated > ago(30d)
+| where OperationName in ("Add Windows Hello for Business credential")
+| summarize Count=count()by OperationName, startofday(TimeGenerated)
+| render columnchart with (kind=unstacked, title="whatevber", xtitle="day")

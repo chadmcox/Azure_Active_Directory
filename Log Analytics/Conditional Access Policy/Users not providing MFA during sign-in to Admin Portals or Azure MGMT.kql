@@ -1,0 +1,15 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Users not providing MFA during sign-in to Admin Portals or Azure MGMT
+let includeapps = pack_array("Microsoft Graph Command Line Tools","Graph Explorer","Microsoft Graph PowerShell","Windows Azure Service Management API","Azure Resource Manager","Azure portal","Azure Data Lake","Application Insights API","Log Analytics API","Microsoft Cloud App Security","Azure Advanced Threat Protection","Windows Defender ATP");
+let includeappsguid = pack_array("c44b4083-3bb0-49c1-b47d-974e53cbdf3c","00000006-0000-0ff1-ce00-000000000000","497effe9-df71-4043-a8bb-14cf78c4b63b","80ccca67-54bd-44ab-8625-4b79c4dc7775","c44b4083-3bb0-49c1-b47d-974e53cbdf3c");
+SigninLogs
+| where AADTenantId == ResourceTenantId
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps) or AppId in (includeappsguid)
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
+| distinct AppDisplayName, UPN = tolower(UserPrincipalName), ConditionalAccessStatus, AuthenticationRequirement
+| summarize apps=make_list(AppDisplayName) by UPN, ConditionalAccessStatus, AuthenticationRequirement

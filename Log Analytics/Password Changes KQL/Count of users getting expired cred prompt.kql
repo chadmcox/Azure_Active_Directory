@@ -1,0 +1,5 @@
+SigninLogs 
+| where TimeGenerated > ago(30d)
+| where ResultType == 50055
+| distinct startofday(TimeGenerated), UserPrincipalName
+| summarize Count=count()by startofday(TimeGenerated)

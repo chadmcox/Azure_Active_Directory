@@ -1,0 +1,35 @@
+let risklevel = pack_array("high");
+let riskeventsid = SigninLogs
+| where RiskLevelAggregated in (risklevel)
+| distinct OriginalRequestId;
+let remediated = SigninLogs
+| where RiskState !in ("none")
+| where OriginalRequestId in (riskeventsid)
+| where RiskState !in ("atRisk","none")
+| project OriginalRequestId,RemediatedDateTime = TimeGenerated, UserPrincipalName, RiskState;
+let risk = SigninLogs
+| where RiskState !in ("none")
+| where OriginalRequestId in (riskeventsid)
+| where RiskState in ("atRisk") and RiskLevelAggregated in (risklevel)
+| where not(ResultType == 53003 and ResultDescription == "Access has been blocked due to conditional access policies.")
+| join kind=leftouter (remediated) on OriginalRequestId
+| project RiskDateTime = TimeGenerated, UserPrincipalName = tolower(UserPrincipalName), RemediatedDateTime,riskuserRiskLevelAggregated = RiskLevelAggregated, riskResultType=ResultType,riskResultDescription=ResultDescription;
+let riskusers = risk | distinct UserPrincipalName = tolower(UserPrincipalName);
+SigninLogs
+| where ResultType == 0 or (ResultType == 50142 and AuthenticationRequirementPolicies has "riskBasedPolicy" ) or (ResultType == 53003 and ResultDescription == "Access has been blocked due to conditional access policies.")
+| where tolower(UserPrincipalName) in (riskusers) 
+| where AppDisplayName !in ("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2")
+| extend ["Device trust type"] = tostring(parse_json(DeviceDetail).trustType) 
+| extend ["Device is compliant"] = tostring(parse_json(DeviceDetail).isCompliant) 
+| join kind=leftouter (risk) on UserPrincipalName
+| where ((TimeGenerated <= RemediatedDateTime) or (isnull(RemediatedDateTime))) and (TimeGenerated >= RiskDateTime)
+| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, riskuserRiskLevelAggregated,RiskLevelDuringSignIn,["Device trust type"], ["Device is compliant"],riskResultType,riskResultDescription
+| summarize  Applications=make_set(AppDisplayName),
+resulttype = make_set(ResultType),
+["User risk level"]=make_set(riskuserRiskLevelAggregated),
+["Sign-in risk level"] = make_set(RiskLevelDuringSignIn),
+["Device trust type"] = make_set(["Device trust type"]),
+["Device is compliant"] = make_set(["Device is compliant"])
+ by UserDisplayName,UserPrincipalName, UserType
+ | where resulttype !contains "50142"
+ | project ["User display name"] = UserDisplayName,["User principal name"] = UserPrincipalName, ["User type"] = UserType, ["User risk level"],["Sign-in risk level"], Applications,["Device trust type"], ["Device is compliant"]

@@ -1,0 +1,4 @@
+
+SigninLogs
+| project UserId,UserPrincipalName, Location, SourceSystem, TimeGenerated, IPAddress
+| where UserPrincipalName in ('breakglass@contoso.com','breakglass2@contoso.com')

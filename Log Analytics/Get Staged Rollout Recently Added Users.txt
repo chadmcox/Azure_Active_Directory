@@ -1,0 +1,31 @@
+#this just goest back last 4 hours
+AuditLogs
+| where ActivityDateTime >= ago(4h)
+| where ActivityDisplayName == "Add user to feature rollout"
+| mv-expand TargetResources
+| extend Target = tostring(TargetResources.userPrincipalName)
+| project Target
+
+#this will list the users removed from staged rollout
+AuditLogs
+| where ActivityDateTime >= ago(17h)
+| where ActivityDisplayName == "Remove user from feature rollout"
+| mv-expand TargetResources
+| extend Target = tostring(TargetResources.userPrincipalName)
+| project Target, ActivityDateTime
+
+//This will show a graph for recently added users
+AuditLogs
+| where ActivityDateTime >= ago(30d)
+| where ActivityDisplayName == "Add user to feature rollout"
+| mv-expand TargetResources
+| extend Target = tostring(TargetResources.userPrincipalName)
+| project Target, ActivityDateTime
+| summarize
+    Enabled=count() by startofweek(ActivityDateTime)
+| render columnchart
+    with (
+    kind=unstacked,
+    xtitle="Week",
+    ytitle="Enabled Count",
+    title="Add user to feature rollout")

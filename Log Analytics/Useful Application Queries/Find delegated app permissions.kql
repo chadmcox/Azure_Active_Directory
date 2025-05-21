@@ -1,0 +1,9 @@
+let operations = pack_array('Add delegated permission grant','Remove delegated permission grant');
+AuditLogs 
+| where TimeGenerated > ago (30d)
+| where OperationName in (operations)
+| extend InitiatedBy = tostring(InitiatedBy.user.userPrincipalName)
+| extend API = tostring(parse_json(TargetResources)[0].displayName)
+| extend DelegatedPermissionGrantScope = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[0].newValue)
+| extend spid = tostring(parse_json(TargetResources)[1].id)
+| project TimeGenerated, InitiatedBy, API, DelegatedPermissionGrantScope, spid

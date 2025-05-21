@@ -1,0 +1,4 @@
+AADUserRiskEvents
+| where RiskEventType == "unlikelyTravel"
+| extend iplocation = strcat(Location.countryOrRegion, '|', Location.state, '|',Location.city)
+| summarize totalcount = count() by iplocation, IpAddress

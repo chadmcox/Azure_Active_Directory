@@ -1,0 +1,5 @@
+SigninLogs
+| where TimeGenerated > ago(1d)
+| where ResultType == 0
+| where AppId in ("80ccca67-54bd-44ab-8625-4b79c4dc7775")
+| distinct UserPrincipalName, AuthenticationRequirement, AppDisplayName

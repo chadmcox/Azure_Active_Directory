@@ -1,0 +1,27 @@
+let compliant = SigninLogs
+| where TimeGenerated > ago(14d) and ResultType == 0
+| where UserType <> "Guest"
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant)
+| extend deviceId = tostring(parse_json(DeviceDetail).deviceId)
+| where isCompliant == 'true' or trustType == "Hybrid Azure AD joined"
+| where deviceId <> ""
+| distinct deviceId;
+SigninLogs
+| where TimeGenerated > ago(14d) and ResultType == 0
+| where UserType <> "Guest"
+| extend deviceId = tostring(parse_json(DeviceDetail).deviceId)
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend deviceName = tostring(parse_json(DeviceDetail).deviceName)
+| where deviceId !in (compliant)
+| extend browser = tostring(parse_json(DeviceDetail).browser) 
+//| where ConditionalAccessStatus <> "success"
+| where AADTenantId == ResourceTenantId
+| where AppDisplayName !in ("Microsoft Authentication Broker","Windows Sign In","Microsoft Device Registration Client")
+| where os contains "windows" or os contains "mac"
+| distinct UserPrincipalName, trustType,isCompliant,os, deviceName, browser
+| sort by os, browser
+| project UserPrincipalName, trustType,isCompliant,os, deviceName, browser

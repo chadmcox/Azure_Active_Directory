@@ -1,0 +1,18 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+SigninLogs
+| where TimeGenerated > ago(30d) and AppDisplayName !in (excludeapps) and ResultType == 0 and UserType == "Member"
+| extend Day = startofday(TimeGenerated)
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| summarize
+    ['Total Signin Count']=count(),
+    ['Hybrid Azure AD joined']=countif(trustType == "Hybrid Azure AD joined"),
+    ['Compliant']=countif(isCompliant == "true") by Day  
+| project Day,HAADJPercentage=(todouble(['Hybrid Azure AD joined']) * 100 / todouble(['Total Signin Count'])),
+CompliantPercentage=(todouble(['Compliant']) * 100 / todouble(['Total Signin Count']))
+| render columnchart
+    with (
+    kind=unstacked,
+    xtitle="Day",
+    ytitle="Signin Count",
+    title="HAADJ vs Compliant signins per day")

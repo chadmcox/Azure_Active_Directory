@@ -1,0 +1,9 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Directory Sync Account not being blocked from untrusted networks
+
+union SigninLogs, AADNonInteractiveUserSignInLogs 
+| where TimeGenerated > ago(14d) 
+| where NetworkLocationDetails !contains "trustedNamedLocation"
+| where UserPrincipalName startswith "Sync_" or AppDisplayName == 'Microsoft Azure Active Directory Connect'
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
+| distinct IPAddress, TrustedLocation, UserPrincipalName, AppDisplayName

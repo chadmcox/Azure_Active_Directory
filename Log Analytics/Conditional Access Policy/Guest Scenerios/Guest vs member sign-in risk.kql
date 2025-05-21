@@ -1,0 +1,16 @@
+let lastsomanydays = ago(30d);
+let strauthreq = SigninLogs 
+| where TimeGenerated >= lastsomanydays
+| where ResultType in (50074)
+| where RiskLevelDuringSignIn in ("high", "medium","low")
+| where AuthenticationRequirementPolicies !has "riskBasedPolicy" | distinct CorrelationId;
+SigninLogs
+| where TimeGenerated >= lastsomanydays | where RiskState !in ("dismissed","remediated") | where ResultType in (0) | where AppDisplayName <> "Microsoft Authentication Broker"  
+| where RiskLevelDuringSignIn in ("high", "medium","low")| where CorrelationId !in (strauthreq) 
+| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) | where authRequirement <> "riskBasedPolicy" 
+//| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+//| extend RiskEventTypes_V2 = tostring(RiskEventType)
+| distinct ResultType, ResultDescription,AppDisplayName, UserDisplayName, UserPrincipalName = tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn,   RiskEventTypes_V2,HomeTenantId, AADTenantId
+| summarize 
+    Members = countif(AADTenantId == HomeTenantId), 
+    Guest = countif(AADTenantId <> HomeTenantId) by RiskLevelDuringSignIn

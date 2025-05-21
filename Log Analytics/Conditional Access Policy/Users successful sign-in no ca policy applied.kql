@@ -1,0 +1,13 @@
+SigninLogs
+| where ResultType == 0 and TimeGenerated >= ago(5d)
+| where HomeTenantId == ResourceTenantId  and UserPrincipalName <> "Guest"
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success","failure"))
+)
+| where condition1 == 0
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
+| distinct UserPrincipalName=tolower(UserPrincipalName),AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed

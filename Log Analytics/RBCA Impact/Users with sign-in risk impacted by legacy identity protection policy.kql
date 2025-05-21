@@ -1,0 +1,8 @@
+SigninLogs
+| where ResultType in (0)
+| where RiskLevelDuringSignIn in ("high","medium")
+| where AuthenticationRequirementPolicies has "riskBasedPolicy"
+| where AuthenticationRequirementPolicies has "tenantSessionRiskPolicy"
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct  ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated,RiskLevelDuringSignIn, RiskState, RiskDetail,tostring(RiskEventType), ConditionalAccessStatus, AuthenticationRequirement
+| project ResultType, ResultDescription,AppDisplayName, caller,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,RiskEventType, ConditionalAccessStatus, AuthenticationRequirement

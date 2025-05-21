@@ -1,0 +1,23 @@
+let csvData = externaldata(
+    AutonomousSystemNumber: string,
+    Owner: string
+)
+[
+    'https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/refs/heads/master/Log%20Analytics/KnownASN/List.csv'
+]
+with (format='csv');
+let lookupTable = csvData;
+SigninLogs
+| where TimeGenerated > ago(30d) and RiskState !in ("dismissed","remediated")
+| where RiskLevelDuringSignIn in ("high","medium","low") or RiskLevelAggregated in ("high","medium","low")
+| where HomeTenantId == ResourceTenantId and UserType <> "Guest"
+| extend NetworkLocation = tostring(parse_json(NetworkLocationDetails)[0].networkNames[0]) 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| join kind=leftouter (csvData) on AutonomousSystemNumber
+| distinct UserPrincipalName, NetworkLocation, AutonomousSystemNumber, ASNOwner = Owner,RiskLevelAggregated,RiskLevelDuringSignIn
+| summarize 
+    NetworkLocations = makeset(NetworkLocation),
+    instancecount = count(),
+    ['High user risk']=countif(RiskLevelAggregated == "high"),
+    ['High sign-in risk']=countif(RiskLevelDuringSignIn == "high"),
+    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == "medium") by ASNOwner

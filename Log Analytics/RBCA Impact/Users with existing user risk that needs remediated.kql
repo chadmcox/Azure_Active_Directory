@@ -1,0 +1,10 @@
+//this list every user that has attempted to sign-in over the last 60 days
+//that have user risk.  Goal would be to make sure to clear these users risk
+SigninLogs
+| where TimeGenerated > ago(60d) 
+| where AADTenantId == ResourceTenantId
+| where RiskLevelAggregated in ("medium","low")
+| where RiskState !in ("dismissed","remediated")
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct UserPrincipalName, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState
+| project UserPrincipalName, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState

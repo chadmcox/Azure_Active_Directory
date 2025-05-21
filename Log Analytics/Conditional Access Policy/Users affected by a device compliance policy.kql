@@ -1,0 +1,31 @@
+let AAD = AADNonInteractiveUserSignInLogs
+| where ResultType in (53000)
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    where ca.result in ("failure")
+    | extend PolicyName = tostring(ca.displayName))
+| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName,PolicyName
+;
+let AADNon =  SigninLogs
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    where ca.result in ("failure")
+    | extend PolicyName = tostring(ca.displayName))
+| where ResultType in (53000)
+| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName,PolicyName
+;
+AADNon
+| union AAD
+| summarize 
+    officelist = make_set(AppDisplayName),
+    oslist = make_set(os),
+    browserlist = make_set(browser),
+    clientapplist = make_set(ClientAppUsed),
+    PolicyList = make_set(PolicyName)
+     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant

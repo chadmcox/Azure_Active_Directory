@@ -1,0 +1,11 @@
+let isGUID = "[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}";
+SigninLogs
+| where TimeGenerated > ago(30d)
+| mv-expand todynamic(AuthenticationDetails)
+| extend ['Authentication Method'] = tostring(AuthenticationDetails.authenticationMethod)
+| where ['Authentication Method'] has ('OATH')
+//Exclude previously satisifed, passwords and other data and any UserPrincipalName that comes through as a guid
+| where ['Authentication Method'] !in ("Previously satisfied", "Password", "Other")
+    and isnotempty(['Authentication Method'])
+    and not(UserPrincipalName matches regex isGUID)
+ | distinct UserPrincipalName, ['Authentication Method']

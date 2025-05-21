@@ -1,0 +1,6 @@
+AuditLogs
+| where ActivityDisplayName == "Delete group"
+| mv-expand TargetResources
+| extend GroupDisplayname = tostring(TargetResources.displayName)
+| extend GroupObjectID = tostring(TargetResources.id)
+| project GroupObjectID, GroupDisplayname

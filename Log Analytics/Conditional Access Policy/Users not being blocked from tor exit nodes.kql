@@ -1,0 +1,11 @@
+//tor exit nodes
+let BlockList = (externaldata(ip:string)[@"https://raw.githubusercontent.com/SecOps-Institute/Tor-IP-Addresses/master/tor-exit-nodes.lst"]
+with(format="csv")
+| where ip matches regex "(^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$)"
+| distinct ip
+);
+SigninLogs
+| where CreatedDateTime >= ago(30d)
+| where IPAddress in (BlockList)
+| extend DevicetrustType = tostring(DeviceDetail.trustType)
+| project TimeGenerated, UserPrincipalName, OperationName, Category, ResultType, ResultDescription, AppDisplayName, AuthenticationRequirement, IPAddress, DevicetrustType

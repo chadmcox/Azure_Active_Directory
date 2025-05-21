@@ -1,0 +1,5 @@
+AuditLogs
+| where TimeGenerated > ago(14d)
+| where OperationName in ("User changed default security info", "User registered all required security info", "User registered security info")
+| extend User = tostring(TargetResources[0].userPrincipalName)
+| project SecurityInfoTime=TimeGenerated, User, OperationName

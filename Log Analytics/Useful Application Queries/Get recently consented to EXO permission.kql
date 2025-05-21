@@ -1,0 +1,41 @@
+let perms =  pack_array("Mail.Read","Mail.Read.Shared","Mail.ReadBasic","Mail.ReadBasic.All","Mail.ReadWrite","Mail.ReadWrite.Shared","Mail.Send", 
+    "Mail.Send.Shared","MailboxSettings.Read","MailboxSettings.ReadWrite","email","EWS.AccessAsUser.All","Exchange.Manage","EAS.AccessAsUser.All");
+AuditLogs
+  | where LoggedByService =~ "Core Directory"
+  | where TimeGenerated > ago(60d)
+  | where Category =~ "ApplicationManagement"
+  | where OperationName =~ "Consent to application"
+  | mv-expand TargetResources
+  | extend OAuthAppName = tostring(TargetResources.displayName)
+  | extend ModifiedProperties = TargetResources.modifiedProperties 
+  | mv-apply Property = ModifiedProperties on 
+    (
+        where Property.displayName =~ "ConsentContext.isAdminConsent"
+        | extend AdminConsent = tostring(Property.newValue)
+    )
+  | mv-apply Property = ModifiedProperties on 
+    (
+        where Property.displayName =~ "ConsentAction.Permissions"
+        | extend Permissions = tostring(Property.newValue)
+    )
+  | mv-apply Property = ModifiedProperties on 
+    (
+        where Property.displayName =~ "TargetId.ServicePrincipalNames"
+        | extend AppId = tostring(Property.newValue)
+    )
+  | mv-expand AdditionalDetails
+  | extend GrantUserAgent = tostring(iff(AdditionalDetails.key =~ "User-Agent", AdditionalDetails.value, ""))
+  | where GrantUserAgent <> "EvoSTS"
+  | parse Permissions with * "ConsentType: " GrantConsentType ", Scope: " GrantScope1 "," *
+  | extend GrantIpAddress = tostring(iff(isnotempty(InitiatedBy.user.ipAddress), InitiatedBy.user.ipAddress, InitiatedBy.app.ipAddress))
+  | extend GrantInitiatedBy = tostring(iff(isnotempty(InitiatedBy.user.userPrincipalName),InitiatedBy.user.userPrincipalName, InitiatedBy.app.displayName))
+  | project-reorder TimeGenerated, OAuthAppName, AppId, AdminConsent, Permissions, GrantIpAddress, GrantInitiatedBy, GrantUserAgent, GrantScope1, GrantConsentType
+  | extend Name = split(GrantInitiatedBy, "@")[0], UPNSuffix = split(GrantInitiatedBy, "@")[1]
+  | project OAuthAppName, GrantInitiatedBy, AdminConsent, GrantScope1
+ | extend perm = split(GrantScope1,' ')
+| mv-expand bagexpansion=array perm
+| evaluate bag_unpack(perm)
+| where perm <> ""
+| extend scope = tostring(perm)
+| where perm in~ (perms)
+| project OAuthAppName, AdminConsent, perm, GrantInitiatedBy, scope

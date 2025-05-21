@@ -1,0 +1,7 @@
+let PowershellApps = pack_array('00000002-0000-0000-c000-000000000000','cb1056e2-e479-49de-ae31-7812af012ed8','1b730954-1685-4b74-9bfd-dac224a7b894', '1950a258-227b-4e31-a9cf-717495945fc2', '04b07795-8ddb-461a-bbee-02f9e1bf7b46','14d82eec-204b-4c2f-b7e8-296a70dab67e','fb78d390-0c51-40cd-8e17-fdbfab77341b','4765445b-32c6-49b0-83e6-1d93765276ca');
+union SigninLogs,AADNonInteractiveUserSignInLogs
+| where TimeGenerated > ago(17d) 
+| where UserAgent has "node-fetch" or UserAgent has "python-requests" or UserAgent has "go-resty/2.14.0 (https://github.com/go-resty/resty)" or UserAgent has "go-http-client" or UserAgent has "fasthttp" or UserAgent == 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0'
+| where ResultType in (50126,50076,50053,50105)
+| where AppId in~ (PowershellApps)
+| project TimeGenerated,AppDisplayName, UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement, ResultType,ResultDescription, Location, Identity, IPAddress, AutonomousSystemNumber, UserAgent

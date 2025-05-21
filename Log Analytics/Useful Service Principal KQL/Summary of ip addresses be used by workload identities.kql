@@ -1,0 +1,13 @@
+//this will provide a list of IP addresses and how many unique service principals are hitting up against it
+//Summary of IP Addresses be used by workload identities
+let trustedNamedLocations = SigninLogs | where TimeGenerated > ago(30d) | where ResultType == "0" | extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) | where TrustedLocation == "trustedNamedLocation" | distinct IPAddress;
+AADServicePrincipalSignInLogs  
+| where TimeGenerated > ago(30d)
+| where ResultType == 0
+| extend TrustedLocation = tostring(iff(IPAddress in (trustedNamedLocations), 'trustedNamedLocation',''))
+| extend City = tostring(parse_json(LocationDetails).city)
+| extend State = tostring(parse_json(LocationDetails).state)
+| extend Country = tostring(parse_json(LocationDetails).countryOrRegion)
+| distinct IPAddress, ServicePrincipalName, City, State, Country, TrustedLocation
+| summarize workloadidentitycount = count() by IPAddress, City, State, Country, TrustedLocation
+| sort by workloadidentitycount desc 

@@ -1,0 +1,6 @@
+//this is the audit event that triggers when user reports suspicious activity
+//goal is to list users who are using the feature
+AuditLogs 
+| where ActivityDisplayName in ("Suspicious activity reported")
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| distinct TimeGenerated, OperationName, Actor

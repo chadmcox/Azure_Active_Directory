@@ -1,0 +1,35 @@
+Get-ADSyncExportDeletionThreshold
+
+Disable-ADSyncExportDeletionThreshold
+
+Enable-ADSyncExportDeletionThreshold -DeletionThreshold 500
+
+Get-MsolDirSyncConfiguration
+
+set-MsolDirSyncConfiguration
+
+----------------------------------------------------------------------------------------------------------------------
+Some of my notes
+
+Azure AD Connect sync: Prevent accidental deletes
+https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sync-feature-prevent-accidental-deletes
+
+Here is what I noticed
+
+if I run:
+Enable-ADSyncExportDeletionThreshold -DeletionThreshold 505
+
+It changes the setting to 505 on the server and in Azure AD
+
+DeletionPrevention ThresholdPercentage ThresholdCount
+------------------ ------------------- --------------
+                 1                   0            505
+                 
+After a few seconds this also shows here
+Get-MsolDirSyncConfiguration
+
+went from 500 to 505
+
+ExtensionData                                    AccidentalDeletionThreshold DeletionPreventionType
+-------------                                    --------------------------- ----------------------
+System.Runtime.Serialization.ExtensionDataObject                         505        EnabledForCount

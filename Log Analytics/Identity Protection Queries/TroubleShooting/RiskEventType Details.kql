@@ -1,0 +1,6 @@
+SigninLogs
+| where TimeGenerated > ago(8d) and RiskState !in ("dismissed","remediated")
+| where RiskLevelDuringSignIn in ("high","medium","low") or RiskLevelAggregated in ("high","medium","low")
+| where isnotnull(RiskEventTypes_V2)
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| project TimeGenerated,UserPrincipalName,UserType,AppDisplayName,RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskEventType, IPAddress, AutonomousSystemNumber, ResultType, ResultDescription

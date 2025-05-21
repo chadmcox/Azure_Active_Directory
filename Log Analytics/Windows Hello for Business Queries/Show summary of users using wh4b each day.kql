@@ -1,0 +1,15 @@
+let timerange=60d;
+SigninLogs
+| where TimeGenerated > ago (timerange)
+| project eachday = startofday(TimeGenerated), AuthenticationDetails, UserPrincipalName
+| extend AuthMethod = tostring(parse_json(AuthenticationDetails)[0].authenticationMethod)
+| where AuthMethod != "Previously satisfied"
+| summarize
+    Passwordless=countif(AuthMethod in ("Windows Hello for Business"))
+    by eachday
+| render columnchart
+    with (
+    kind=unstacked,
+    xtitle="Week",
+    ytitle="Signin Count",
+    title="WH4B number of users per day")

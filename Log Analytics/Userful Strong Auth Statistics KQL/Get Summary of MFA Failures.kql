@@ -1,0 +1,10 @@
+//idea from https://github.com/reprise99/Sentinel-Queries/tree/main/Azure%20Active%20Directory
+
+SigninLogs
+| where TimeGenerated > ago (90d)
+| where ResultType == "500121"
+| mv-expand todynamic(AuthenticationDetails)
+| project AuthenticationDetails, ResultType
+| extend ['MFA Failure Type'] = tostring(parse_json(AuthenticationDetails).authenticationStepResultDetail)
+| summarize Count=count()by ['MFA Failure Type']
+| sort by Count

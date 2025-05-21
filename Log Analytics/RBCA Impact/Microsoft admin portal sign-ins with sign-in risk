@@ -1,0 +1,17 @@
+//this applied to users with a user risk when trying to sign-in to Windows Azure Service Management API or Microsoft Admin Portals
+//want to make sure no users with a sign-in risk are signing into one of the admin portals
+let includeapps = pack_array("Windows Azure Service Management API","Azure Resource Manager","Azure portal","Azure Data Lake","Application Insights API","Log Analytics API");
+let includeappsguid = pack_array("c44b4083-3bb0-49c1-b47d-974e53cbdf3c","00000006-0000-0ff1-ce00-000000000000","497effe9-df71-4043-a8bb-14cf78c4b63b","80ccca67-54bd-44ab-8625-4b79c4dc7775","c44b4083-3bb0-49c1-b47d-974e53cbdf3c");
+SigninLogs
+| where AADTenantId == ResourceTenantId
+| where ResultType == 0 
+| where RiskLevelDuringSignIn in ("high","medium","low")
+| where RiskState !in ("dismissed","remediated")
+| where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps) or AppId in (includeappsguid)
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+//| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct UserPrincipalName,UserDisplayName, RiskLevelDuringSignIn, RiskLevelAggregated,  RiskDetail, RiskLevel, RiskState, AppDisplayName
+| project UserPrincipalName,UserDisplayName, RiskLevelDuringSignIn, RiskLevelAggregated,  RiskDetail, RiskLevel, RiskState, AppDisplayName

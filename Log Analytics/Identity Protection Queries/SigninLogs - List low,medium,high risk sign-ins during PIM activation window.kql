@@ -1,0 +1,15 @@
+let pim = AuditLogs 
+| where TimeGenerated > ago(60d) 
+| where ActivityDisplayName == 'Add member to role completed (PIM activation)'  
+| extend caller = tolower(tostring(InitiatedBy.user.userPrincipalName)) 
+| extend Role = tostring(TargetResources[0].displayName) 
+| extend ActivityTime = bin(TimeGenerated,1h)
+| distinct caller,Role,Category, ActivityTime;
+let risk = SigninLogs | where TimeGenerated > ago(60d) 
+| where RiskLevelDuringSignIn in ("high","medium","low") 
+| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) 
+| extend ActivityTime = bin(TimeGenerated,1h)
+| project ActivityTime,ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement,UserPrincipalName;
+risk
+| join kind=innerunique (pim) on caller, ActivityTime
+| distinct ActivityTime, AppDisplayName, UserPrincipalName,  Role, Category, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ResultType, ResultDescription

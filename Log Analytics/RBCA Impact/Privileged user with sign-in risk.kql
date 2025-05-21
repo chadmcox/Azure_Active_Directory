@@ -1,0 +1,17 @@
+//first query list every azure role, group, entra id role that is checked out from PIM
+//it then looks at sign-ins within an hour of the check out to see if a sign-in risk is associated
+//goal is to identify privileged accounts signing-in with a sign-in risk.
+let pim = AuditLogs 
+| where ActivityDisplayName == 'Add member to role completed (PIM activation)'  
+| extend caller = tolower(tostring(InitiatedBy.user.userPrincipalName)) 
+| extend Role = tostring(TargetResources[0].displayName) 
+| extend ActivityTime = bin(TimeGenerated,1h)
+| distinct caller,Role,Category, ActivityTime;
+SigninLogs 
+| where HomeTenantId == ResourceTenantId
+| where ResultType == 0 
+| where RiskLevelDuringSignIn in ("high","medium","low")
+| where RiskState !in ("dismissed","remediated")
+| extend ActivityTime = bin(TimeGenerated,1h)
+| project ActivityTime,ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement
+| join kind=innerunique (pim) on caller, ActivityTime

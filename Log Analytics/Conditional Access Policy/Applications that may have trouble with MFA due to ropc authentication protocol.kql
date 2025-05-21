@@ -1,0 +1,5 @@
+SigninLogs 
+| where AuthenticationProtocol == 'ropc'
+| where HomeTenantId == ResourceTenantId
+| distinct AppDisplayName,UPN = tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement
+| summarize apps=make_list(AppDisplayName) by UPN,ConditionalAccessStatus,AuthenticationRequirement

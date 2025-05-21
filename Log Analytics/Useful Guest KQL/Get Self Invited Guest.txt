@@ -1,0 +1,8 @@
+AuditLogs
+| where ActivityDateTime >= ago(30d)
+| where OperationName == "Viral user creation"
+| mv-expand InitiatedBy
+| extend PerformedBy = tostring(InitiatedBy.user.userPrincipalName)
+| mv-expand TargetResources
+| extend Target = tostring(TargetResources.userPrincipalName)
+| project OperationName,PerformedBy

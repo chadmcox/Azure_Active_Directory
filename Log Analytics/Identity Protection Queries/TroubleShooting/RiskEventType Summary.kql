@@ -1,0 +1,7 @@
+SigninLogs
+| where TimeGenerated > ago(8d) and RiskState !in ("dismissed","remediated")
+| where RiskLevelDuringSignIn in ("high","medium","low") or RiskLevelAggregated in ("high","medium","low")
+| where isnotnull(RiskEventTypes_V2)
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| project TimeGenerated, ResultType, ResultDescription,AppDisplayName,UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskEventType
+| summarize risktypecount = count() by tostring(RiskEventType)

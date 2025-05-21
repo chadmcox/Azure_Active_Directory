@@ -1,0 +1,26 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Possible Admins not providing MFA during sign-in
+let pim = AuditLogs 
+| where ActivityDisplayName == 'Add member to role completed (PIM activation)'  
+| extend caller = tolower(tostring(InitiatedBy.user.userPrincipalName)) 
+| extend Role = tostring(TargetResources[0].displayName) 
+| extend ActivityTime = bin(TimeGenerated,1h)
+| distinct caller,Role,Category, ActivityTime;
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
+SigninLogs 
+| where HomeTenantId == ResourceTenantId
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| where AppDisplayName  !in (excludeapps) and AppDisplayName <> ''
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
+| extend ActivityTime = bin(TimeGenerated,1h)
+| project ActivityTime,ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement
+| join kind=innerunique (pim) on caller, ActivityTime
+| distinct ActivityTime, AppDisplayName, caller,  Role, Category,AuthenticationRequirement
+| summarize 
+    applist = make_set(AppDisplayName),
+    rolelist = make_set(Role)
+    by ActivityTime, caller,  AuthenticationRequirement

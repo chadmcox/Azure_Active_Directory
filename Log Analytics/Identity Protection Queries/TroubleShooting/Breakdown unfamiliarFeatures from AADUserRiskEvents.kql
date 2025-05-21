@@ -1,0 +1,6 @@
+AADUserRiskEvents
+| where TimeGenerated > ago(8d)
+| where RiskEventType == 'unfamiliarFeatures' and RiskState == 'atRisk'
+| extend info = tostring(parse_json(AdditionalInfo)[0].Value)
+| extend reason = strcat_array(parse_json(info), ",")
+| project TimeGenerated,UserPrincipalName,RiskEventType,RiskState,RiskLevel,reason

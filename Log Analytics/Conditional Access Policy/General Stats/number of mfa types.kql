@@ -1,0 +1,44 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+SigninLogs
+| where TimeGenerated > ago(7d) and ResultType == 0 and UserType == "Member"
+| mv-expand todynamic(AuthenticationDetails)
+| extend ['Authentication Method'] = tostring(AuthenticationDetails.authenticationMethod)
+| where ['Authentication Method'] !in ("Previously satisfied","Password")
+| extend Day = startofweek(TimeGenerated)
+| project Day, ['Authentication Method']
+| summarize
+    ['Total Signin Count']=countif(isnotnull(['Authentication Method'])),
+    ['Windows Hello for Business']=countif(['Authentication Method'] == "Windows Hello for Business"),
+    ['Mobile app notification']=countif(['Authentication Method'] == "Mobile app notification"),
+    ['OATH verification code']=countif(['Authentication Method'] == "OATH verification code"),
+    ['Text message']=countif(['Authentication Method'] == "Text message"),
+    ['Passwordless phone sign-in']=countif(['Authentication Method'] == "Passwordless phone sign-in"),
+    ['Phone call approval (Authentication phone)']=countif(['Authentication Method'] == "Phone call approval (Authentication phone)"),
+    ['Companion mobile app notification']=countif(['Authentication Method'] == "Companion mobile app notification"),
+    ['Phone call approval (Office phone)']=countif(['Authentication Method'] == "Phone call approval (Office phone)"),
+    ['Phone call approval (Alternate phone)']=countif(['Authentication Method'] == "Phone call approval (Alternate phone)"),
+    ['Passkey (device-bound)']=countif(['Authentication Method'] == "Passkey (device-bound)"),
+    ['Passwordless Microsoft Authenticator']=countif(['Authentication Method'] == "Passwordless Microsoft Authenticator"),
+    ['QR code']=countif(['Authentication Method'] == "QR code"),
+    ['SMS Sign-in']=countif(['Authentication Method'] == "SMS Sign-in"),
+    ['X.509 Certificate']=countif(['Authentication Method'] == "X.509 Certificate") by Day  
+| project ['Windows Hello for Business']=(todouble(['Windows Hello for Business']) * 100 / todouble(['Total Signin Count'])),
+['Mobile app notification']=(todouble(['Mobile app notification']) * 100 / todouble(['Total Signin Count'])),
+['OATH verification code']=(todouble(['OATH verification code']) * 100 / todouble(['Total Signin Count'])),
+['Text message']=(todouble(['Text message']) * 100 / todouble(['Total Signin Count'])),
+['Passwordless phone sign-in']=(todouble(['Passwordless phone sign-in']) * 100 / todouble(['Total Signin Count'])),
+['Phone call approval (Authentication phone)']=(todouble(['Phone call approval (Authentication phone)']) * 100 / todouble(['Total Signin Count'])),
+['Companion mobile app notification']=(todouble(['Companion mobile app notification']) * 100 / todouble(['Total Signin Count'])),
+['Phone call approval (Office phone)']=(todouble(['Phone call approval (Office phone)']) * 100 / todouble(['Total Signin Count'])),
+['Phone call approval (Alternate phone)']=(todouble(['Phone call approval (Alternate phone)']) * 100 / todouble(['Total Signin Count'])),
+['Passkey (device-bound)']=(todouble(['Passkey (device-bound)']) * 100 / todouble(['Total Signin Count'])),
+['Passwordless Microsoft Authenticator']=(todouble(['Passwordless Microsoft Authenticator']) * 100 / todouble(['Total Signin Count'])),
+['QR code']=(todouble(['QR code']) * 100 / todouble(['Total Signin Count'])),
+['SMS Sign-in']=(todouble(['SMS Sign-in']) * 100 / todouble(['Total Signin Count'])),
+['X.509 Certificate']=(todouble(['X.509 Certificate']) * 100 / todouble(['Total Signin Count'])),Day
+| render columnchart
+    with (
+    kind=unstacked,
+    xtitle="Day",
+    ytitle="Signin %",
+    title="MFA Method signins per day")

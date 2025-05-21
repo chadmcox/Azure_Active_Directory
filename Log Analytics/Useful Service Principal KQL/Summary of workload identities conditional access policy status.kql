@@ -1,0 +1,10 @@
+//Summary of workload identities conditional access policy status
+AADServicePrincipalSignInLogs 
+| where ResultType == 0
+| mv-expand parse_json(ConditionalAccessPolicies)
+| extend policyname = tostring(ConditionalAccessPolicies["displayName"])
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| project-away ConditionalAccessPolicies
+| distinct ServicePrincipalName, ResourceDisplayName, ConditionalAccessStatus, ResultType, result, policyname
+| summarize ServicePrincipalCount = count() by policyname, result
+| sort by ServicePrincipalCount desc 

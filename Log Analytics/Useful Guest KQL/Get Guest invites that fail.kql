@@ -1,0 +1,5 @@
+AuditLogs 
+| where TimeGenerated > ago(5d)
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| where OperationName == "Invite external user"
+| where Result == 'clientError'

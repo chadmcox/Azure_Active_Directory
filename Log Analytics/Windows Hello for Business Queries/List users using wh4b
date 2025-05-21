@@ -1,0 +1,6 @@
+SigninLogs 
+| where CreatedDateTime >= ago(60d) 
+| where AuthenticationDetails contains 'Windows Hello For Business' 
+| extend AuthMethod = tostring(parse_json(AuthenticationDetails)[0].authenticationMethod)
+| where AuthMethod != "Previously satisfied"
+| distinct tolower(UserPrincipalName)

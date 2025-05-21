@@ -1,0 +1,15 @@
+//https://github.com/reprise99/Sentinel-Queries/blob/main/Azure%20Active%20Directory/Identity-GuestInvitesSentvsRedeemed.kql
+let timerange=180d;
+let timeframe=7d;
+AuditLogs
+| where TimeGenerated > ago (timerange)
+| where OperationName in ("Redeem external user invite", "Invite external user")
+| summarize
+    InvitesSent=countif(OperationName == "Invite external user"),
+    InvitesRedeemed=countif(OperationName == "Redeem external user invite")
+    by bin(TimeGenerated, timeframe)
+| render columnchart
+    with (
+    title="Guest Invites Sent v Guest Invites Redeemed",
+    xtitle="Invites",
+    kind=unstacked)

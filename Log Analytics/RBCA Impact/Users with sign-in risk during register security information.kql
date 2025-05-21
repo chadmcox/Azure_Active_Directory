@@ -1,0 +1,8 @@
+//goal is to list users who are triggering mfa registration with user sign-in risk
+//50125 = Sign-in was interrupted due to a password reset or password registration entry.
+SigninLogs
+| where AADTenantId == ResourceTenantId
+| where ResultType == 50125
+| where RiskLevelDuringSignIn in ("high","medium","low")
+| distinct UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState, ResultType, ResultDescription
+| project UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState,ResultType, ResultDescription 

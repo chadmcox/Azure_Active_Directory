@@ -1,0 +1,54 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+//Get every user that has provided MFA over the last 60 days
+let uniqueusermfa = union SigninLogs, AADNonInteractiveUserSignInLogs
+| where TimeGenerated > ago(30d) and AppDisplayName !in (excludeapps) and ResultType == 0 and UserType == "Member" | where AuthenticationRequirement == "multiFactorAuthentication" | distinct UserId;
+//get users from non interactive logs that do not have device IntuneDeviceComplianceOrg
+let noninteractive = AADNonInteractiveUserSignInLogs
+| where TimeGenerated > ago(10d) and AppDisplayName !in (excludeapps) and ResultType == 0 and UserType == "Member"// and NetworkLocationDetails !contains "trustedNamedLocation"
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined" //and UserId !in (uniqueusermfa)
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice'),
+    condition3 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0 and condition2 == 0
+| mv-expand todynamic(ConditionalAccessPolicies)
+| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'RequireDomainJoinedDevice' or ConditionalAccessPolicies["enforcedGrantControls"] contains 'RequireCompliantDevice' or ConditionalAccessPolicies["enforcedGrantControls"] contains 'MFA'
+| where ConditionalAccessPolicies["result"] == "reportOnlyInterrupted"
+| extend policyname = tostring(ConditionalAccessPolicies["displayName"])
+| distinct UserId, UserDisplayName, UserPrincipalName, os,policyname;
+let interactive = SigninLogs
+| where TimeGenerated > ago(30d) and AppDisplayName !in (excludeapps) and ResultType == 0 and UserType == "Member"// and NetworkLocationDetails !contains "trustedNamedLocation"
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined" //and UserId !in (uniqueusermfa)
+ | mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice')  
+)
+| where condition1 > 0 or condition2 > 0
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice'),
+    condition3 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0 and condition2 == 0
+| mv-expand todynamic(ConditionalAccessPolicies)
+| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'RequireDomainJoinedDevice' or ConditionalAccessPolicies["enforcedGrantControls"] contains 'RequireCompliantDevice' or ConditionalAccessPolicies["enforcedGrantControls"] contains 'MFA'
+| where ConditionalAccessPolicies["result"] == "reportOnlyInterrupted"
+| extend policyname = tostring(ConditionalAccessPolicies["displayName"])
+| distinct UserId, UserDisplayName, UserPrincipalName, os,policyname;
+union noninteractive, interactive
+| extend ["User Has MFA"] = iif(UserId in (uniqueusermfa), "True", "False")
+| distinct UserId, UserDisplayName, UserPrincipalName, ["User Has MFA"], os, policyname
+| summarize
+    ['Total IOS']=countif(os contains "IOS"),
+    ['Total Android']=countif(os contains "Android"),
+    ['Total Windows']=countif(os contains "Windows"),
+    ['Total MacOs']=countif(os contains "MacOs"),
+    ['Total Linux']=countif(os contains "Linux") by ["User Has MFA"],policyname
+| project policyname,["User Has MFA"],['Total Windows'],['Total MacOs'],['Total IOS'],['Total Android'],['Total Linux']

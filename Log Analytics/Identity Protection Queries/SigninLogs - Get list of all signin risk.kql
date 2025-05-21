@@ -1,0 +1,6 @@
+SigninLogs
+| where TimeGenerated > ago(14d) 
+| where AADTenantId == ResourceTenantId
+| where RiskLevelDuringSignIn in ("high","medium","low") 
+| extend mfaUsed = tostring(MfaDetail.authMethod)
+| project AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, mfaUsed, MfaDetail,ConditionalAccessStatus, AuthenticationRequirement, Category, ResultType, ResultDescription

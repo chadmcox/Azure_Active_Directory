@@ -1,0 +1,8 @@
+//Block directory sync account from non trusted location
+AADNonInteractiveUserSignInLogs 
+| union SigninLogs 
+| where TimeGenerated > ago(14d) 
+| where NetworkLocationDetails !contains "trustedNamedLocation"
+| where UserPrincipalName startswith "Sync_" 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
+| distinct IPAddress, TrustedLocation, UserPrincipalName

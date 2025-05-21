@@ -1,0 +1,9 @@
+//MFA requirement satisfied by claim provided by external provider
+//this is what we expect from ping and okta if enforceMfaByFederatedIdp
+SigninLogs
+| where RiskLevelDuringSignIn in ("high")  and ResultType == 50074
+| where RiskState !in ("dismissed","remediated")
+| where AuthenticationRequirementPolicies has "riskBasedPolicy"
+| where Status has "Redirected to external provider for MFA"
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| project ResultType, ResultDescription,AppDisplayName, caller=tolower(UserPrincipalName),UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,RiskEventType, ConditionalAccessStatus, AuthenticationRequirement

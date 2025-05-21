@@ -1,0 +1,8 @@
+SigninLogs 
+| where TimeGenerated > ago(14d) //and ResultType == 50072 
+| where AADTenantId == ResourceTenantId
+| where AppDisplayName == 'Microsoft Authenticator App'
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| distinct  UserPrincipalName, os, trustType, isCompliant, AppDisplayName, ResourceDisplayName

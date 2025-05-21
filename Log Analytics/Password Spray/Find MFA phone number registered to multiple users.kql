@@ -1,0 +1,25 @@
+//great kql from this blog https://techcommunity.microsoft.com/t5/microsoft-security-experts-blog/hunting-for-mfa-manipulations-in-entra-id-tenants-using-kql/ba-p/4154039
+//such a great article by Thabet Awad
+AuditLogs
+| where OperationName == "Update user" and TargetResources contains "StrongAuthenticationUserDetails"
+| extend Target = TargetResources[0].userPrincipalName
+| extend Actor = parse_json(InitiatedBy.user).userPrincipalName
+| mv-expand   ModifiedProperties = parse_json(TargetResources[0].modifiedProperties)
+| where ModifiedProperties.displayName == "StrongAuthenticationUserDetails"
+| extend NewValue = parse_json(replace_string(replace_string(tostring(ModifiedProperties.newValue),"[",""),"]",""))
+| extend OldValue = parse_json(replace_string(replace_string(tostring(ModifiedProperties.oldValue),"[",""),"]",""))
+| mv-expand NewValue
+| mv-expand OldValue
+| where (tostring(bag_keys(OldValue)) == tostring(bag_keys(NewValue))) or (isempty(OldValue) and tostring(NewValue) !contains ":null") or (isempty(NewValue) and tostring(OldValue) !contains ":null") 
+| extend ChangedValue = tostring(bag_keys(NewValue)[0])
+| extend OldValue = tostring(parse_json(OldValue)[ChangedValue])
+| extend NewValue = tostring(parse_json(NewValue)[ChangedValue])
+| extend OldValue = case(ChangedValue == "PhoneNumber" or ChangedValue == "AlternativePhoneNumber", replace_strings(OldValue,dynamic([' ','(',')']), dynamic(['','',''])), OldValue )
+| extend NewValue = case(ChangedValue == "PhoneNumber" or ChangedValue == "AlternativePhoneNumber", replace_strings(NewValue,dynamic([' ','(',')']), dynamic(['','',''])), NewValue )
+| where tostring(OldValue) != tostring(NewValue)
+| extend Action = case(isempty(OldValue), strcat("Added new ",ChangedValue, " to Strong Authentication."),isempty(NewValue),strcat("Removed existing ",ChangedValue, " from Strong Authentication."),strcat("Changed ",ChangedValue," in Strong Authentication."))
+| project TimeGenerated,Action,Actor,Target,ChangedValue,OldValue,NewValue
+| where isnotempty(NewValue)
+| summarize min(TimeGenerated),max(TimeGenerated),make_set(Target) by NewValue
+| extend UserCount = array_length(set_Target)
+| where UserCount > 1

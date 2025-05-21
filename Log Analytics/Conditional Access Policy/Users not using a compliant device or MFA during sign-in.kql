@@ -1,0 +1,27 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+////use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
+SigninLogs
+| where ResultType == 0  and AppDisplayName !in (excludeapps)
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where UserType <> "Guest"
+| where HomeTenantId == ResourceTenantId
+| where AuthenticationRequirement == "singleFactorAuthentication" 
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice'),
+    condition3 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0 and condition2 == 0 and condition3 == 0
+| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
+| summarize 
+    officelist = make_set(AppDisplayName),
+    oslist = make_set(os),
+    browserlist = make_set(browser),
+    clientapplist = make_set(ClientAppUsed)
+     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant,AuthenticationRequirement

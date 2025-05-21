@@ -1,0 +1,1941 @@
+{
+    "@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies",
+    "value":  [
+                  {
+                      "id":  "9420a6da-29bc-487a-b7b6-c4dd01143b29",
+                      "displayName":  "(Internal Users) Always require MFA",
+                      "createdDateTime":  "\/Date(1676050853086)\/",
+                      "modifiedDateTime":  "\/Date(1676053921910)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+                                                                                          "45a330b1-b1ec-4cc1-9161-9f03992aa49f"
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+                                                                            "d29b2b05-8046-44ba-8758-1e26182fcf32"
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u00279420a6da-29bc-487a-b7b6-c4dd01143b29\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "c2feac9a-4cf9-4dda-86b2-1ed8ce5c028d",
+                      "displayName":  "(Internal Users) Always require MFA from untrusted networks",
+                      "createdDateTime":  "\/Date(1676050945525)\/",
+                      "modifiedDateTime":  "\/Date(1676053944719)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+                                                                                          "45a330b1-b1ec-4cc1-9161-9f03992aa49f"
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   },
+                                         "locations":  {
+                                                           "includeLocations":  [
+                                                                                    "AllTrusted"
+                                                                                ],
+                                                           "excludeLocations":  [
+                                                                                    "AllTrusted"
+                                                                                ]
+                                                       }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027c2feac9a-4cf9-4dda-86b2-1ed8ce5c028d\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "107dd758-f289-44af-92e2-4dfb966f60f2",
+                      "displayName":  "(Internal Users) Always require MFA or Trusted Devices or Compliant Devices",
+                      "createdDateTime":  "\/Date(1676051095518)\/",
+                      "modifiedDateTime":  "\/Date(1676053986832)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+                                                                                          "45a330b1-b1ec-4cc1-9161-9f03992aa49f"
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+                                                                            "d29b2b05-8046-44ba-8758-1e26182fcf32"
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa",
+                                                                    "compliantDevice",
+                                                                    "domainJoinedDevice"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027107dd758-f289-44af-92e2-4dfb966f60f2\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "ac5dd357-ee7c-4bad-add7-aea62a42443f",
+                      "displayName":  "(Internal Users) Always require MFA or Trusted Devices or Complaint Devices from untrusted  networks",
+                      "createdDateTime":  "\/Date(1676051232973)\/",
+                      "modifiedDateTime":  "\/Date(1676053971432)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+                                                                                          "45a330b1-b1ec-4cc1-9161-9f03992aa49f"
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   },
+                                         "locations":  {
+                                                           "includeLocations":  [
+                                                                                    "All"
+                                                                                ],
+                                                           "excludeLocations":  [
+                                                                                    "AllTrusted"
+                                                                                ]
+                                                       }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa",
+                                                                    "compliantDevice",
+                                                                    "domainJoinedDevice"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027ac5dd357-ee7c-4bad-add7-aea62a42443f\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "bd404e01-144f-4ccb-81c1-3faa03ee5420",
+                      "displayName":  "(All Users) Require MFA for Microsoft Graph PowerShell and Explorer",
+                      "createdDateTime":  "\/Date(1676051470495)\/",
+                      "modifiedDateTime":  "\/Date(1676053996445)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "de8bc8b5-d9f9-48b1-a8ad-b748da725064",
+                                                                                          "14d82eec-204b-4c2f-b7e8-296a70dab67e"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027bd404e01-144f-4ccb-81c1-3faa03ee5420\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "c293405d-f80c-406b-b5c0-eeee11802245",
+                      "displayName":  "(All Users) Require MFA for Microsoft Azure Management",
+                      "createdDateTime":  "\/Date(1676051542623)\/",
+                      "modifiedDateTime":  "\/Date(1676054004755)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "797f4846-ba00-4fd7-ba43-dac1f8f63013"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027c293405d-f80c-406b-b5c0-eeee11802245\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "f3e767c6-d463-4336-831f-a1e0f5416f20",
+                      "displayName":  "(All Users) Block Legacy Authentication",
+                      "createdDateTime":  "\/Date(1676051621959)\/",
+                      "modifiedDateTime":  "\/Date(1676054010588)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "exchangeActiveSync",
+                                                                "other"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027f3e767c6-d463-4336-831f-a1e0f5416f20\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "446d3f64-243d-4e45-bc9f-7612dbf44c87",
+                      "displayName":  "(Privileged Users) Always require MFA",
+                      "createdDateTime":  "\/Date(1676051814747)\/",
+                      "modifiedDateTime":  "\/Date(1676054021629)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+                                                                            "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3",
+                                                                            "c4e39bd9-1100-46d3-8c65-fb160da0071f",
+                                                                            "158c047a-c907-4556-b7ef-446551a6b5f7",
+                                                                            "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9",
+                                                                            "29232cdf-9323-42fd-ade2-1d097af3e4de",
+                                                                            "62e90394-69f5-4237-9190-012177145e10",
+                                                                            "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+                                                                            "8ac3fc64-6eca-42ea-9e69-59f4c7b60eb2",
+                                                                            "966707d0-3269-4727-9be2-8c3a10f19b9d",
+                                                                            "7be44c8a-adaf-4e2a-84d6-ab2649e08a13",
+                                                                            "e8611ab8-c189-46e8-94e1-60213ab1f814",
+                                                                            "194ae4cb-b126-40b2-bd5b-6091b380977d",
+                                                                            "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+                                                                            "fe930be7-5e62-47db-91af-98c3a49a38b1"
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027446d3f64-243d-4e45-bc9f-7612dbf44c87\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        },
+                      "sessionControls":  {
+                                              "disableResilienceDefaults":  false,
+                                              "applicationEnforcedRestrictions":  null,
+                                              "cloudAppSecurity":  null,
+                                              "persistentBrowser":  null,
+                                              "continuousAccessEvaluation":  null,
+                                              "secureSignInSession":  null,
+                                              "signInFrequency":  {
+                                                                      "value":  2,
+                                                                      "type":  "hours",
+                                                                      "authenticationType":  "primaryAndSecondaryAuthentication",
+                                                                      "frequencyInterval":  "timeBased",
+                                                                      "isEnabled":  true
+                                                                  }
+                                          }
+                  },
+                  {
+                      "id":  "1398528e-5624-423e-9936-64c490be895d",
+                      "displayName":  "(Privileged Users) Block Legacy Authentication",
+                      "createdDateTime":  "\/Date(1676051978509)\/",
+                      "modifiedDateTime":  "\/Date(1676054034528)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "exchangeActiveSync",
+                                                                "other"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+                                                                            "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3",
+                                                                            "c4e39bd9-1100-46d3-8c65-fb160da0071f",
+                                                                            "158c047a-c907-4556-b7ef-446551a6b5f7",
+                                                                            "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9",
+                                                                            "29232cdf-9323-42fd-ade2-1d097af3e4de",
+                                                                            "62e90394-69f5-4237-9190-012177145e10",
+                                                                            "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+                                                                            "8ac3fc64-6eca-42ea-9e69-59f4c7b60eb2",
+                                                                            "966707d0-3269-4727-9be2-8c3a10f19b9d",
+                                                                            "7be44c8a-adaf-4e2a-84d6-ab2649e08a13",
+                                                                            "e8611ab8-c189-46e8-94e1-60213ab1f814",
+                                                                            "194ae4cb-b126-40b2-bd5b-6091b380977d",
+                                                                            "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+                                                                            "fe930be7-5e62-47db-91af-98c3a49a38b1"
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u00271398528e-5624-423e-9936-64c490be895d\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "c534dd3c-79f6-4f73-86b2-5ed04d47ba1b",
+                      "displayName":  "(Directory Sync Account) Block from untrusted networks",
+                      "createdDateTime":  "\/Date(1676052160553)\/",
+                      "modifiedDateTime":  "\/Date(1676054045531)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+                                                                            "d29b2b05-8046-44ba-8758-1e26182fcf32"
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   },
+                                         "locations":  {
+                                                           "includeLocations":  [
+                                                                                    "All"
+                                                                                ],
+                                                           "excludeLocations":  [
+                                                                                    "AllTrusted"
+                                                                                ]
+                                                       }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027c534dd3c-79f6-4f73-86b2-5ed04d47ba1b\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "de09684a-22bf-467c-9608-c317e0ea3b14",
+                      "displayName":  "(All Guest) Block from Microsoft Azure Management",
+                      "createdDateTime":  "\/Date(1676052246342)\/",
+                      "modifiedDateTime":  "\/Date(1676054061896)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "797f4846-ba00-4fd7-ba43-dac1f8f63013"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "excludeGuestsOrExternalUsers":  null,
+                                                       "includeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027de09684a-22bf-467c-9608-c317e0ea3b14\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "5c0ca0d0-640f-4712-8621-bd06af2bf949",
+                      "displayName":  "(All Guest) Always Require MFA",
+                      "createdDateTime":  "\/Date(1676052312570)\/",
+                      "modifiedDateTime":  "\/Date(1676054075917)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "excludeGuestsOrExternalUsers":  null,
+                                                       "includeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u00275c0ca0d0-640f-4712-8621-bd06af2bf949\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "de26222d-a7b9-40e5-9503-af59f10de568",
+                      "displayName":  "(Internal Users) Require Compliant Devices for Office 365 / All Apps",
+                      "createdDateTime":  "\/Date(1676052436406)\/",
+                      "modifiedDateTime":  "\/Date(1676054101952)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "Office365"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "compliantDevice",
+                                                                    "domainJoinedDevice"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027de26222d-a7b9-40e5-9503-af59f10de568\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "8acce073-b307-44b3-a65e-465cf983ab98",
+                      "displayName":  "(All Users) No Persistent Browser and 1 Hour Session from Unmanaged Devices",
+                      "createdDateTime":  "\/Date(1676052645469)\/",
+                      "modifiedDateTime":  "\/Date(1676054125950)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "grantControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   },
+                                         "devices":  {
+                                                         "includeDeviceStates":  [
+
+                                                                                 ],
+                                                         "excludeDeviceStates":  [
+
+                                                                                 ],
+                                                         "includeDevices":  [
+
+                                                                            ],
+                                                         "excludeDevices":  [
+
+                                                                            ],
+                                                         "deviceFilter":  {
+                                                                              "mode":  "include",
+                                                                              "rule":  "device.isCompliant -ne True -and device.trustType -ne \"ServerAD\""
+                                                                          }
+                                                     }
+                                     },
+                      "sessionControls":  {
+                                              "disableResilienceDefaults":  false,
+                                              "applicationEnforcedRestrictions":  null,
+                                              "cloudAppSecurity":  null,
+                                              "continuousAccessEvaluation":  null,
+                                              "secureSignInSession":  null,
+                                              "signInFrequency":  {
+                                                                      "value":  1,
+                                                                      "type":  "hours",
+                                                                      "authenticationType":  "primaryAndSecondaryAuthentication",
+                                                                      "frequencyInterval":  "timeBased",
+                                                                      "isEnabled":  true
+                                                                  },
+                                              "persistentBrowser":  {
+                                                                        "mode":  "never",
+                                                                        "isEnabled":  true
+                                                                    }
+                                          }
+                  },
+                  {
+                      "id":  "b22c808a-c654-49c5-8723-9305912eb5de",
+                      "displayName":  "(Privileged Users) Require Compliant Devices",
+                      "createdDateTime":  "\/Date(1676052840862)\/",
+                      "modifiedDateTime":  "\/Date(1676054147492)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+                                                                            "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3",
+                                                                            "c4e39bd9-1100-46d3-8c65-fb160da0071f",
+                                                                            "158c047a-c907-4556-b7ef-446551a6b5f7",
+                                                                            "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9",
+                                                                            "29232cdf-9323-42fd-ade2-1d097af3e4de",
+                                                                            "62e90394-69f5-4237-9190-012177145e10",
+                                                                            "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+                                                                            "8ac3fc64-6eca-42ea-9e69-59f4c7b60eb2",
+                                                                            "966707d0-3269-4727-9be2-8c3a10f19b9d",
+                                                                            "7be44c8a-adaf-4e2a-84d6-ab2649e08a13",
+                                                                            "e8611ab8-c189-46e8-94e1-60213ab1f814",
+                                                                            "194ae4cb-b126-40b2-bd5b-6091b380977d",
+                                                                            "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+                                                                            "fe930be7-5e62-47db-91af-98c3a49a38b1"
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "compliantDevice",
+                                                                    "domainJoinedDevice"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027b22c808a-c654-49c5-8723-9305912eb5de\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "638d7a5a-0574-47a7-8195-97a7fc088817",
+                      "displayName":  "(Internal Users) Block when user risk is high",
+                      "createdDateTime":  "\/Date(1676052956347)\/",
+                      "modifiedDateTime":  "\/Date(1676054167809)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+                                                                "high"
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027638d7a5a-0574-47a7-8195-97a7fc088817\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "c49e4b7c-06ae-4e0e-a16d-ab2977a2b36d",
+                      "displayName":  "(Internal Users) Block when sign-in risk is high",
+                      "createdDateTime":  "\/Date(1676053016880)\/",
+                      "modifiedDateTime":  "\/Date(1676054181851)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+                                                                  "high"
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027c49e4b7c-06ae-4e0e-a16d-ab2977a2b36d\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "d9c57ad3-1136-4f5b-9408-d8e5e1e21643",
+                      "displayName":  "(Internal Users) Require MFA when sign-in risk is low, medium or high",
+                      "createdDateTime":  "\/Date(1676053120324)\/",
+                      "modifiedDateTime":  "\/Date(1676054205003)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+                                                                  "high",
+                                                                  "medium",
+                                                                  "low"
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+                                                                            "All"
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "mfa"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027d9c57ad3-1136-4f5b-9408-d8e5e1e21643\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        },
+                      "sessionControls":  {
+                                              "disableResilienceDefaults":  false,
+                                              "applicationEnforcedRestrictions":  null,
+                                              "cloudAppSecurity":  null,
+                                              "persistentBrowser":  null,
+                                              "continuousAccessEvaluation":  null,
+                                              "secureSignInSession":  null,
+                                              "signInFrequency":  {
+                                                                      "value":  null,
+                                                                      "type":  null,
+                                                                      "authenticationType":  "primaryAndSecondaryAuthentication",
+                                                                      "frequencyInterval":  "everyTime",
+                                                                      "isEnabled":  true
+                                                                  }
+                                          }
+                  },
+                  {
+                      "id":  "df12f8b6-b074-4cb3-a6e1-d4fb91284709",
+                      "displayName":  "(Privileged Users) Block when user risk is low, medium or high",
+                      "createdDateTime":  "\/Date(1676053279975)\/",
+                      "modifiedDateTime":  "\/Date(1676054219682)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+                                                                "high",
+                                                                "medium",
+                                                                "low"
+                                                            ],
+                                         "signInRiskLevels":  [
+
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+                                                                            "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3",
+                                                                            "c4e39bd9-1100-46d3-8c65-fb160da0071f",
+                                                                            "158c047a-c907-4556-b7ef-446551a6b5f7",
+                                                                            "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9",
+                                                                            "29232cdf-9323-42fd-ade2-1d097af3e4de",
+                                                                            "62e90394-69f5-4237-9190-012177145e10",
+                                                                            "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+                                                                            "8ac3fc64-6eca-42ea-9e69-59f4c7b60eb2",
+                                                                            "966707d0-3269-4727-9be2-8c3a10f19b9d",
+                                                                            "7be44c8a-adaf-4e2a-84d6-ab2649e08a13",
+                                                                            "e8611ab8-c189-46e8-94e1-60213ab1f814",
+                                                                            "194ae4cb-b126-40b2-bd5b-6091b380977d",
+                                                                            "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+                                                                            "fe930be7-5e62-47db-91af-98c3a49a38b1"
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027df12f8b6-b074-4cb3-a6e1-d4fb91284709\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "c03cb110-de8d-421d-be2a-1da4b8732c9b",
+                      "displayName":  "(Privileged Users) Block when sign-in risk is low, medium or high",
+                      "createdDateTime":  "\/Date(1676053430186)\/",
+                      "modifiedDateTime":  "\/Date(1676054240027)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+                                                                  "high",
+                                                                  "medium",
+                                                                  "low"
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+                                                                            "9b895d92-2cd3-44c7-9d02-a6ac2d5ea5c3",
+                                                                            "c4e39bd9-1100-46d3-8c65-fb160da0071f",
+                                                                            "158c047a-c907-4556-b7ef-446551a6b5f7",
+                                                                            "b1be1c3e-b65d-4f19-8427-f6fa0d97feb9",
+                                                                            "29232cdf-9323-42fd-ade2-1d097af3e4de",
+                                                                            "62e90394-69f5-4237-9190-012177145e10",
+                                                                            "729827e3-9c14-49f7-bb1b-9608f156bbb8",
+                                                                            "8ac3fc64-6eca-42ea-9e69-59f4c7b60eb2",
+                                                                            "966707d0-3269-4727-9be2-8c3a10f19b9d",
+                                                                            "7be44c8a-adaf-4e2a-84d6-ab2649e08a13",
+                                                                            "e8611ab8-c189-46e8-94e1-60213ab1f814",
+                                                                            "194ae4cb-b126-40b2-bd5b-6091b380977d",
+                                                                            "f28a1f50-f6e7-4571-818b-6a12f2af6b6c",
+                                                                            "fe930be7-5e62-47db-91af-98c3a49a38b1"
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u0027c03cb110-de8d-421d-be2a-1da4b8732c9b\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "5d71dd4d-ff81-485a-adba-234686699216",
+                      "displayName":  "(Directory Sync Account) Block when sign-in risk is low, medium or high",
+                      "createdDateTime":  "\/Date(1676053568531)\/",
+                      "modifiedDateTime":  "\/Date(1676054254152)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+                                                                  "high",
+                                                                  "medium",
+                                                                  "low"
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+                                                                            "d29b2b05-8046-44ba-8758-1e26182fcf32"
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "includeGuestsOrExternalUsers":  null,
+                                                       "excludeGuestsOrExternalUsers":  null
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u00275d71dd4d-ff81-485a-adba-234686699216\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  },
+                  {
+                      "id":  "3cd5c284-3ffe-4f48-a567-5696920b3ac9",
+                      "displayName":  "(All Guest) Block when sign-in risk is low, medium or high",
+                      "createdDateTime":  "\/Date(1676053697260)\/",
+                      "modifiedDateTime":  "\/Date(1676054268956)\/",
+                      "state":  "enabledForReportingButNotEnforced",
+                      "sessionControls":  null,
+                      "conditions":  {
+                                         "userRiskLevels":  [
+
+                                                            ],
+                                         "signInRiskLevels":  [
+                                                                  "high",
+                                                                  "medium",
+                                                                  "low"
+                                                              ],
+                                         "clientAppTypes":  [
+                                                                "all"
+                                                            ],
+                                         "servicePrincipalRiskLevels":  [
+
+                                                                        ],
+                                         "platforms":  null,
+                                         "locations":  null,
+                                         "times":  null,
+                                         "deviceStates":  null,
+                                         "devices":  null,
+                                         "clientApplications":  null,
+                                         "applications":  {
+                                                              "includeApplications":  [
+                                                                                          "All"
+                                                                                      ],
+                                                              "excludeApplications":  [
+
+                                                                                      ],
+                                                              "includeUserActions":  [
+
+                                                                                     ],
+                                                              "includeAuthenticationContextClassReferences":  [
+
+                                                                                                              ]
+                                                          },
+                                         "users":  {
+                                                       "includeUsers":  [
+
+                                                                        ],
+                                                       "excludeUsers":  [
+
+                                                                        ],
+                                                       "includeGroups":  [
+
+                                                                         ],
+                                                       "excludeGroups":  [
+
+                                                                         ],
+                                                       "includeRoles":  [
+
+                                                                        ],
+                                                       "excludeRoles":  [
+
+                                                                        ],
+                                                       "excludeGuestsOrExternalUsers":  null,
+                                                       "includeGuestsOrExternalUsers":  {
+                                                                                            "guestOrExternalUserTypes":  "internalGuest,b2bCollaborationGuest,b2bCollaborationMember,b2bDirectConnectUser,otherExternalUser,serviceProvider",
+                                                                                            "externalTenants":  {
+                                                                                                                    "@odata.type":  "#microsoft.graph.conditionalAccessAllExternalTenants",
+                                                                                                                    "membershipKind":  "all"
+                                                                                                                }
+                                                                                        }
+                                                   }
+                                     },
+                      "grantControls":  {
+                                            "operator":  "OR",
+                                            "builtInControls":  [
+                                                                    "block"
+                                                                ],
+                                            "customAuthenticationFactors":  [
+
+                                                                            ],
+                                            "termsOfUse":  [
+
+                                                           ],
+                                            "authenticationStrength@odata.context":  "https://graph.microsoft.com/beta/$metadata#identity/conditionalAccess/policies(\u00273cd5c284-3ffe-4f48-a567-5696920b3ac9\u0027)/grantControls/authenticationStrength/$entity",
+                                            "authenticationStrength":  null
+                                        }
+                  }
+              ]
+}

@@ -1,0 +1,23 @@
+let capname = "changeme";
+//let includeapps = pack_array("Exchange Online","Microsoft 365 Search Service","Microsoft Forms","Microsoft Planner","Microsoft Stream","Microsoft Teams","Microsoft To-Do","Microsoft Flow","Microsoft Office 365 Portal","Microsoft Office client application","Microsoft Stream","Microsoft To-Do WebApp","Microsoft Whiteboard Services","Office Delve","Office Online","OneDrive","Power Apps","Power Automate","Security & compliance portal","SharePoint Online","Skype for Business Online","Skype and Teams Tenant Admin API","Sway","Yammer","PowerApps Service","Viva Engage","Targeted Messaging Service","Microsoft Exchange Online Protection","Connectors","OfficeHome","OfficeClientService","Microsoft Teams Chat Aggregator","Microsoft People Cards Service","Office 365 Search Service","Skype Presence Service","Office 365 Exchange Microservices");
+SigninLogs
+//| where CreatedDateTime >= ago(1d)
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+//| where  ResourceDisplayName in (includeapps) or AppDisplayName in (includeapps)
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined" and os contains "windows" 
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies["displayName"] == capname
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result !in ("reportOnlyNotApplied","NotApplied")
+| project-away ConditionalAccessPolicies
+| distinct AppDisplayName, ResourceDisplayName, result, UserPrincipalName, os, browser,ClientAppUsed,UserDisplayName ,IPAddress, trustType
+| summarize 
+    officelist = make_set(AppDisplayName),
+    oslist = make_set(os),
+    browserlist = make_set(browser),
+    clientapplist = make_set(ClientAppUsed),
+    ip = make_set(IPAddress)
+     by UserDisplayName,UserPrincipalName, trustType, result

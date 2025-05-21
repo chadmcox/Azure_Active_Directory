@@ -1,0 +1,35 @@
+SigninLogs
+| where TimeGenerated > ago (14d)
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend os = tostring(DeviceDetail.operatingSystem) 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    where ca.result in ("success","failure")
+    | extend PolicyName = tostring(ca.displayName)
+    //| extend PolicyResult = tostring(ca.result)
+    )
+| summarize
+    ['Total Signin']=count(),
+    ['Total IOS']=countif(os contains "IOS"),
+    ['Total Android']=countif(os contains "Android"),
+    ['Total Windows']=countif(os contains "Windows"),
+    ['Total MacOs']=countif(os contains "MacOs"),
+    ['Total Linux']=countif(os contains "Linux"),
+    ['Total Compliant Device']=countif(isCompliant == 'true'),
+    ['Total Trusted Device']=countif(trustType == "Hybrid Azure AD joined"),
+    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),
+    ['Total Blocked']=countif(ResultType == 53003),
+    NumberofApps=dcount(AppDisplayName),NumberofUsers=dcount(UserPrincipalName)
+    by PolicyName
+| project
+    PolicyName,NumberofUsers,NumberofApps,
+    ['Total Signin'],
+    ['% of IOS']=(todouble(['Total IOS']) * 100 / todouble(['Total Signin'])),
+    ['% of Android']=(todouble(['Total Android']) * 100 / todouble(['Total Signin'])),
+    ['% of Windows']=(todouble(['Total Windows']) * 100 / todouble(['Total Signin'])),
+    ['% of MacOs']=(todouble(['Total MacOs']) * 100 / todouble(['Total Signin'])),
+    ['% of Linux']=(todouble(['Total Linux']) * 100 / todouble(['Total Signin'])),
+    ['% of Compliant Device']=(todouble(['Total Compliant Device']) * 100 / todouble(['Total Signin'])),
+    ['% of Trusted Device']=(todouble(['Total Trusted Device']) * 100 / todouble(['Total Signin'])),
+    ['Total Blocked']

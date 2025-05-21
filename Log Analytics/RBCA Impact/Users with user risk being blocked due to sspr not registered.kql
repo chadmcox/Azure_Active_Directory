@@ -1,0 +1,9 @@
+//this looks for users with a risk based policy that is applied
+//but does not have sspr registered and is blocked
+// 53011 = User blocked due to risk on home tenant.
+SigninLogs
+| where ResultType == '53011'
+| where AuthenticationRequirementPolicies contains "riskBasedPolicy"
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct UserPrincipalName, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState
+| project UserPrincipalName, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState

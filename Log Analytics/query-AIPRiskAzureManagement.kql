@@ -1,0 +1,8 @@
+let msappid = (externaldata(defaultappid:string)[@"https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Applications/microsoftazuremanagementlist.txt"]
+with(format="txt"));
+let timerange=30d;
+SigninLogs
+| where TimeGenerated > ago(timerange)
+| where AppId in (msappid)
+| where RiskLevelDuringSignIn <> "none"
+| project AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2,MfaDetail,ConditionalAccessStatus,AuthenticationRequirement

@@ -1,0 +1,5 @@
+let timerange=60d;
+SigninLogs
+| where TimeGenerated > ago(timerange)
+| where RiskState == "atRisk" and RiskLevelAggregated == "high"
+| project AppDisplayName, UserPrincipalName, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail,IsRisky, RiskEventTypes_V2,MfaDetail,ConditionalAccessStatus,AuthenticationRequirement,ResultType

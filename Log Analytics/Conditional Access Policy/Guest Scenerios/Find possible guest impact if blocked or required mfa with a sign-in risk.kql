@@ -1,0 +1,5 @@
+SigninLogs | where TimeGenerated > ago(14d) and UserType == "Guest" and ResultType == 0 
+| where AADTenantId <> HomeTenantId
+| where RiskLevelDuringSignIn in ("high","medium","low") 
+| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,Category,RiskLevelDuringSignIn,RiskDetail 
+| summarize apps=make_list(AppDisplayName) by UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, RiskLevelDuringSignIn,RiskDetail

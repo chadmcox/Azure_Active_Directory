@@ -1,0 +1,13 @@
+let users = AuditLogs
+| where TimeGenerated > ago(5d)
+| where Category == "UserManagement"
+| where OperationName == "Invite external user with reset invitation status"
+| extend Target =  tostring(TargetResources[0].userPrincipalName) | distinct Target;
+AuditLogs
+| where TimeGenerated > ago(5d)
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| where Target in (users)
+| where OperationName == "Update user"
+//| where InitiatedBy !contains "Microsoft Substrate Management"
+| where TargetResources contains "InviteTicket"

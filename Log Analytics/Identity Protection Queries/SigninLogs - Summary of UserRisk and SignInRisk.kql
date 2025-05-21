@@ -1,0 +1,13 @@
+//this shows the count of the different risk levels
+SigninLogs
+| where TimeGenerated > ago(120d)
+| where RiskLevelDuringSignIn in ("high","medium","low") or RiskLevelAggregated in ("high","medium","low")
+| summarize
+    SignInRiskHigh=countif(RiskLevelDuringSignIn == "high"),
+    SignInRiskMedium=countif(RiskLevelDuringSignIn == "medium"),
+    SignInRiskLow=countif(RiskLevelDuringSignIn == "low"),
+    UserRiskHigh=countif(RiskLevelAggregated == "high"),
+    UserRiskMedium=countif(RiskLevelAggregated == "medium"),
+    UserRiskLow=countif(RiskLevelAggregated == "low"),
+    SuccessfulSignIn=countif(ResultType == 0),
+    FailedSignIn=countif(ResultType <> 0)

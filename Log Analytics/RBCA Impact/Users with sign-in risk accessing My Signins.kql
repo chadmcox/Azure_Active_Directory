@@ -1,0 +1,8 @@
+//goal is to see users who may be changing mfa or password with a sign-in risk
+//this only shows successful authentications
+SigninLogs 
+| where ResultType == 0
+| where AppDisplayName in ("My Signins","Microsoft App Access Panel")
+| where RiskLevelDuringSignIn in ("high","medium","low")
+| distinct UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState, ResultType, ResultDescription
+| project UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, RiskDetail, RiskLevel, RiskState,ResultType, ResultDescription 

@@ -1,0 +1,4 @@
+SigninLogs 
+| where CreatedDateTime >= ago(30d)
+| distinct AppDisplayName, Identity 
+| summarize Count=count() by AppDisplayName

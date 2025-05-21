@@ -1,0 +1,6 @@
+SigninLogs  
+| where CreatedDateTime >= ago(30d) and AuthenticationRequirement == 'multiFactorAuthentication'
+| where AuthenticationRequirementPolicies contains "mfaRegistrationRequiredByIdentityProtectionPolicy"
+| extend errorCode = toint(Status.errorCode)
+| where errorCode == 50072
+| project TimeGenerated, Identity, UserPrincipalName, ResultDescription, ClientAppUsed, ResourceDisplayName

@@ -1,0 +1,4 @@
+AADUserRiskEvents
+| where TimeGenerated > ago(4d)
+| where RiskEventType == "maliciousIPAddress" and RiskState == "atRisk"
+| distinct UserPrincipalName, RiskLevel, RiskEventType, IpAddress

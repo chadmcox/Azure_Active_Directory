@@ -1,0 +1,21 @@
+let isGUID = "[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}";
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where AppDisplayName <> 'Windows Sign In' and UserType <> "Guest"
+| mv-expand todynamic(AuthenticationDetails)
+| extend ['Authentication Method'] = tostring(AuthenticationDetails.authenticationMethod)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+//Exclude previously satisifed, passwords and other data and any UserPrincipalName that comes through as a guid
+| where ['Authentication Method'] !in ("Previously satisfied", "Password", "Other")
+    and isnotempty(['Authentication Method'])
+    and not(UserPrincipalName matches regex isGUID)
+| where ['Authentication Method'] <> "Windows Hello for Business"
+| distinct TimeGenerated,UserPrincipalName, ['Authentication Method'],TrustedLocation
+| summarize
+    MFACount=countif(['Authentication Method'] !in ("FIDO2 security key", "Passwordless phone sign-in", "Windows Hello for Business")),
+    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),
+    UniqueUserCount = count_distinct(UserPrincipalName)
+    by startofday(TimeGenerated)
+| project startofday(TimeGenerated), MFACount, UniqueUserCount,
+AVGMFAPerUser=(todouble(MFACount) / todouble(UniqueUserCount)),
+TrustedLocationPercentage=(todouble(['Total Trusted Location']) * 100 / todouble(MFACount))

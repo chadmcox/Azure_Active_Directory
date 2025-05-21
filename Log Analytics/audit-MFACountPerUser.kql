@@ -1,0 +1,11 @@
+//https://github.com/reprise99/Sentinel-Queries/blob/main/Azure%20Active%20Directory/Identity-MFACountPerUser.kql
+let threshold = 5;
+SigninLogs
+| where TimeGenerated > ago(90d)
+| where AuthenticationRequirement == "multiFactorAuthentication"
+| extend x=todynamic(AuthenticationDetails)
+| mv-expand x
+| project TimeGenerated, x, UserPrincipalName
+| extend MFAResultStep = tostring(x.authenticationStepResultDetail)
+| summarize MFARequired=countif(MFAResultStep == "MFA completed in Azure AD"), PreviouslySatisfied=countif(MFAResultStep == "MFA requirement satisfied by claim in the token") by UserPrincipalName, startofday(TimeGenerated)
+| where MFARequired >= threshold

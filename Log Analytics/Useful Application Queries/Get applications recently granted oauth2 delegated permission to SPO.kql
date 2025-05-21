@@ -1,0 +1,12 @@
+let perms =  pack_array("Sites.FullControl.All","Sites.Manage.All","Sites.Read.All","Sites.ReadWrite.All","Files.Read.All","Files.ReadWrite.All","File.Read.All");
+let operations = pack_array('Add delegated permission grant','Remove delegated permission grant');
+AuditLogs 
+| where TimeGenerated > ago (30d)
+| where OperationName in (operations)
+| extend InitiatedBy = tostring(InitiatedBy.user.userPrincipalName)
+| extend API = tostring(parse_json(TargetResources)[0].displayName)
+| extend DelegatedPermissionGrantScope = split(replace_string(tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[0].newValue),'"',''), ' ')
+| mv-expand DelegatedPermissionGrantScope
+| where DelegatedPermissionGrantScope in~ (perms)
+| extend DelegatedAppId = tostring(parse_json(TargetResources)[1].id)
+| project TimeGenerated, InitiatedBy, API, DelegatedPermissionGrantScope, DelegatedAppId

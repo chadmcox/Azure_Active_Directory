@@ -1,0 +1,4 @@
+//Your are using TLS version 1.0, 1.1 and/or 3DES cipher which are deprecated to improve the security posture of Azure AD.
+AADServicePrincipalSignInLogs  
+| where ResultType == 1002016
+| distinct ResourceDisplayName, ServicePrincipalName, ResultType

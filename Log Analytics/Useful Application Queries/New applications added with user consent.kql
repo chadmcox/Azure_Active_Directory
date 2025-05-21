@@ -1,0 +1,20 @@
+let recentlyadded = AuditLogs 
+| where TimeGenerated > ago (180d)
+| where OperationName in ("Add service principal")
+| extend spid = tostring(parse_json(TargetResources)[0].id) | project spid;
+let names = AuditLogs 
+| where TimeGenerated > ago (180d)
+| where OperationName in ("Add service principal")
+| extend sp = tostring(parse_json(TargetResources)[0].displayName) 
+| extend spid = tostring(parse_json(TargetResources)[0].id) | project spid,sp;
+AuditLogs 
+| where TimeGenerated > ago (180d)
+| where OperationName in ("Add delegated permission grant")
+| extend InitiatedBy = tostring(InitiatedBy.user.userPrincipalName)
+| extend API = tostring(parse_json(TargetResources)[0].displayName)
+| extend DelegatedPermissionGrantScope = tostring(parse_json(parse_json(TargetResources)[0].modifiedProperties)[0].newValue)
+| extend spid = tostring(parse_json(TargetResources)[1].id)
+| where spid in (recentlyadded)
+| join names on spid
+| project TimeGenerated, InitiatedBy, spid,sp, DelegatedPermissionGrantScope
+| distinct spid, sp, DelegatedPermissionGrantScope

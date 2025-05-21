@@ -1,0 +1,25 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Users not required to reauthenticate from non-compliant devices
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
+SigninLogs
+| where ResultType == 0  and AppDisplayName !in (excludeapps)
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where AADTenantId == ResourceTenantId
+| where SessionLifetimePolicies !contains "signInFrequencyPeriodicReauthentication"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice'),
+    condition3 = countif(ca.result in ("success") and tostring(ca.enforcedSessionControls) contains 'SignInFrequency'),
+    condition4 = countif(ca.result in ("success") and tostring(ca.enforcedSessionControls) contains 'PersistentBrowserSessionMode')
+)
+| where condition1 == 0 and condition2 == 0 and condition3 == 0 and condition4 == 0
+| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
+| summarize 
+    officelist = make_set(AppDisplayName),
+    oslist = make_set(os),
+    browserlist = make_set(browser),
+    clientapplist = make_set(ClientAppUsed)
+     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant

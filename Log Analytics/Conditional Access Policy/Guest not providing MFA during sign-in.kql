@@ -1,0 +1,13 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Guest not providing MFA during sign-in
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
+SigninLogs 
+| where UserType == "Guest" and AppDisplayName !in (excludeapps)
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication"
+| where AADTenantId == ResourceTenantId
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
+| distinct AppDisplayName,UPN = tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement,Category, UserType
+| summarize apps=make_list(AppDisplayName) by UPN,ConditionalAccessStatus,AuthenticationRequirement, Category, UserType

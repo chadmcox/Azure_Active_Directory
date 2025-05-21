@@ -1,0 +1,7 @@
+let thisTenantId = SigninLogs | take 1 | distinct AADTenantId;
+union AADNonInteractiveUserSignInLogs, SigninLogs 
+| where TimeGenerated > ago(14d) 
+| where ResultType == 0
+| where HomeTenantId !in (thisTenantId) and HomeTenantId <> '' 
+| distinct UserId, AppDisplayName
+| summarize externalguestcount = count() by AppDisplayName

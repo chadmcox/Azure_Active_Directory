@@ -1,0 +1,5 @@
+//this query will list the accounts being disabled frequently
+SigninLogs 
+| where TimeGenerated > ago(30d) 
+| where ResultType == 50053
+| summarize lockoutcount = count() by UserPrincipalName, ResultDescription, AppDisplayName, IPAddress

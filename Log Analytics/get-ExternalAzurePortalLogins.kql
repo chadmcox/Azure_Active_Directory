@@ -1,0 +1,14 @@
+//this one provides a count of unique users and the external tenantid
+SigninLogs
+| where ResourceTenantId <> HomeTenantId and AADTenantId == HomeTenantId
+| where AppDisplayName == "Azure Portal"
+| distinct UserPrincipalName,ResourceTenantId,AADTenantId,HomeTenantId,AppDisplayName
+| summarize signincount=count() by ResourceTenantId
+
+
+
+//this one provides a list of users and the tenants they are logging into
+SigninLogs
+| where ResourceTenantId <> HomeTenantId and AADTenantId == HomeTenantId
+| where AppDisplayName == "Azure Portal"
+| distinct UserPrincipalName,ResourceTenantId,AADTenantId,HomeTenantId,AppDisplayName

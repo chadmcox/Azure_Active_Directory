@@ -1,0 +1,7 @@
+let timerange=30d;
+ADFSSignInLogs
+| extend Network = tostring(iff(NetworkLocationDetails contains "extranet", 'extranet','intranet'))
+| extend authenticationMethod = tostring(iff(AuthenticationDetails contains "Password", 'Password','Integrated Windows Authentication'))
+| where TimeGenerated > ago(timerange)
+| where Requirement == "Secondary"
+| distinct UserPrincipalName

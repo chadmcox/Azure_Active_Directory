@@ -1,0 +1,5 @@
+//if break glass is being used
+AuditLogs
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
+| where Actor in ('breakglass@contoso.com','breakglass2@contoso.com')
+| distinct TimeGenerated, OperationName, Actor

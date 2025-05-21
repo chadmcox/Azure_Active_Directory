@@ -1,0 +1,7 @@
+SigninLogs
+| where TimeGenerated > ago (14d)
+| where ResultType == 0
+| where AppDisplayName contains "Microsoft PIN"
+| project eachday = startofday(TimeGenerated), UserPrincipalName
+| distinct eachday, UserPrincipalName
+| summarize dailycount = count() by eachday

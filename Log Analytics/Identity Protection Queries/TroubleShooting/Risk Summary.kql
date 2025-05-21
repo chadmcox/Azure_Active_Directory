@@ -1,0 +1,9 @@
+SigninLogs
+| where TimeGenerated > ago(30d) and RiskState !in ("dismissed","remediated")
+| where RiskLevelDuringSignIn in ("high","medium","low") or RiskLevelAggregated in ("high","medium","low")
+| extend Day = startofday(TimeGenerated)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| summarize
+    ['High user risk']=countif(RiskLevelAggregated == "high"),
+    ['High sign-in risk']=countif(RiskLevelDuringSignIn == "high"),
+    ['Medium sign-in risk']=countif(RiskLevelDuringSignIn == "medium") by Day  

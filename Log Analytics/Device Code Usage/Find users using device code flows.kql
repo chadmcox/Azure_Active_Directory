@@ -1,0 +1,7 @@
+//https://www.linkedin.com/pulse/detect-device-code-authentication-phishing-kloudynet-i0rpc/
+
+let excludeapps = pack_array("Windows Sign In","Microsoft Authenticator App","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+union SigninLogs, AADNonInteractiveUserSignInLogs
+| where TimeGenerated >= ago(60d) and AppDisplayName !in (excludeapps)
+| where AuthenticationProtocol=="deviceCode"
+| project TimeGenerated, UserPrincipalName,ResultType, ResultDescription,UserAgent, IPAddress, Location,AppDisplayName,ResourceDisplayName, AuthenticationProtocol, AuthenticationRequirement 

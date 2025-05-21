@@ -1,0 +1,5 @@
+AuditLogs
+| where OperationName == "Add conditional access policy" or OperationName == "Update conditional access policy"
+| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)
+| extend ConditionalAccessPolicy = tostring(TargetResources[0].displayName)
+| project TimeGenerated, Actor, OperationName, ConditionalAccessPolicy, Result, AADOperationType

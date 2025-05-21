@@ -1,0 +1,13 @@
+SigninLogs
+| where TimeGenerated > ago(14d) 
+| where AADTenantId == ResourceTenantId
+| where ResultType == 0
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| where RiskLevelAggregated in ("high","medium","low")
+| where RiskState !in ("dismissed","remediated")
+| mv-expand RiskEventType = todynamic(RiskEventTypes_V2)
+| distinct UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState,trustType,isCompliant,os,browser
+| project UserPrincipalName, RiskLevelDuringSignIn, RiskLevelAggregated, tostring(RiskEventType), RiskDetail, RiskLevel, RiskState,trustType,isCompliant,os,browser

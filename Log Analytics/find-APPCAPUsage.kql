@@ -1,0 +1,8 @@
+let msappid = (externaldata(defaultappid:string)[@"https://raw.githubusercontent.com/chadmcox/Azure_Active_Directory/master/Applications/msdefaultapps.txt"]
+with(format="txt"));
+SigninLogs
+| where CreatedDateTime >= ago(30d) and ResultType == 0
+| where AppId !in (msappid)
+| distinct AppDisplayName, Identity, ConditionalAccessStatus, AppId
+| summarize Count=count() by AppDisplayName, ConditionalAccessStatus, AppId
+| where Count > 10

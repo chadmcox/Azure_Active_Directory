@@ -1,0 +1,6 @@
+let thisTenantId = SigninLogs | take 1 | distinct AADTenantId;
+AADNonInteractiveUserSignInLogs | union SigninLogs | where TimeGenerated > ago(14d) 
+| where HomeTenantId !in (thisTenantId) and HomeTenantId <> '' 
+| where ResultType == 0
+| distinct Location, UserPrincipalName
+| summarize guestcount = count() by Location

@@ -1,0 +1,9 @@
+SigninLogs 
+| where TimeGenerated > ago(14d) and ResultType == 0 and UserType <> "Guest" 
+| extend trustType = tostring(DeviceDetail.trustType) 
+| extend isCompliant = tostring(DeviceDetail.isCompliant) 
+| extend deviceName = tostring(DeviceDetail.displayName) 
+| extend os = tostring(DeviceDetail.operatingSystem) 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation','')) 
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined" and ClientAppUsed == "Browser" 
+| distinct UserPrincipalName, os, deviceName, trustType, isCompliant, TrustedLocation

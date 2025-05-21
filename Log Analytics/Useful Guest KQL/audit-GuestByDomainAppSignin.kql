@@ -1,0 +1,8 @@
+let timerange=30d;
+SigninLogs
+| where TimeGenerated > ago(timerange)
+| where UserType == "Guest"
+| extend UserDomain = tostring(split(UserPrincipalName, "@")[1])
+| project TimeGenerated, UserType, ResultType, AppDisplayName, UserDomain
+| where ResultType == 0
+| summarize Count=count() by AppDisplayName, UserDomain

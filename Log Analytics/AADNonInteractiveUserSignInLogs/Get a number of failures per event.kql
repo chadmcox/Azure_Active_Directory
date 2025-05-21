@@ -1,0 +1,6 @@
+AADNonInteractiveUserSignInLogs
+| where ResultType <> 0
+| where TimeGenerated > ago(14d)
+| summarize countoffailures = count() by ResultType, ResultDescription
+| where countoffailures > 10000
+| order by countoffailures desc 

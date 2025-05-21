@@ -1,0 +1,26 @@
+let apps=SigninLogs
+    | where TimeGenerated > ago (30d)
+    | project TimeGenerated, ConditionalAccessPolicies, AppDisplayName
+//Exclude native Microsoft apps that you can't enforce policy on or that are covered natively in Office 365
+    | where AppDisplayName !in ("Microsoft Office Web Apps Service", "Microsoft App Access Panel", "Office Online Core SSO", "Microsoft Authentication Broker", "Microsoft Account Controls V2", "Microsoft 365 Support Service","Office Online Maker SSO","My Apps","My Profile")
+    | mv-expand ConditionalAccessPolicies
+    | extend CAResult = tostring(ConditionalAccessPolicies.result)
+    | summarize ResultSet=make_set(CAResult) by AppDisplayName
+    | where ResultSet has "success" or ResultSet has "failure"
+    | project AppDisplayName;
+AADNonInteractiveUserSignInLogs 
+| union SigninLogs
+| where TimeGenerated > ago(14d)
+| where AppDisplayName in (apps)
+| summarize
+    ['Total Signin Count']=count(),
+    ['Total Successful Logins']=countif(ResultType == 0),
+    ['Total KMSI']=countif(ResultType == 50140),
+    ['Total Device Auth Required']=countif(ResultType == 50097),
+    ['Total Risk Block']=countif(ResultType == 530032),
+    ['Total CAP Blocked']=countif(ResultType == 53003),
+    ['Total MFA Enrollment']=countif(ResultType == 50072),
+    ['Total Session Limit']=countif(ResultType == 70044),
+    ['Total MFA Required']=countif(ResultType == 50074),
+    NumberofUsers=dcount(UserPrincipalName)
+    by AppDisplayName

@@ -1,0 +1,8 @@
+AADNonInteractiveUserSignInLogs 
+| union SigninLogs 
+| where TimeGenerated > ago(5h) 
+| where NetworkLocationDetails !contains "trustedNamedLocation"
+| where UserPrincipalName startswith "Sync_" or AppDisplayName == 'Microsoft Azure Active Directory Connect'
+| where ResultDescription == "Access has been blocked due to conditional access policies."
+| where Identity == "On-Premises Directory Synchronization Service Account"
+| where AppDisplayName == "Microsoft Azure Active Directory Connect"

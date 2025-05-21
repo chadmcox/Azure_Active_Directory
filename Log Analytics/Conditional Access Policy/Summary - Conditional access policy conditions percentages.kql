@@ -1,0 +1,29 @@
+SigninLogs
+| where TimeGenerated > ago (14d)
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    where ca.result in ("success","failure")
+    | extend PolicyName = tostring(ca.displayName)
+    //| extend PolicyResult = tostring(ca.result)
+    )
+| summarize
+    ['Total Signin Count']=count(),
+    ['Total MFA Count']=countif(AuthenticationRequirement == "multiFactorAuthentication"),
+    ['Total non MFA Count']=countif(AuthenticationRequirement == "singleFactorAuthentication"),
+    ['Total Trusted device']=countif(trustType == "Hybrid Azure AD joined"),
+    ['Total Compliant device']=countif(isCompliant == 'true'),
+    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),
+    ['Total CAP Applied']=countif(ConditionalAccessStatus == 'success'),
+    ['Total CAP Blocked']=countif(ResultType == 53003),
+    NumberofApps=dcount(AppDisplayName),NumberofUsers=dcount(UserPrincipalName)
+    by PolicyName//,PolicyResult
+| project
+    PolicyName,NumberofUsers,NumberofApps,TotalSigninCount = ['Total Signin Count'],
+    TotalBlocks = ['Total CAP Blocked'],
+    MFAPercentage=(todouble(['Total MFA Count']) * 100 / todouble(['Total Signin Count'])),
+    TrustedDevicePercentage=(todouble(['Total Trusted device']) * 100 / todouble(['Total Signin Count'])),
+    CompliantDevicePercentage=(todouble(['Total Compliant device']) * 100 / todouble(['Total Signin Count'])),
+    TrustedLocationPercentage=(todouble(['Total Trusted Location']) * 100 / todouble(['Total Signin Count'])),
+    ConditionalPolicyAppliedPercentage=(todouble(['Total CAP Applied']) * 100 / todouble(['Total Signin Count']))

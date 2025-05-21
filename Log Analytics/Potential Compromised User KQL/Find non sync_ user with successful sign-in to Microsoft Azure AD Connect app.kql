@@ -1,0 +1,8 @@
+AADNonInteractiveUserSignInLogs
+| union SigninLogs
+| where AppId == 'cb1056e2-e479-49de-ae31-7812af012ed8'
+| where UserPrincipalName !contains "sync_"
+| where AuthenticationDetails !has "Incorrect password" and ResultType !in (50126,50053)
+| where NetworkLocationDetails !has "trustedNamedLocation"
+//| where AuthenticationDetails contains "Correct password" and AuthenticationDetails !contains "Incorrect password"
+| project TimeGenerated,AppDisplayName, UserPrincipalName, ConditionalAccessStatus, AuthenticationRequirement, ResultType,ResultDescription, Location, Identity, IPAddress, AutonomousSystemNumber

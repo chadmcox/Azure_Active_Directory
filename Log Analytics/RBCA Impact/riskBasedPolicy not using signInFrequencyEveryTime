@@ -1,0 +1,8 @@
+
+SigninLogs
+| where ResultType !in (500121,50140,65001,53003,53004)
+| where AppDisplayName <> "Microsoft Authentication Broker"
+| where RiskState in ("atRisk") 
+| where AuthenticationRequirementPolicies has "riskBasedPolicy"
+| where SessionLifetimePolicies !contains 'signInFrequencyEveryTime'
+| where Status contains "MFA requirement satisfied by claim in the token"

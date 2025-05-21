@@ -1,0 +1,18 @@
+AuditLogs
+| where TimeGenerated > ago(14d)
+//| where OperationName in ("User changed default security info", "User registered all required security info", "User registered security info")
+| extend User = tostring(TargetResources[0].userPrincipalName)
+//| where User == "bob@contoso.com"
+| where TargetResources has "StrongAuthenticationMethod" or TargetResources has "StrongAuthenticationPhoneAppDetail" or TargetResources has "StrongAuthenticationUserDetails"
+| extend targetResources=parse_json(TargetResources)
+| mv-apply tr = targetResources on (
+    extend targetResource = tr.displayName
+    | mv-apply mp = tr.modifiedProperties on (
+    where mp.displayName == "StrongAuthenticationUserDetails" or mp.displayName == "StrongAuthenticationPhoneAppDetail"
+    | extend NewValue = tostring(mp.newValue)
+    | extend OldValue = tostring(mp.oldValue)
+    ))
+| extend MFAafterCount = array_length(todynamic(NewValue))
+| extend MFAbeforeCount = array_length(todynamic(OldValue))
+| where MFAbeforeCount <> MFAafterCount
+| project Identity, User, ActivityDisplayName, MFAbeforeCount, MFAafterCount, NewValue, OldValue

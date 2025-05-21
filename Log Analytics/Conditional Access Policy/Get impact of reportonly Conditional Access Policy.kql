@@ -1,0 +1,24 @@
+//https://learn.microsoft.com/en-us/azure/active-directory/conditional-access/concept-conditional-access-report-only#policy-results
+//change the name of the conditional access policy in the double quotes to the name of the policy
+let capname = "Always require MFA";
+SigninLogs
+| where CreatedDateTime >= ago(1d)  
+| mv-expand ConditionalAccessPolicies
+| where ConditionalAccessPolicies["displayName"] == capname
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result <> "reportOnlyNotApplied"
+| project-away ConditionalAccessPolicies
+| distinct AppDisplayName, ResourceDisplayName, result, UserPrincipalName
+
+
+// I wanted to union the noninteractive logs, but it was crazy slow
+//In order to get this to return anything I have the default set to 1h, may have to keep it shor to run
+let capname = "Always require MFA";
+AADNonInteractiveUserSignInLogs
+| where CreatedDateTime >= ago(1h) and ResultType == 0  
+| mv-expand parse_json(ConditionalAccessPolicies)
+| where ConditionalAccessPolicies["displayName"] == capname
+| extend result = tostring(ConditionalAccessPolicies["result"])
+| where result <> "reportOnlyNotApplied"
+| project-away ConditionalAccessPolicies
+| project AppDisplayName, ResourceDisplayName, result, UserPrincipalName, Category

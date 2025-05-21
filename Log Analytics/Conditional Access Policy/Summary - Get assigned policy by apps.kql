@@ -1,0 +1,13 @@
+SigninLogs
+| where TimeGenerated > ago (1d)
+| where ResultType == 0
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    where ca.result in ("success","failure")
+    | extend PolicyName = tostring(ca.displayName)
+    //| extend PolicyResult = tostring(ca.result)
+    )
+| distinct  PolicyName, AppDisplayName, UserPrincipalName
+| summarize countofuser = dcount(UserPrincipalName),policies=make_set(PolicyName) by AppDisplayName

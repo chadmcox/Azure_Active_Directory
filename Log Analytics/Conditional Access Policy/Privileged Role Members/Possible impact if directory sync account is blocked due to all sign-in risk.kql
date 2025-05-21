@@ -1,0 +1,9 @@
+//if an account is used other than the default one created by azure ad connect you will need to
+//update the syncaccount variable with the other account name instead of sync_
+let syncaccount = "sync_";
+AADNonInteractiveUserSignInLogs 
+| union SigninLogs
+| where TimeGenerated > ago(14d) 
+| where UserPrincipalName startswith syncaccount
+| where RiskLevelDuringSignIn in ("high","medium","low") 
+| project AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,Category,RiskLevelDuringSignIn,RiskDetail 

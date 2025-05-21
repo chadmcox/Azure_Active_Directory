@@ -1,0 +1,24 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+SigninLogs
+| where TimeGenerated > ago (14d) and ResultType == "0"
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend deviceName = tostring(DeviceDetail.displayName)
+| extend browser = tostring(DeviceDetail.browser)
+| where AppDisplayName !in (excludeapps)
+| extend os = tostring(DeviceDetail.operatingSystem) 
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| where UserType <> "Guest"
+| where AADTenantId == ResourceTenantId
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| distinct isCompliant, trustType,  os, upn=tolower(UserPrincipalName), deviceName, browser
+| summarize
+    ['iOS Not Compliant']=countif((isCompliant <> 'true') and (os contains "IOS")),
+    ['Android Not Compliant']=countif((isCompliant <> 'true') and (os contains "Android")),
+    ['MacOs Not Compliant']=countif((isCompliant <> 'true') and (os contains "MacOs")),
+    ['Linux Not Compliant']=countif((isCompliant <> 'true') and (os contains "Linux")),
+    ['Windows Not Compliant']=countif((trustType <> "Hybrid Azure AD joined") and (isCompliant <> 'true') and (os contains "Windows")),
+    ['Total Not Trusted Device']=count(),
+    devicename=make_list(deviceName),
+    browser=make_list(browser)
+    by upn

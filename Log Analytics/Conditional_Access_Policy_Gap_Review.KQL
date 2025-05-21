@@ -1,0 +1,46 @@
+//This query pulls percentage of apps using mfa vs not using, if the user is coming in from a non trusted named location and not on a trusted device or hybrid device
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0 and AppDisplayName <> 'Windows Sign In' and UserType <> "Guest"
+| where ResourceTenantId == HomeTenantId and AADTenantId == HomeTenantId
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| where TrustedLocation <> 'trustedNamedLocation' 
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| summarize
+    ['Total Signin Count']=count(),
+    ['Total MFA Count']=countif(AuthenticationRequirement == "multiFactorAuthentication"),
+    ['Total non MFA Count']=countif(AuthenticationRequirement == "singleFactorAuthentication"),
+    ['Total Trusted device']=countif(trustType == "Hybrid Azure AD joined"),
+    ['Total Compliant device']=countif(isCompliant == 'true'),
+    ['Total Trusted Location']=countif(TrustedLocation == 'trustedNamedLocation'),
+    ['Total CAP Applied']=countif(ConditionalAccessStatus == 'success')
+    by AppDisplayName
+| project
+    AppDisplayName,
+    MFAPercentage=(todouble(['Total MFA Count']) * 100 / todouble(['Total Signin Count'])),
+    ['Total Signin Count'],
+    ['Total MFA Count'],
+    ['Total non MFA Count'],
+    ['Total Trusted device'],
+    ['Total Compliant device'],
+    ['Total Trusted Location'],
+    ['Total CAP Applied']
+| where MFAPercentage <> 100
+| sort by MFAPercentage asc 
+
+//this will retrive the user and the app that did not have to provide mfa
+SigninLogs
+| where TimeGenerated > ago(30d)
+| where ResultType == 0 and AppDisplayName <> 'Windows Sign In' and UserType <> "Guest"
+| where ResourceTenantId == HomeTenantId and AADTenantId == HomeTenantId
+| extend trustType = tostring(DeviceDetail.trustType)
+| extend isCompliant = tostring(DeviceDetail.isCompliant)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| where TrustedLocation <> 'trustedNamedLocation' 
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where AuthenticationRequirement == "singleFactorAuthentication"
+| distinct AppDisplayName, UserPrincipalName, trustType, TrustedLocation,isCompliant, AuthenticationRequirement,ConditionalAccessStatus
+
+// filter out AppDisplayName <> "Microsoft Authentication Broker"

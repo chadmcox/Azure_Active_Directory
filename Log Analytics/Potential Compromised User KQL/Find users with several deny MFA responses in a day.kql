@@ -1,0 +1,26 @@
+//https://github.com/reprise99/Sentinel-Queries/blob/main/Azure%20Active%20Directory/Identity-PotentialMFANumberMatchingAbuse.kql
+let threshold=2;
+SigninLogs
+| where TimeGenerated > ago(14d) 
+| project
+    TimeGenerated,
+    AppDisplayName,
+    AuthenticationRequirement,
+    AuthenticationDetails,
+    UserPrincipalName,
+    CorrelationId
+//Include only authentications that require MFA
+| where AuthenticationRequirement == "multiFactorAuthentication"
+//Extend authentication result description
+| extend AuthResult = tostring(parse_json(AuthenticationDetails)[1].authenticationStepResultDetail)
+//Find results that include both denined and completed MFA
+| where AuthResult in ("MFA completed in Azure AD", "MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
+//Create a list of completed and denied MFA challenges per correlation id
+| summarize ['Result Types']=make_list(AuthResult) by CorrelationId, UserPrincipalName, startofday(TimeGenerated), AppDisplayName
+//Ensure the list includes both completed and denied MFA challenges
+| where ['Result Types'] has ("MFA completed in Azure AD") and ['Result Types'] has_any ("MFA denied; user declined the authentication", "MFA denied; user did not respond to mobile app notification")
+| mv-expand ['Result Types'] to typeof(string)
+//Expand and count all the denied challenges and then return CorrelationId's where the MFA denied count is greater or equal to your threshold
+| where ['Result Types'] has_any ("MFA denied; user declined the authentication","MFA denied; user did not respond to mobile app notification")
+| summarize ['Denied MFA Count']=count()by ['Result Types'], CorrelationId, UserPrincipalName, startofday(TimeGenerated), AppDisplayName
+| where ['Denied MFA Count'] >= threshold

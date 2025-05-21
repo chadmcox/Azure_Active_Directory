@@ -1,0 +1,2 @@
+//use this query in azure monitor or log analytics where the logs are stored to determine the impact if the policy was enabled in Entra ID (Azure AD)
+//Mobile users not required approved clients or app protection policies
