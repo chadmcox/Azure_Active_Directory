@@ -1,0 +1,36 @@
+name: Block Unauthorized Emails
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  email-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Scan for unauthorized email domains
+        run: |
+          echo "🔍 Scanning for unauthorized emails..."
+
+          # Email-matching regex: finds most common email formats
+          matches=$(grep -iEroh --exclude-dir=.git "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}" . || true)
+
+          found=0
+          for email in $matches; do
+            if ! echo "$email" | grep -Eiq "@contoso\.com$|@([A-Za-z0-9.-]+\.)?chadcolabs\.us$"; then
+              echo "❌ Unauthorized email found: $email"
+              found=1
+            fi
+          done
+
+          if [ "$found" -eq 1 ]; then
+            echo "🚫 Commit or PR contains unauthorized email addresses."
+            exit 1
+          else
+            echo "✅ All emails are from approved domains."
+          fi
