@@ -1,6 +1,6 @@
 SigninLogs
 | where TimeGenerated > ago(14d) 
-| where ResultType == 0 or ResultType == 53003
+| where ResultType in (0,50074,50142,70043,53003,53004,530031,530032,70046)
 | where RiskLevelDuringSignIn in ("high","medium","low") or RiskLevelAggregated in ("high","medium","low")
 | extend CA = parse_json(ConditionalAccessPolicies)
 | mv-expand bagexpansion=array CA
