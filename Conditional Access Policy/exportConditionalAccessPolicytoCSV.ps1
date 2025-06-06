@@ -1,4 +1,3 @@
-#Requires -modules AzureADPreview
 <#
 .VERSION 2023.4.18
 .GUID 18bf582a-f85b-4a89-8f60-e52845ca1c08
