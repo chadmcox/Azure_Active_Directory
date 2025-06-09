@@ -1,0 +1,8 @@
+let timerange=14d;
+SigninLogs
+| project TimeGenerated, AuthenticationDetails, UserPrincipalName
+| where TimeGenerated > ago (timerange)
+| extend AuthMethod = tostring(parse_json(AuthenticationDetails)[0].authenticationMethod)
+| where AuthMethod != "Previously satisfied"
+| where  AuthMethod == "SMS Sign-in"
+| distinct TimeGenerated, UserPrincipalName, AuthMethod
