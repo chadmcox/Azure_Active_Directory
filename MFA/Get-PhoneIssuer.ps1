@@ -1,5 +1,5 @@
 #install microsoft.graph if currently not installed
-install-module microsoft.graph
+#install-module microsoft.graph
 #connect to microsoft graph powershell
 Connect-MgGraph -Scopes "Policy.Read.All","Directory.Read.All","User.Read.All","Reports.Read.All", "UserAuthenticationMethod.Read.All"
 
