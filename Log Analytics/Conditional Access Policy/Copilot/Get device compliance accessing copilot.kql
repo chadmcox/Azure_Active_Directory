@@ -1,0 +1,6 @@
+let AI = pack_array("fb8d773d-7ef8-4ec0-a117-179f88add510","bb5ffd56-39eb-458c-a53a-775ba21277da");
+union SigninLogs, AADNonInteractiveUserSignInLogs
+| where ResourceIdentity in (AI) or ResourceId in (AI) or AppId in (AI)
+| extend compliant = tostring(parse_json(DeviceDetail_string).isCompliant) ,compliant1 = tostring(parse_json(DeviceDetail_dynamic).isCompliant)
+| extend isCompliant = coalesce(compliant , compliant1)
+| distinct UserPrincipalName, AppDisplayName, ResourceDisplayName, AuthenticationRequirement, isCompliant
