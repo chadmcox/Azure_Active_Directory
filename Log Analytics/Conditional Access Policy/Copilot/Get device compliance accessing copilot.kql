@@ -3,4 +3,10 @@ union SigninLogs, AADNonInteractiveUserSignInLogs
 | where ResourceIdentity in (AI) or ResourceId in (AI) or AppId in (AI)
 | extend compliant = tostring(parse_json(DeviceDetail_string).isCompliant) ,compliant1 = tostring(parse_json(DeviceDetail_dynamic).isCompliant)
 | extend isCompliant = coalesce(compliant , compliant1)
-| distinct UserPrincipalName, AppDisplayName, ResourceDisplayName, AuthenticationRequirement, isCompliant
+| extend TrustType1 = tostring(parse_json(DeviceDetail_string).trustType) ,TrustType2 = tostring(parse_json(DeviceDetail_dynamic).trustType)
+| extend TrustType = coalesce(TrustType2 , TrustType1)
+| extend os2 = tostring(parse_json(DeviceDetail_string).operatingSystem) ,os1 = tostring(parse_json(DeviceDetail_dynamic).operatingSystem)
+| extend os = coalesce(os1 , os2)
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| distinct UserPrincipalName, AppDisplayName, ResourceDisplayName, AuthenticationRequirement, isCompliant,TrustType,os,TrustedLocation
+| project UserPrincipalName, AppDisplayName, ResourceDisplayName, AuthenticationRequirement, isCompliant,TrustType,os,TrustedLocation
