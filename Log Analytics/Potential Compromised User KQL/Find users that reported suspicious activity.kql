@@ -1,5 +1,12 @@
 SigninLogs
 | where AuthenticationDetails has "SuspiciousActivityReported"
+| mv-expand parse_json(AuthenticationDetails)
+| where AuthenticationDetails["authenticationStepResultDetail"] == "SuspiciousActivityReported"
+| extend AuthMethod = AuthenticationDetails["authenticationMethod"],authenticationStepResultDetail=AuthenticationDetails["authenticationStepResultDetail"]
+| project ["Time generated"] =TimeGenerated, ["User principal name"] =UserPrincipalName, ["Authentication Method"]=AuthMethod,["Authentication Details"]=authenticationStepResultDetail
+
+SigninLogs
+| where AuthenticationDetails has "SuspiciousActivityReported"
 | project TimeGenerated, UserPrincipalName, AuthenticationDetails, AppDisplayName, ResultType, ResultDescription, IPAddress
 
 //can also use this one -------------------
