@@ -1,0 +1,3 @@
+AuditLogs
+//| where TimeGenerated > ago(90d)
+| where OperationName in ("User has elevated their access to User Access Administrator for their Azure Resources")
