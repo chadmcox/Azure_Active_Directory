@@ -38,3 +38,11 @@ SigninLogs
 | extend isManaged = tostring(parse_json(DeviceDetail).isManaged)
 | extend trustType = tostring(parse_json(DeviceDetail).trustType)
 ```
+
+## SigninLogs - LocationDetails
+```
+SigninLogs
+| extend city = tostring(parse_json(LocationDetails).city)
+| extend countryOrRegion = tostring(parse_json(LocationDetails).countryOrRegion)
+| extend state = tostring(parse_json(LocationDetails).state)
+```
