@@ -27,3 +27,14 @@ SigninLogs
 ```
 
 ```
+
+## SigninLogs - DeviceDetail
+```
+SigninLogs
+| extend browser = tostring(parse_json(DeviceDetail).browser) 
+| extend operatingSystem = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend deviceName = tostring(parse_json(DeviceDetail).displayName)
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend isManaged = tostring(parse_json(DeviceDetail).isManaged)
+| extend trustType = tostring(parse_json(DeviceDetail).trustType)
+```
