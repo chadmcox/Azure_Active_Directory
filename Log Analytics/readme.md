@@ -28,6 +28,15 @@ SigninLogs
 SigninLogs
 | where TimeGenerated > ago(30d)
 ```
+## SigninLogs - AuthenticationDetails
+```
+
+```
+
+## SigninLogs - ConditionalAccessPolicies
+```
+
+```
 
 ## SigninLogs - DeviceDetail
 ```
