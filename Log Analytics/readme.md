@@ -25,7 +25,8 @@ SigninLogs
 
 * Always start with a time filter
 ```
-
+SigninLogs
+| where TimeGenerated > ago(30d)
 ```
 
 ## SigninLogs - DeviceDetail
