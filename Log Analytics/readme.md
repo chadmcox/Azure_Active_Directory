@@ -74,3 +74,13 @@ SigninLogs
 | extend networkType = tostring(Parsed_NetworkLocationDetails.networkType), networkName = tostring(Parsed_NetworkLocationDetails.networkNames[0])
 
 ```
+
+## SigninLogs - AuthenticationProcessingDetails
+```
+//retrieve the oauth scope from the sign-in logs
+SigninLogs
+| extend parsed = parse_json(AuthenticationProcessingDetails)
+| mv-expand parsed
+| where parsed.key == "Oauth Scope Info"
+| extend oauth_scope = parse_json(parsed.value)
+```
