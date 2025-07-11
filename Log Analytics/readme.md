@@ -47,3 +47,21 @@ SigninLogs
 | extend countryOrRegion = tostring(parse_json(LocationDetails).countryOrRegion)
 | extend state = tostring(parse_json(LocationDetails).state)
 ```
+
+## SigninLogs - NetworkLocationDetails
+```
+//is the authentication coming from a trusted location
+SigninLogs
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+
+//retrieve the first network named location
+SigninLogs
+| extend NetworkLocation = tostring(parse_json(NetworkLocationDetails)[0].networkNames[0])
+
+//expand and retrieve each network named location in the atteribute
+SigninLogs
+| extend Parsed_NetworkLocationDetails = parse_json(NetworkLocationDetails)
+| mv-expand Parsed_NetworkLocationDetails
+| extend networkType = tostring(Parsed_NetworkLocationDetails.networkType), networkName = tostring(Parsed_NetworkLocationDetails.networkNames[0])
+
+```
