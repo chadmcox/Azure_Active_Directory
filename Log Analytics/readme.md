@@ -84,3 +84,8 @@ SigninLogs
 | where parsed.key == "Oauth Scope Info"
 | extend oauth_scope = parse_json(parsed.value)
 ```
+
+## SigninLogs - AuthenticationRequirementPolicies
+```
+
+```
