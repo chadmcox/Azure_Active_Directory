@@ -15,7 +15,6 @@ function login-MSGraph{
     Connect-MgGraph -Scopes "Application.Read.All","Directory.Read.All","Group.Read.All","PrivilegedAccess.Read.AzureAD", `
         "PrivilegedAccess.Read.AzureADGroup","PrivilegedAccess.Read.AzureResources","RoleManagement.Read.All","User.Read.All", `
         "UserAuthenticationMethod.Read.All" -Environment $mg_env.name
-    Select-MgProfile -Name "beta"
 }
 
 
