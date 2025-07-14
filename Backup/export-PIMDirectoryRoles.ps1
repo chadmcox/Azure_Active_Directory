@@ -15,6 +15,7 @@ function login-MSGraph{
 
 #login
 login-MSGraph
+$context = get-mgcontext
 
 function retrieveaadpimrolemembers{
     [cmdletbinding()] 
