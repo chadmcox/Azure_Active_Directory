@@ -36,7 +36,7 @@ import-csv $file | select groupName -unique | foreach{
     $gname = "$((($_.groupName).replace(' ','')))"
     $gname
     $group=$null;$group = get-mggroup -filter "DisplayName eq '$gname'"
-    if(!($group){
+    if(!($group)){
     $group = New-MgGroup -DisplayName $gname -MailEnabled:$false -MailNickname  $gname  -SecurityEnabled -IsAssignableToRole
     }
     Register-MgPrivilegedAccessResource -PrivilegedAccessId AADGroups -ExternalId $group.Id
