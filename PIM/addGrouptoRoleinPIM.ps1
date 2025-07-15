@@ -49,6 +49,7 @@ $hash_pag = Get-MgPrivilegedAccessResource -PrivilegedAccessId AADGroups | selec
 
 #add the group to a role
 import-csv $file -pv mapping | foreach{
+    write-host "Attempting $($mapping.roleName) to $($mapping.groupName)"
     New-MgPrivilegedAccessRoleAssignmentRequest -PrivilegedAccessId AADRoles `
         -RoleDefinitionId $hash_roles[$mapping.roleName].id -subjectid $hash_pag[$mapping.groupName].id `
         -ResourceId $($context.TenantId) `
