@@ -8,7 +8,7 @@ and can be used to duplicate the role to group mapping in another tenant.
 
 #>
 
-param($file=".\PIM_Roles_to_Group_Mapping\pimrolegroupmapping.csv")
+param($file=".\\PIM_Roles_to_PIM_Group_Mapping\pimrolegroupmapping.csv")
 cd $path
 $starttime = Get-Date
 
@@ -35,7 +35,10 @@ $context = get-mgcontext
 import-csv $file | select groupName -unique | foreach{
     $gname = "$((($_.groupName).replace(' ','')))"
     $gname
+    $group=$null;$group = get-mgbetagroup -filter "DisplayName eq '$gname'"
+    if(!($group){
     $group = New-MgGroup -DisplayName $gname -MailEnabled:$false -MailNickname  $gname  -SecurityEnabled -IsAssignableToRole
+    }
     Register-MgPrivilegedAccessResource -PrivilegedAccessId AADGroups -ExternalId $group.Id
 }
 
