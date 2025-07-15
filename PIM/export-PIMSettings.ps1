@@ -59,4 +59,4 @@ Get-MgPrivilegedAccessRoleDefinition -PrivilegedAccessId AADRoles -Filter "resou
             Convertto-Json | ConvertFrom-Json | where {$_."@odata.type" -eq '#microsoft.graph.group'} | select `
                 @{N="roleName";E={$role.DisplayName}}, @{N="groupName";E={$_.displayName}}, @{N="AssignmentState";E={$assignment.AssignmentState}}
     }
-} | export-csv ".\PIM_Roles_to_Group_Mapping\pimrolegroupmapping.csv" -notypeinformation
+} | export-csv ".\PIM_Roles_to_PIM_Group_Mapping\pimrolegroupmapping.csv" -notypeinformation
