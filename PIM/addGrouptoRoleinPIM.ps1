@@ -38,6 +38,7 @@ import-csv $file | select groupName -unique | foreach{
     $group=$null;$group = get-mggroup -filter "DisplayName eq '$gname'"
     if(!($group)){
     $group = New-MgGroup -DisplayName $gname -MailEnabled:$false -MailNickname  $gname  -SecurityEnabled -IsAssignableToRole
+    start-sleep -second
     }
     Register-MgPrivilegedAccessResource -PrivilegedAccessId AADGroups -ExternalId $group.Id
 }
@@ -50,7 +51,7 @@ $hash_pag = Get-MgPrivilegedAccessResource -PrivilegedAccessId AADGroups | selec
 #add the group to a role
 import-csv $file -pv mapping | foreach{
     write-host "Attempting $($mapping.roleName) to $($mapping.groupName)"
-    write-host "Attempting $($hash_roles[$mapping.roleName].id) to $(($hash_pag[$mapping.groupName].id)[0])"
+    write-host "Attempting $($hash_roles[$mapping.roleName].id) to $($hash_pag[$mapping.groupName].id)"
     New-MgPrivilegedAccessRoleAssignmentRequest -PrivilegedAccessId AADRoles `
         -RoleDefinitionId $hash_roles[$mapping.roleName].id -subjectid $hash_pag[$mapping.groupName].id `
         -ResourceId $($context.TenantId) `
