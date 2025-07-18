@@ -1,6 +1,7 @@
 AuditLogs
 | where OperationName == "Update conditional access policy"
 | extend ConditionalAccessPolicy = tostring(TargetResources[0].displayName)
+| extend Actor = iff(isempty(tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)) == true, tostring(parse_json(tostring(InitiatedBy.app)).displayName), tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName))
 | mv-expand ModifiedProperties = parse_json(TargetResources[0].modifiedProperties)
 | extend PropertyName = tostring(ModifiedProperties.displayName),
          OldValueRaw = tostring(ModifiedProperties.oldValue),
@@ -62,7 +63,7 @@ AuditLogs
     New_CustomAuthFactors = strcat_array(NewValueJson.grantControls.customAuthenticationFactors, ", "),
     Old_TermsOfUse = strcat_array(OldValueJson.grantControls.termsOfUse, ", "),
     New_TermsOfUse = strcat_array(NewValueJson.grantControls.termsOfUse, ", ")
-| project TimeGenerated, ConditionalAccessPolicy, PropertyName,
+| project TimeGenerated,Actor, ConditionalAccessPolicy, PropertyName,
           Old_DisplayName, New_DisplayName,
           Old_ModifiedDateTime, New_ModifiedDateTime,
           Old_State, New_State,
