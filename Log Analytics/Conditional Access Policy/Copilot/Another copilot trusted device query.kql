@@ -1,0 +1,41 @@
+let AAD = SigninLogs
+| where ResultType == 0
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| where AppId in ('fb8d773d-7ef8-4ec0-a117-179f88add510','bb5ffd56-39eb-458c-a53a-775ba21277da')
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where AADTenantId == ResourceTenantId
+| where UserType <> "Guest"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice')
+)
+| where condition1 == 0 and condition2 == 0
+| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
+;
+let AADNon = AADNonInteractiveUserSignInLogs
+| where ResultType == 0
+| extend os = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend browser = tostring(parse_json(DeviceDetail).browser)
+| where AppId in ('fb8d773d-7ef8-4ec0-a117-179f88add510','bb5ffd56-39eb-458c-a53a-775ba21277da')
+| where isCompliant <> 'true' and trustType <> "Hybrid Azure AD joined"
+| where UserType <> "Guest"
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireCompliantDevice'),
+    condition2 = countif(ca.result in ("success","reportOnlySuccess") and tostring(ca.enforcedGrantControls) contains 'RequireDomainJoinedDevice')
+)
+| where condition1 == 0 and condition2 == 0
+| distinct AppDisplayName,UserPrincipalName=tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement, UserType,trustType,isCompliant,os,browser, ClientAppUsed, UserDisplayName
+;
+AADNon
+| union AAD
+| summarize 
+    officelist = make_set(AppDisplayName),
+    oslist = make_set(os),
+    browserlist = make_set(browser),
+    clientapplist = make_set(ClientAppUsed)
+     by UserDisplayName,UserPrincipalName, UserType,trustType,isCompliant
