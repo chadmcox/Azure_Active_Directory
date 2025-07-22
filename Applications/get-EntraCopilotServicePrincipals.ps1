@@ -1,3 +1,8 @@
+param($defaultpath = "$env:USERPROFILE\Downloads")
+if(!(Get-MgContext)){
+    connect-mggraph -scopes "Application.Read.All","Directory.Read.All"
+}
+
 $sps_lastsignin = Get-MgBetaReportServicePrincipalSignInActivity -all | where {$_.LastSignInActivity.LastSignInDateTime} | select appid, LastSignInActivity, `
         @{N="SignInActivityType";E={if($_.delegatedClientSignInActivity.lastSignInDateTime){"delegatedClient"
         }elseif($_.delegatedResourceSignInActivity.lastSignInDateTime){"delegatedResource"
