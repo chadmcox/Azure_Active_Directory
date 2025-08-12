@@ -1,0 +1,31 @@
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2","Microsoft Intune Company Portal","Microsoft Mobile Application Management");
+SigninLogs
+| where TimeGenerated > ago(10d) and AppDisplayName !in (excludeapps) and ResultType == 0 and UserType == "Member"
+| extend Day = startofday(TimeGenerated)
+| extend trustType = tostring(parse_json(DeviceDetail).trustType) 
+| extend isCompliant = tostring(parse_json(DeviceDetail).isCompliant) 
+| extend operatingSystem = tostring(parse_json(DeviceDetail).operatingSystem) 
+| extend CompliantTrusted = trustType == "Hybrid Azure AD joined" or isCompliant == "true"
+| summarize
+    ['Total Signin Count']=count(),
+    ['Andriod Compliant']=countif(CompliantTrusted == "true" and operatingSystem == "Android"),
+    ['Andriod Signin']=countif(operatingSystem == "Android"),
+    ['iOS Compliant']=countif(CompliantTrusted == "true" and operatingSystem contains "Ios"),
+    ['iOS Signin']=countif(operatingSystem contains "Ios"),
+    ['Windows Compliant']=countif(CompliantTrusted == "true" and operatingSystem == "Windows10"),
+    ['Windows Signin']=countif(operatingSystem == "Windows10"),
+    ['Linux Compliant']=countif(CompliantTrusted == "true" and operatingSystem == "Linux"),
+    ['Linux Signin']=countif(operatingSystem == "Linux"),
+    ['MacOs Compliant']=countif(CompliantTrusted == "true" and operatingSystem == "MacOs"),
+    ['MacOs Signin']=countif(operatingSystem == "MacOs") by Day
+| project Day, ["Android %"]=(todouble(['Andriod Compliant']) * 100 / todouble(['Andriod Signin'])),
+["iOS %"]=(todouble(['iOS Compliant']) * 100 / todouble(['iOS Signin'])),
+["Windows %"]=(todouble(['Windows Compliant']) * 100 / todouble(['Windows Signin'])),
+["Linux %"]=(todouble(['Linux Compliant']) * 100 / todouble(['Linux Signin'])),
+["MacOs %"]=(todouble(['MacOs Compliant']) * 100 / todouble(['MacOs Signin']))
+| render columnchart
+    with (
+    kind=unstacked,
+    xtitle="Day",
+    ytitle="Signin Count",
+    title="By OS Compliant signins per day")
