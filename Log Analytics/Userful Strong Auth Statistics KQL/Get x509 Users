@@ -1,0 +1,7 @@
+SigninLogs
+| where TimeGenerated > ago(30d) and AuthenticationDetails contains 'X.509 Certificate'
+| mv-expand todynamic(AuthenticationDetails)
+| extend ['Authentication Method'] = tostring(AuthenticationDetails.authenticationMethod)
+| where ['Authentication Method'] == 'X.509 Certificate'
+| extend TrustedLocation = tostring(iff(NetworkLocationDetails contains 'trustedNamedLocation', 'trustedNamedLocation',''))
+| distinct ['Authentication Method'], AppDisplayName, UPN = tolower(UserPrincipalName), ConditionalAccessStatus, AuthenticationRequirement, ResultType, ResultDescription, TrustedLocation, IPAddress, AutonomousSystemNumber, UserAgent
