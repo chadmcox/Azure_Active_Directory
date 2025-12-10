@@ -35,7 +35,7 @@ SigninLogs
 | extend AuthenticationDetails_authenticationMethod = tostring(AuthenticationDetails["authenticationMethod"])
 | extend AuthenticationDetails_authenticationStepRequirement = tostring(AuthenticationDetails["authenticationStepRequirement"])
 | extend AuthenticationDetails_succeeded = tostring(AuthenticationDetails["succeeded"])
-| project TimeGenerated, UserPrincipalName, ResultType, ResultDescription,city,state,IPAddress,operatingSystem, UserAgent, RiskLevelAggregated, RiskLevelDuringSignIn,MfaDetail_authMethod,MfaDetail_authDetail, AuthenticationDetails_authenticationMethod, AuthenticationDetails_authenticationStepRequirement, AuthenticationDetails_succeeded
+
 ```
 
 ## SigninLogs - ConditionalAccessPolicies
