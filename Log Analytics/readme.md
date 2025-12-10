@@ -85,7 +85,10 @@ SigninLogs
 | extend oauth_scope = parse_json(parsed.value)
 ```
 
-## SigninLogs - AuthenticationRequirementPolicies
-```
+## SigninLogs - MFADetail
 
+```
+SigninLogs
+| extend MfaDetail_authMethod =  tostring(parse_json(MfaDetail).authMethod)
+| extend MfaDetail_authDetail =  tostring(parse_json(MfaDetail).authDetail)
 ```
