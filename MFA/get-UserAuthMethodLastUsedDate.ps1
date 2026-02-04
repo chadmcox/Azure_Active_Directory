@@ -12,7 +12,7 @@ $users | foreach{ $u=$null;$u=$_
     $authm | select -ExpandProperty AdditionalProperties | convertto-json -Depth 99 | Convertfrom-Json | where {!($_."@odata.type" -eq '#microsoft.graph.passwordAuthenticationMethod')}  | select `
        @{N="UserId";E={$u.id}}, `
        @{N="UserDisplayName";E={$u.DisplayName}}, `
-       @{N="AuthMethodLastUsedDate";E={$authm.LastUsedDateTime}}, `
+       @{N="AuthMethodLastUsedDate";E={$_.LastUsedDateTime}}, `
        @{N="AuthMethodType";E={$_."@odata.type"}}, `
        displayName,phoneNumber
     }
