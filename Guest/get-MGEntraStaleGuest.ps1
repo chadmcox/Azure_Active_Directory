@@ -7,7 +7,6 @@ Get-MgBetaUser -Filter "userType eq 'Guest' and AccountEnabled eq true" -all  -P
       externalUserState,@{Name="externalUserStateChangeDateTime";Expression={(get-date $_.externalUserStateChangeDateTime).tostring('yyyy-MM-dd')}},creationType, `
         @{Name="lastSuccessfulSignInDateTime";Expression={(get-date $_.signInActivity.lastSuccessfulSignInDateTime).tostring('yyyy-MM-dd')}}, `
         @{N='LastSignInDateTime';E={$_.signInActivity.LastSignInDateTime}}, @{N='LastNonInteractiveSignInDateTime';E={$_.signInActivity.LastNonInteractiveSignInDateTime}} | `
-            where {($_.LastSignInDateTime -eq $null)  -or ((New-TimeSpan -Start $_.LastSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
-            where {($_.LastNonInteractiveSignInDateTime -eq $null) -or ((New-TimeSpan -Start $_.LastNonInteractiveSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
+            where {($_.lastSuccessfulSignInDateTime -eq $null)  -or ((New-TimeSpan -Start $_.lastSuccessfulSignInDateTime -end $(get-date)).TotalDays -gt $notsignedonindays)} | `
                 export-csv .\entra_guest_StaleLastSignIn.csv -notypeinformation
 write-host "Report can be found here cd $defaultpath"
