@@ -1,0 +1,10 @@
+AuditLogs 
+| where OperationName in ("Reset password (self-service)") or ActivityDisplayName == 'Self-service password reset flow activity progress'
+| extend extracted_Id = extract(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", 0, Id)
+| extend Target =  tostring(TargetResources[0].userPrincipalName)
+| project TimeGenerated,Target,extracted_Id, ResultDescription, OperationName
+| summarize 
+  results = make_set(ResultDescription),
+  attempts = count()by Target, OperationName
+| extend Success = tostring(iff(results contains 'success', 'True',''))
+| project Target, OperationName,attempts, results, Success
