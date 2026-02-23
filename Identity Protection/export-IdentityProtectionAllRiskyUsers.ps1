@@ -43,6 +43,13 @@ $uri = "https://graph.microsoft.com/beta/riskyUsers?`$filter=riskState eq 'atRis
 }
 
 
-getAADRiskyUsers | export-csv .\azuread_riskyusers.csv -notypeinformation
+$riskyUsers = getAADRiskyUsers
+foreach($riskyUser in $riskyUsers) {
+    
+    $userData = Get-MgUser -UserId $riskyUser.id -Property "lastPasswordChangeDateTime" | Select-Object lastPasswordChangeDateTime
+    $riskyUser | Add-Member -MemberType NoteProperty -Name lastPasswordChangeDateTime -Value $userData.lastPasswordChangeDateTime -Force
+}
+
+$riskyUsers | export-csv .\azuread_riskyusers.csv -notypeinformation
 
 write-host "Results can be found here: $resultslocation"
