@@ -42,14 +42,45 @@ $uri = "https://graph.microsoft.com/beta/riskyUsers?`$filter=riskState eq 'atRis
     }until ($uri -eq $null)
 }
 
-
-$riskyUsers = getAADRiskyUsers
-foreach($riskyUser in $riskyUsers) {
-    
-    $userData = Get-MgUser -UserId $riskyUser.id -Property "lastPasswordChangeDateTime" | Select-Object lastPasswordChangeDateTime
-    $riskyUser | Add-Member -MemberType NoteProperty -Name lastPasswordChangeDateTime -Value $userData.lastPasswordChangeDateTime -Force
+function getAADuser{
+    [cmdletbinding()] 
+    param()
+    write-host "Exporting all user to: $resultslocation, this may take a while"
+    $uri = "https://graph.microsoft.com/beta/users?`$filter=userType eq 'Member' and AccountEnabled eq true&`$select=Id,lastPasswordChangeDateTime"
+    do{$results = $null
+        for($i=0; $i -le 3; $i++){
+            try{
+                $results = Invoke-MgGraphRequest -Uri $uri -Method GET -OutputType PSObject
+                break
+            }catch{#if this fails it is going to try to authenticate again and rerun query
+                if(($_.Exception.response.statuscode -eq "TooManyRequests") -or ($_.Exception.Response.StatusCode.value__ -eq 429)){
+                    #if this hits up against to many request response throwing in the timer to wait the number of seconds recommended in the response.
+                    write-host "Error: $($_.Exception.response.statuscode), trying again $i of 3"
+                    Start-Sleep -Seconds $_.Exception.response.headers.RetryAfter.Delta.seconds
+                }
+            }
+        }
+        $results.value
+        $uri=$null;$uri = $Results.'@odata.nextlink'
+    }until ($uri -eq $null)
 }
 
-$riskyUsers | export-csv .\azuread_riskyusers.csv -notypeinformation
+
+$riskyUsers = getAADRiskyUsers | group id -AsHashTable -AsString
+
+getAADuser | where {$riskyUsers.Contains($_.id)} | foreach{
+    $_ | select lastPasswordChangeDateTime, `
+         @{N="id";E={$riskyUsers[$_.id].id}}, `
+         @{N="isDeleted";E={$riskyUsers[$_.id].isDeleted}}, `
+         @{N="isProcessing";E={$riskyUsers[$_.id].isProcessing}}, `
+         @{N="riskLevel";E={$riskyUsers[$_.id].riskLevel}}, `
+         @{N="riskState";E={$riskyUsers[$_.id].riskState}}, `
+         @{N="riskDetail";E={$riskyUsers[$_.id].riskDetail}}, `
+         @{N="riskLastUpdatedDateTime ";E={$riskyUsers[$_.id].riskLastUpdatedDateTime}}, `
+         @{N="userDisplayName";E={$riskyUsers[$_.id].userDisplayName}}, `
+         @{N="userPrincipalName";E={$riskyUsers[$_.id].userPrincipalName}}
+
+
+} | export-csv .\azuread_riskyusers.csv -notypeinformation
 
 write-host "Results can be found here: $resultslocation"
