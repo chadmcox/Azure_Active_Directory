@@ -5,6 +5,7 @@ AADServicePrincipalSignInLogs
 | extend policyname = tostring(ConditionalAccessPolicies["displayName"])
 | extend result = tostring(ConditionalAccessPolicies["result"])
 | project-away ConditionalAccessPolicies
-| distinct ServicePrincipalName, ResourceDisplayName, ConditionalAccessStatus, ResultType, result, policyname
-| summarize ServicePrincipalCount = count() by policyname, result
+| extend  agentType = tostring(parse_json(Agent).agentType)
+| distinct ServicePrincipalName, ResourceDisplayName, ConditionalAccessStatus, ResultType, result, policyname, agentType
+| summarize ServicePrincipalCount = count() by policyname, result, agentType
 | sort by ServicePrincipalCount desc 
