@@ -1,0 +1,3 @@
+AADServicePrincipalSignInLogs 
+| where parse_json(Agent).agentType <> "notAgentic"
+| extend  agentType = tostring(parse_json(Agent).agentType)
