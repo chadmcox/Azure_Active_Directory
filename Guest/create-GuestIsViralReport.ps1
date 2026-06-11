@@ -46,6 +46,26 @@ function getAADGuest{
     }until ($uri -eq $null)
 }
 
+function isguestviral{
+    [cmdletbinding()]
+    param($mail)
+    if(!($global:Hash_DomainisViral.containskey(($mail -split("@"))[1]))){
+        $userRealmUriFormat = "https://login.microsoftonline.com/common/userrealm?user={urlEncodedMail}&api-version=2.1"
+        $encodedMail = [System.Web.HttpUtility]::UrlEncode($mail)
+        $userRealmUri = $userRealmUriFormat -replace "{urlEncodedMail}", $encodedMail
+        try{$results = Invoke-WebRequest -Uri $userRealmUri}catch{}
+        if(($results.Content | ConvertFrom-Json).IsViral -eq $true){
+            ($results.Content | ConvertFrom-Json).IsViral
+            $global:Hash_DomainisViral.add(($mail -split("@"))[1],$true)
+        }else{
+            $false
+            $global:Hash_DomainisViral.add(($mail -split("@"))[1],$false)
+        }
+    }else{$global:Hash_DomainisViral["$(($mail -split("@"))[1])"]}
+}
+
+$global:Hash_DomainisViral = @{}
+
 
 getAADGuest | where {!($_.onPremisesSyncEnabled -eq $true) -and ($_.identities | where {$_.SignInType -eq "federated"}).Issuer -eq "ExternalAzureAD"} | `
     foreach{$guest="";$guest = $_; $results=""
@@ -58,7 +78,8 @@ getAADGuest | where {!($_.onPremisesSyncEnabled -eq $true) -and ($_.identities |
         $guest | select userprincipalname, @{Name="Login";Expression={if($results){($results.Content | ConvertFrom-Json).Login}else{"NA"}}}, `
             @{Name="DomainName";Expression={if($results){($results.Content | ConvertFrom-Json).DomainName}else{"NA"}}}, `
             @{Name="FederationBrandName";Expression={if($results){($results.Content | ConvertFrom-Json).FederationBrandName}}}, `
-            @{Name="IsViral";Expression={if($results){($results.Content | ConvertFrom-Json).IsViral}}}, `
+            @{Name="IsViral";Expression={$SignInType =$null;$SignInType = ($_.identities | where {$_.SignInType -eq "federated"}).Issuer; `
+        if(!($SignInType)){isguestviral -mail $_.mail}elseif($SignInType -eq 'ExternalAzureAD'){isguestviral -mail $_.mail}}}, `
             @{Name="SignInType";Expression={($_.identities | where {$_.SignInType -eq "federated"}).Issuer}}, `
         @{Name="createdDateTime";Expression={(get-date $_.createdDateTime).tostring('yyyy-MM-dd')}}, `
         @{Name="lastPasswordChangeDateTime";Expression={if($_.createdDateTime -ne $_.lastPasswordChangeDateTime){(get-date $_.lastPasswordChangeDateTime).tostring('yyyy-MM-dd')}}}, `
