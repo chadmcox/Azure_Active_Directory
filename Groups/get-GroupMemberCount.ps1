@@ -12,7 +12,7 @@ function GetAADGroupCounts {
 
     Write-Host "Retrieving groups...writing to this file $file1 in this directory $defaultpath"
 
-    $uri = "https://graph.microsoft.com/beta/groups?`$select=id,displayName,groupTypes,OnPremisesSyncEnabled,mailEnabled,SecurityEnabled,onPremisesDomainName, onPremisesLastSyncDateTime,createdDateTime,isAssignableToRole,onPremisesSecurityIdentifier&`$top=999"
+    $uri = "https://graph.microsoft.com/beta/groups?`$filter=securityEnabled eq true and mailEnabled eq false&`$select=id,displayName,groupTypes,OnPremisesSyncEnabled,mailEnabled,SecurityEnabled,onPremisesDomainName, onPremisesLastSyncDateTime,createdDateTime,isAssignableToRole,onPremisesSecurityIdentifier&`$top=999"
 
     do {
         $results = $null
