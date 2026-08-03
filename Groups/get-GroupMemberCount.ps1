@@ -6,14 +6,70 @@ cd $defaultpath
 
 $file1 = ".\member_count_groups.csv"
 
-$groups = Get-MgBetaGroup -All -Property Id,DisplayName,onPremisesSyncEnabled,mailEnabled, SecurityEnabled,onPremisesDomainName, onPremisesLastSyncDateTime,createdDateTime, isAssignableToRole,onPremisesSecurityIdentifier | select  Id,DisplayName,onPremisesSyncEnabled,mailEnabled, SecurityEnabled,onPremisesDomainName, onPremisesLastSyncDateTime,createdDateTime,isAssignableToRole,onPremisesSecurityIdentifier
-$totalcount = $groups.count
-$i = 0
- $groups | ForEach-Object {$count=0 ; $i++
-    Write-host "Checking $($_.displayname) $i of $totalcount"
-    $count = (Invoke-MgGraphRequest -Method GET `
-        -Uri "https://graph.microsoft.com/v1.0/groups/$($_.Id)/members/`$count" -Headers @{ConsistencyLevel="eventual"})
-    Write-host "Checking $($_.displayname) has $count members"
-        $_ | Select-Object Id, DisplayName,onPremisesSyncEnabled,mailEnabled, SecurityEnabled, @{N="membercount";E={$count}}, onPremisesDomainName, onPremisesLastSyncDateTime,createdDateTime,isAssignableToRole,onPremisesSecurityIdentifier
+function GetAADGroupCounts {
+    [cmdletbinding()]
+    param()
 
-} | export-csv $file1 -notypeinformation
+    Write-Host "Retrieving groups..."
+
+    $uri = "https://graph.microsoft.com/beta/groups?`$select=id,displayName,groupTypes,OnPremisesSyncEnabled,mailEnabled,SecurityEnabled,onPremisesDomainName, onPremisesLastSyncDateTime,createdDateTime,isAssignableToRole,onPremisesSecurityIdentifier&`$top=999"
+
+    do {
+        $results = $null
+
+        for($i = 0; $i -le 3; $i++) {
+            try {
+                $results = Invoke-MgGraphRequest -Uri $uri -Method GET -OutputType PSObject
+                break
+            }
+            catch {
+                if(($_.Exception.Response.StatusCode -eq "TooManyRequests") -or
+                   ($_.Exception.Response.StatusCode.value__ -eq 429)) {
+
+                    Write-Host "Error: $($_.Exception.Response.StatusCode), retrying $($i + 1) of 3"
+                    Start-Sleep -Seconds $_.Exception.Response.Headers.RetryAfter.Delta.Seconds
+                }
+                else {
+                    Write-Host $_.Exception.Message
+                    break
+                }
+            }
+        }
+
+        $results.value |
+            Select-Object displayName,
+                          id,
+                          OnPremisesSyncEnabled,mailEnabled, SecurityEnabled,
+                          @{N="DynamicGroup";E={$_.groupTypes -contains "DynamicMembership"}},
+                          @{N="MemberCount";E={
+
+                                $countUri = "https://graph.microsoft.com/beta/groups/$($_.id)/members/`$count"
+                                $count    = -1
+
+                                for($x = 0; $x -le 3; $x++) {
+                                    try {
+                                        $count = Invoke-MgGraphRequest -Uri $countUri -Method GET -Headers @{ConsistencyLevel="eventual"}
+                                        break
+                                    }
+                                    catch {
+                                        if(($_.Exception.Response.StatusCode -eq "TooManyRequests") -or
+                                           ($_.Exception.Response.StatusCode.value__ -eq 429)) {
+
+                                            Start-Sleep -Seconds $_.Exception.Response.Headers.RetryAfter.Delta.Seconds
+                                        }
+                                        else {
+                                            Write-Host $_.Exception.Message
+                                            break
+                                        }
+                                    }
+                                }
+
+                                [int]$count
+                          }},onPremisesDomainName, onPremisesLastSyncDateTime,createdDateTime,isAssignableToRole,onPremisesSecurityIdentifier
+
+        $uri = $results.'@odata.nextLink'
+
+    } until ($null -eq $uri)
+}
+
+GetAADGroupCounts | export-csv $file1 -notypeinformation
