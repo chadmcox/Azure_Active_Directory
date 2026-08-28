@@ -1,0 +1,38 @@
+SigninLogs
+| where ResourceDisplayName == "Azure Resource Manager"
+| extend
+    browser = tostring(parse_json(DeviceDetail).browser),
+    operatingSystem = tostring(parse_json(DeviceDetail).operatingSystem),
+    deviceName = tostring(parse_json(DeviceDetail).displayName),
+    isCompliant = tostring(parse_json(DeviceDetail).isCompliant),
+    isManaged = tostring(parse_json(DeviceDetail).isManaged),
+    trustType = tostring(parse_json(DeviceDetail).trustType)
+| extend TokenProtectionStatus = todynamic(TokenProtectionStatusDetails)
+| extend
+    TokenBoundStatus = tostring(TokenProtectionStatus.signInSessionStatus),
+    TokenBoundStatusCode = tostring(TokenProtectionStatus.signInSessionStatusCode)
+| mv-expand CAP = ConditionalAccessPolicies
+| extend
+    PolicyName = tostring(CAP.displayName),
+    PolicyResult = tostring(CAP.result),
+    EnforcedSessionControls = tostring(CAP.enforcedSessionControls),
+    SessionControlsNotSatisfied = tostring(CAP.sessionControlsNotSatisfied)
+| where EnforcedSessionControls has "SignInTokenProtection"
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    PolicyName,
+    PolicyResult,
+    TokenBoundStatus,
+    TokenBoundStatusCode,
+    SessionControlsNotSatisfied,
+    operatingSystem,
+    browser,
+    deviceName,
+    trustType,
+    isCompliant,
+    isManaged,
+    ResultType,
+    ResultDescription,
+    IPAddress
+| order by TimeGenerated desc
