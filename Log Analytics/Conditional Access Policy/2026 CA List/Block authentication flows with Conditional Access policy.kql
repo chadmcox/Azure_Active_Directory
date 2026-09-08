@@ -1,0 +1,6 @@
+//Block authentication flows with Conditional Access policy
+// https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-block-authentication-flows
+union SigninLogs, AADNonInteractiveUserSignInLogs
+| where TimeGenerated >= ago(90d) and ResultType == 0
+| where AuthenticationProtocol=="deviceCode" or AuthenticationProtocol =="authenticationTransfer"
+| project TimeGenerated, UserPrincipalName,ResultType, ResultDescription,UserAgent, IPAddress, Location,AppDisplayName,ResourceDisplayName, AuthenticationProtocol, AuthenticationRequirement 
