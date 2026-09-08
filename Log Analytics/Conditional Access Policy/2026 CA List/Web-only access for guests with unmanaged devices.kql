@@ -3,11 +3,6 @@
 let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
 SigninLogs 
 | where TimeGenerated > ago(14d) and UserType == "Guest" and AppDisplayName !in (excludeapps)
-| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication"
+| where ResultType == 0 and ClientAppUsed == 'Mobile Apps and Desktop clients'
 | where AADTenantId == ResourceTenantId
-| mv-expand ConditionalAccessPolicies
-| where ConditionalAccessPolicies["enforcedGrantControls"] contains 'Mfa'
-| extend result = tostring(ConditionalAccessPolicies["result"])
-| where result <> "success"
-| distinct AppDisplayName,UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement,Category, UserType
-| summarize apps=make_list(AppDisplayName) by UserPrincipalName,ConditionalAccessStatus,AuthenticationRequirement, Category, UserType
+| summarize Resource = make_set(ResourceDisplayName) by  UserPrincipalName, AppDisplayName
