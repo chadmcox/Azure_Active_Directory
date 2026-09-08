@@ -1,1 +1,15 @@
-
+//Require multifactor authentication for all users
+//https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-all-users-mfa-strength
+let excludeapps = pack_array("Windows Sign In","Microsoft Authentication Broker","Microsoft Account Controls V2");
+SigninLogs 
+| where UserType <> "Guest"
+| where HomeTenantId == ResourceTenantId
+| where ResultType == 0 and AuthenticationRequirement == "singleFactorAuthentication" 
+| where Status !contains "MFA requirement satisfied by claim in the token"
+| where AppDisplayName  !in (excludeapps) and AppDisplayName <> ''
+| mv-apply ca=todynamic(ConditionalAccessPolicies) on (
+    summarize condition1 = countif(ca.result in ("success") and tostring(ca.enforcedGrantControls) contains 'Mfa')
+)
+| where condition1 == 0
+| distinct AppDisplayName,UPN = tolower(UserPrincipalName),ConditionalAccessStatus,AuthenticationRequirement
+| summarize apps=make_list(AppDisplayName) by UPN,ConditionalAccessStatus,AuthenticationRequirement
