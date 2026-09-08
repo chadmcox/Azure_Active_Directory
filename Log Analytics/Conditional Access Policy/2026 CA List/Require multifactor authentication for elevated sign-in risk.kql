@@ -1,0 +1,10 @@
+//Require multifactor authentication for elevated sign-in risk
+//https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-risk-based-sign-in
+let strauthreq = SigninLogs | where TimeGenerated > ago(14d) | where ResultType in (50074)| where RiskLevelDuringSignIn in ("high") 
+| where AuthenticationRequirementPolicies !has "riskBasedPolicy" | distinct CorrelationId;
+SigninLogs | where TimeGenerated > ago(14d) | where ResultType in (0) | where AppDisplayName <> "Microsoft Authentication Broker"  
+| where RiskLevelDuringSignIn in ("high") | where CorrelationId !in (strauthreq) 
+| extend authRequirement = tostring(parse_json(AuthenticationRequirementPolicies)[1].requirementProvider) 
+| where authRequirement <> "riskBasedPolicy"
+| where RiskState == 'atRisk' and ServicePrincipalName  <> 'Windows Sign In' and MfaDetail !contains 'Fido' 
+| project TimeGenerated,ResultType, ResultDescription,AppDisplayName, UserPrincipalName,UserType, RiskLevelAggregated, RiskLevelDuringSignIn, RiskState, RiskDetail, RiskEventTypes_V2, ConditionalAccessStatus, AuthenticationRequirement,AADTenantId,ResourceTenantId
