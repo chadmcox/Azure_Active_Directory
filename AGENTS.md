@@ -17,8 +17,9 @@ These are the owner's rules. Follow them in every script you add or change.
 - Put each script in the folder for the object type it works on (Users, Guest, Agent ID, Groups, Applications, Devices, Roles and PIM, Conditional Access Policy, and so on). Don't add scripts to the repo root, and delete folders that end up empty.
 - In `Agent ID`, always say which kind of object each row is: `Blueprint` (the agent identity blueprint application), `BlueprintPrincipal`, `AgentIdentity` (the agent's service principal) or `AgentUser` (the agent's user account). Leave agent users out of the Users scripts and agent service principals out of the Applications scripts.
 - Don't add a second script that does the same job as an existing one. Add a parameter or a column to the existing script instead.
+- Folders that only hold reports or settings (Hybrid Identity, Identity Governance, Intune, Logs, Security, Tenant) don't need stale scripts.
 - Each object type folder has a stale object report (`Get-Stale<Type>.ps1`) and a remediation script (`Disable-Stale<Type>.ps1` or `Remove-Stale<Type>.ps1`). Remediation scripts take the reviewed report with `-CsvPath`, check each object again before changing it, support `-WhatIf`, have a `-MaxRemovals` limit and take `-Identity` to run as a runbook.
-- List every new script in README.md.
+- List every new script in README.md. If it covers a task in the Microsoft Entra operations reference guide, add it to the guide coverage table too.
 
 ## Exceptions
 
