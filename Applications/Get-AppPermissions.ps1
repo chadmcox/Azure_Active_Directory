@@ -35,7 +35,9 @@ url: List oauth2PermissionGrants - https://learn.microsoft.com/en-us/graph/api/o
     All, Application (app roles) or Delegated (OAuth2 grants).
 .PARAMETER Workload
     All, Exchange (mailbox permissions), SharePoint (sites and files), AzureADGraph (retiring API)
-    or ReadWrite (any write permission - check the Owners column, owners of these apps are sensitive).
+    ReadWrite (any write permission - check the Owners column, owners of these apps are sensitive)
+    or HighRisk (the consent grants the operations guide says to review: mail access, user impersonation
+    and any ReadWrite permission).
 .PARAMETER IncludeMicrosoftApps
     Include Microsoft first-party apps. They are left out by default.
 .EXAMPLE
@@ -45,7 +47,7 @@ url: List oauth2PermissionGrants - https://learn.microsoft.com/en-us/graph/api/o
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
     [ValidateSet("All", "Application", "Delegated")][string]$PermissionType = "All",
-    [ValidateSet("All", "Exchange", "SharePoint", "AzureADGraph", "ReadWrite")][string]$Workload = "All",
+    [ValidateSet("All", "Exchange", "SharePoint", "AzureADGraph", "ReadWrite", "HighRisk")][string]$Workload = "All",
     [switch]$IncludeMicrosoftApps,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
@@ -121,6 +123,7 @@ function Select-Workload {
             "SharePoint"   { $Permission.Permission -like "Sites.*" -or $Permission.Permission -like "Files.*" }
             "AzureADGraph" { $Permission.APIAppId -eq "00000002-0000-0000-c000-000000000000" }
             "ReadWrite"    { $Permission.Permission -match "ReadWrite|FullControl|full_access_as_app|Manage" }
+            "HighRisk"     { $Permission.Permission -in $highRiskPermissions -or $Permission.Permission -match "ReadWrite|FullControl" }
             default        { $true }
         }
         if ($keep) { $Permission }
@@ -150,6 +153,10 @@ $microsoftTenantId = "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
 $exchangePermissions = "Mail.Read", "Mail.Read.Shared", "Mail.ReadBasic", "Mail.ReadBasic.All", "Mail.ReadWrite",
     "Mail.ReadWrite.Shared", "Mail.Send", "Mail.Send.Shared", "MailboxSettings.Read", "MailboxSettings.ReadWrite",
     "EWS.AccessAsUser.All", "Exchange.Manage", "full_access_as_app", "IMAP.AccessAsUser.All", "POP.AccessAsUser.All", "SMTP.Send"
+
+# Permissions the operations guide says to scrutinize: mail access and full user impersonation.
+$highRiskPermissions = "EAS.AccessAsUser.All", "EWS.AccessAsUser.All", "Mail.Read", "Mail.Read.Shared", "Mail.ReadWrite", "Mail.Send",
+    "Directory.AccessAsUser.All", "user_impersonation", "full_access_as_app", "RoleManagement.ReadWrite.Directory", "AppRoleAssignment.ReadWrite.All"
 
 Write-Host "Getting service principals"
 $servicePrincipals = Get-ServicePrincipals
