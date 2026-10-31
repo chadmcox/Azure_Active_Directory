@@ -26,7 +26,7 @@ url: application: removePassword - https://learn.microsoft.com/en-us/graph/api/a
 .SYNOPSIS
     Removes expired client secrets.
 .DESCRIPTION
-    Replaces Maintenance Task\runbook-removeAADExpiredCredentials. Only secrets are removed. Expired
+    Module-based version of Maintenance Task\runbook-removeAADExpiredCredentials. Only secrets are removed. Expired
     certificates are written to the report but left in place, because removing a certificate needs
     proof of possession of the current key.
 .PARAMETER ExpiredForDays

@@ -26,7 +26,7 @@ url: riskyUser: dismiss - https://learn.microsoft.com/en-us/graph/api/riskyuser-
 .SYNOPSIS
     Dismisses old user risk.
 .DESCRIPTION
-    Replaces dismiss-IdentityProtectionRiskyUsers and Maintenance Task\runbook-dismissAIPRiskyUsers.
+    Replaces dismiss-IdentityProtectionRiskyUsers. The no-module runbook version is Maintenance Task\runbook-dismissAIPRiskyUsers.
 .PARAMETER OlderThanDays
     Only dismiss risk last updated more than this many days ago. Default 30.
 .PARAMETER RiskLevel
