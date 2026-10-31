@@ -71,7 +71,7 @@ function Select-Stale {
     param([Parameter(ValueFromPipeline)]$Domain)
     process {
         if ($Domain.isDefault -or $Domain.isInitial) { return }
-        $inUse = [bool]("$script:Graph/domains/$($Domain.id)/domainNameReferences?`$top=1&`$select=id" | Get-GraphPage | Select-Object -First 1)
+        $inUse = [bool]("$script:Graph/domains/$($Domain.id)/domainNameReferences?`$select=id" | Get-GraphPage | Select-Object -First 1)
         $reason = if (-not $Domain.isVerified) { "NotVerified" } elseif (-not $inUse) { "NotUsed" }
         if (-not $reason) { return }
         $Domain | Select-Object id, isVerified, authenticationType, isRoot,

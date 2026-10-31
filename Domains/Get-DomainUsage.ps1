@@ -91,11 +91,11 @@ $domainFile = Join-Path $Path "entra_registered_domains.csv"
 $file = Join-Path $Path "entra_domain_references.csv"
 Write-Host "Reading users, groups, contacts and apps"
 @(
-    "$script:Graph/users?`$select=userPrincipalName,mail,otherMails,proxyAddresses,onPremisesUserPrincipalName&`$top=999" | Get-GraphPage |
+    "$script:Graph/users?`$select=userPrincipalName,mail,otherMails,proxyAddresses,onPremisesUserPrincipalName" | Get-GraphPage |
         Expand-DomainAttributes -ObjectType User -IdProperty userPrincipalName -Attributes userPrincipalName, mail, onPremisesUserPrincipalName, otherMails, proxyAddresses
     "$script:Graph/directory/deletedItems/microsoft.graph.user?`$select=userPrincipalName,mail,otherMails,proxyAddresses" | Get-GraphPage |
         Expand-DomainAttributes -ObjectType DeletedUser -IdProperty userPrincipalName -Attributes userPrincipalName, mail, otherMails, proxyAddresses
-    "$script:Graph/groups?`$select=displayName,mail,proxyAddresses&`$top=999" | Get-GraphPage |
+    "$script:Graph/groups?`$select=displayName,mail,proxyAddresses" | Get-GraphPage |
         Expand-DomainAttributes -ObjectType Group -IdProperty displayName -Attributes mail, proxyAddresses
     "$script:Graph/contacts?`$select=displayName,mail,proxyAddresses" | Get-GraphPage |
         Expand-DomainAttributes -ObjectType OrgContact -IdProperty displayName -Attributes mail, proxyAddresses

@@ -87,7 +87,7 @@ function Get-Candidates {
         Import-Csv $CsvPath | Select-Object -ExpandProperty UserId -Unique |
             ForEach-Object { Invoke-MgGraphRequest -Uri "$script:Graph/users/$($_)?`$select=$select" -OutputType PSObject }
     } else {
-        "$script:Graph/users?`$filter=assignedLicenses/`$count ne 0&`$count=true&`$select=$select&`$top=999" | Get-GraphPage -Eventual
+        "$script:Graph/users?`$filter=assignedLicenses/`$count ne 0&`$count=true&`$select=$select" | Get-GraphPage -Eventual
     }
 }
 

@@ -85,7 +85,7 @@ function Get-Candidates {
     if ($CsvPath) {
         Import-Csv $CsvPath | ForEach-Object { Invoke-MgGraphRequest -Uri "$script:Graph/devices/$($_.id)?`$select=$select" -OutputType PSObject }
     } else {
-        "$script:Graph/devices?`$select=$select&`$top=999" | Get-GraphPage
+        "$script:Graph/devices?`$select=$select" | Get-GraphPage
     }
 }
 

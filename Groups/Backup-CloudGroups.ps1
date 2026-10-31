@@ -79,7 +79,7 @@ Connect-Cloud -Scopes "Group.Read.All", "Directory.Read.All"
 
 $file = Join-Path $Path "backup_cloud_security_groups_$(Get-Date -Format yyyy-MM-dd).json"
 Write-Host "Backing up cloud security groups"
-"$script:Graph/groups?`$filter=securityEnabled eq true" | Get-GraphPage |
+"$script:Graph/groups?`$filter=securityEnabled eq true&`$select=id,displayName,description,mailNickname,mailEnabled,securityEnabled,groupTypes,isAssignableToRole,membershipRule,membershipRuleProcessingState,onPremisesSyncEnabled" | Get-GraphPage |
     Where-Object { -not $_.onPremisesSyncEnabled -and $_.groupTypes -notcontains "Unified" } |
     Add-GroupDetail | ConvertTo-Json -Depth 6 | Out-File $file
 Write-Host "Results: $file"

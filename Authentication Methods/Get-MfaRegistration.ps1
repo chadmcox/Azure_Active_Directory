@@ -101,7 +101,7 @@ $filters = @(
 $query = if ($filters) { "?`$filter=$($filters -join ' and ')" } else { "" }
 
 Write-Host "Getting users"
-$users = "$script:Graph/users?`$select=id,accountEnabled,onPremisesSyncEnabled,mobilePhone,businessPhones,otherMails&`$top=999" | Get-GraphPage | Group-Object id -AsHashTable -AsString
+$users = "$script:Graph/users?`$select=id,accountEnabled,onPremisesSyncEnabled,mobilePhone,businessPhones,otherMails" | Get-GraphPage | Group-Object id -AsHashTable -AsString
 $file = Join-Path $Path "entra_mfa_registration_$UserType.csv"
 Write-Host "Getting registration details"
 "$script:Graph/reports/authenticationMethods/userRegistrationDetails$query" | Get-GraphPage |

@@ -89,7 +89,7 @@ function Get-ApplicationPermissions {
     process {
         if (-not ($Resource.appRoles | Where-Object { $_.allowedMemberTypes -contains "Application" })) { return }
         $roles = $Resource.appRoles | Group-Object id -AsHashTable -AsString
-        "$script:Graph/servicePrincipals/$($Resource.id)/appRoleAssignedTo?`$top=999" | Get-GraphPage |
+        "$script:Graph/servicePrincipals/$($Resource.id)/appRoleAssignedTo" | Get-GraphPage |
             Where-Object { $_.principalType -eq "ServicePrincipal" } |
             Select-Object @{ n = "PermissionType"; e = { "Application" } },
                 @{ n = "Permission"; e = { $roles[$_.appRoleId].value } },
@@ -102,7 +102,7 @@ function Get-ApplicationPermissions {
 }
 
 function Get-DelegatedPermissions {
-    "$script:Graph/oauth2PermissionGrants?`$top=999" | Get-GraphPage | ForEach-Object {
+    "$script:Graph/oauth2PermissionGrants" | Get-GraphPage | ForEach-Object {
         $grant = $_
         $grant.scope -split " " | Where-Object { $_ } |
             Select-Object @{ n = "PermissionType"; e = { "Delegated" } },

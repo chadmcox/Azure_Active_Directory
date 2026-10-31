@@ -96,6 +96,6 @@ $skuNames = @{}
 "$script:Graph/subscribedSkus" | Get-GraphPage | ForEach-Object { $skuNames[[string]$_.skuId] = $_.skuPartNumber }
 $file = Join-Path $Path "entra_stale_licenses.csv"
 Write-Host "Reading licensed users"
-"$script:Graph/users?`$filter=assignedLicenses/`$count ne 0&`$count=true&`$select=id,userPrincipalName,userType,accountEnabled,createdDateTime,identityParentId,licenseAssignmentStates,signInActivity&`$top=999" |
+"$script:Graph/users?`$filter=assignedLicenses/`$count ne 0&`$count=true&`$select=id,userPrincipalName,userType,accountEnabled,createdDateTime,identityParentId,licenseAssignmentStates,signInActivity" |
     Get-GraphPage -Eventual | Select-Stale | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

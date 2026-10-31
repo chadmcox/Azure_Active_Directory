@@ -9,6 +9,8 @@ These are the owner's rules. Follow them in every script you add or change.
 - Don't create custom objects (`[pscustomobject]@{}`, `New-Object PSObject`, classes). Keep data in the pipeline and shape it with `Select-Object` calculated properties (`@{ n = "Name"; e = { ... } }`).
 - Use functions for each step, and make them pipeline-friendly (`process { }` blocks) where it fits.
 - Follow `@odata.nextLink` for every collection.
+- Don't use `$top`.
+- Keep Graph calls down to avoid throttling: filter on the server with `$filter` whenever the endpoint supports it, ask only for the properties you use with `$select`, and cache lookups that repeat (for example a group's members used by several policies) instead of calling Graph again. Don't change what a script reports to save calls.
 - Ask which cloud to connect to. Add `[ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment`; if it's empty, list those clouds from `Get-MgEnvironment` (same module), ask with `Read-Host` into a separate variable (the ValidateSet rejects an empty answer), and default to Global. Build every URL from that cloud's `GraphEndpoint` (never hard-code `graph.microsoft.com`) and pass `-Environment $Environment` to `Connect-MgGraph`.
 - Never put tenant IDs, object IDs or email addresses in the repo. Use placeholders like `"<person UPN>"`.
 

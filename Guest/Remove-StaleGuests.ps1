@@ -91,7 +91,8 @@ function Get-Candidates {
     if ($CsvPath) {
         Import-Csv $CsvPath | ForEach-Object { Invoke-MgGraphRequest -Uri "$script:Graph/users/$($_.id)?`$select=$select" -OutputType PSObject }
     } else {
-        "$script:Graph/users?`$filter=userType eq 'Guest'&`$select=$select" | Get-GraphPage
+        $filter = if ($Mode -eq "PendingAcceptance") { "userType eq 'Guest' and externalUserState eq 'PendingAcceptance'" } else { "userType eq 'Guest'" }
+        "$script:Graph/users?`$filter=$filter&`$select=$select" | Get-GraphPage
     }
 }
 

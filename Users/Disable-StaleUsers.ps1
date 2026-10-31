@@ -82,7 +82,7 @@ function Get-Candidates {
     if ($CsvPath) {
         Import-Csv $CsvPath | ForEach-Object { Invoke-MgGraphRequest -Uri "$script:Graph/users/$($_.id)?`$select=$select" -OutputType PSObject }
     } else {
-        "$script:Graph/users?`$filter=userType eq 'Member' and accountEnabled eq true&`$select=$select&`$top=999" | Get-GraphPage
+        "$script:Graph/users?`$filter=userType eq 'Member' and accountEnabled eq true&`$select=$select" | Get-GraphPage
     }
 }
 

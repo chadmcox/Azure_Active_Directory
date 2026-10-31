@@ -95,7 +95,7 @@ $skus | Select-Object skuPartNumber, skuId, capabilityStatus,
     Export-Csv (Join-Path $Path "entra_license_subscriptions.csv") -NoTypeInformation
 
 Write-Host "Reading user license assignments"
-"$script:Graph/users?`$filter=assignedLicenses/`$count ne 0&`$count=true&`$select=id,userPrincipalName,accountEnabled,licenseAssignmentStates&`$top=999" |
+"$script:Graph/users?`$filter=assignedLicenses/`$count ne 0&`$count=true&`$select=id,userPrincipalName,accountEnabled,licenseAssignmentStates" |
     Get-GraphPage -Eventual | Get-Assignments | Export-Csv (Join-Path $Path "entra_license_assignments.csv") -NoTypeInformation
 
 $licensedGroups | Where-Object { $_.hasMembersWithLicenseErrors } | Select-Object id, displayName, hasMembersWithLicenseErrors |

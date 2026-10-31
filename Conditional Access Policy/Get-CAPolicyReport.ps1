@@ -78,8 +78,14 @@ function Get-TargetCount {
     if ($userList -contains "All") { return "All ($($totalUsers + $totalGuests))" }
     $counts = @(
         @($userList | Where-Object { $_ -notin "GuestsOrExternalUsers", "None" }).Count
-        $Users."$($Side)Groups" | ForEach-Object { Get-Count -Uri "$script:Graph/groups/$_/transitiveMembers/`$count" }
-        $Users."$($Side)Roles" | ForEach-Object { @("$script:Graph/roleManagement/directory/roleAssignments?`$filter=roleDefinitionId eq '$_'" | Get-GraphPage | Select-Object principalId -Unique).Count }
+        $Users."$($Side)Groups" | ForEach-Object {
+            if (-not $groupCounts.ContainsKey($_)) { $groupCounts[$_] = Get-Count -Uri "$script:Graph/groups/$_/transitiveMembers/`$count" }
+            $groupCounts[$_]
+        }
+        $Users."$($Side)Roles" | ForEach-Object {
+            if (-not $roleCounts.ContainsKey($_)) { $roleCounts[$_] = @("$script:Graph/roleManagement/directory/roleAssignments?`$filter=roleDefinitionId eq '$_'" | Get-GraphPage | Select-Object principalId -Unique).Count }
+            $roleCounts[$_]
+        }
         if ($Users."$($Side)GuestsOrExternalUsers" -or $userList -contains "GuestsOrExternalUsers") { $totalGuests }
     )
     ($counts | Measure-Object -Sum).Sum
@@ -150,6 +156,8 @@ function Format-Policy {
 Connect-Cloud -Scopes "Policy.Read.All", "Directory.Read.All", "Application.Read.All"
 
 $appNames = @{}
+$groupCounts = @{}
+$roleCounts = @{}
 $objectNames = @{}
 $totalUsers = Get-Count -Uri "$script:Graph/users/`$count?`$filter=accountEnabled eq true and userType eq 'Member'"
 $totalGuests = Get-Count -Uri "$script:Graph/users/`$count?`$filter=userType eq 'Guest'"

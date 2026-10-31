@@ -97,6 +97,6 @@ $cutoff = (Get-Date).AddDays(-$Days)
 $joinTypes = @{ AzureAd = "Microsoft Entra joined"; ServerAd = "Microsoft Entra hybrid joined"; Workplace = "Microsoft Entra registered" }
 $file = Join-Path $Path "entra_stale_devices.csv"
 Write-Host "Getting devices"
-"$script:Graph/devices?`$select=id,deviceId,displayName,accountEnabled,operatingSystem,operatingSystemVersion,trustType,isManaged,isCompliant,onPremisesSyncEnabled,registrationDateTime,approximateLastSignInDateTime,physicalIds&`$expand=registeredOwners(`$select=id,userPrincipalName)&`$top=999" |
+"$script:Graph/devices?`$select=id,deviceId,displayName,accountEnabled,operatingSystem,operatingSystemVersion,trustType,isManaged,isCompliant,onPremisesSyncEnabled,registrationDateTime,approximateLastSignInDateTime,physicalIds&`$expand=registeredOwners(`$select=id,userPrincipalName)" |
     Get-GraphPage | Select-Stale | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

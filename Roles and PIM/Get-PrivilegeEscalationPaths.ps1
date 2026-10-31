@@ -111,13 +111,15 @@ function Get-CapabilityPaths {
         $definition = $capabilities[$CapabilityName]
         $roleIds = $graphSp.appRoles | Where-Object { $_.value -in $definition.Permissions } | Group-Object id -AsHashTable -AsString
         if (-not $roleIds) { $roleIds = @{} }
-        $apps = "$script:Graph/servicePrincipals/$($graphSp.id)/appRoleAssignedTo?`$top=999" | Get-GraphPage |
+        $apps = "$script:Graph/servicePrincipals/$($graphSp.id)/appRoleAssignedTo" | Get-GraphPage |
             Where-Object { $_.appRoleId -and $roleIds.ContainsKey($_.appRoleId) } |
             Select-Object @{ n = "Capability"; e = { $CapabilityName } },
                 @{ n = "displayName"; e = { $_.principalDisplayName } },
                 @{ n = "userPrincipalName"; e = { $null } },
                 @{ n = "Via"; e = { "Graph permission $($roleIds[$_.appRoleId].value)" } },
-                @{ n = "AppId"; e = { (Invoke-MgGraphRequest -Uri "$script:Graph/servicePrincipals/$($_.principalId)?`$select=appId" -OutputType PSObject).appId } }
+                @{ n = "AppId"; e = {
+                    if (-not $appIds.ContainsKey($_.principalId)) { $appIds[$_.principalId] = (Invoke-MgGraphRequest -Uri "$script:Graph/servicePrincipals/$($_.principalId)?`$select=appId" -OutputType PSObject).appId }
+                    $appIds[$_.principalId] } }
         $members = $definition.Roles | ForEach-Object {
             "$script:Graph/roleManagement/directory/roleAssignments?`$filter=roleDefinitionId eq '$_'&`$expand=principal,roleDefinition" | Get-GraphPage
         } | Select-Object @{ n = "Capability"; e = { $CapabilityName } },
@@ -132,6 +134,7 @@ function Get-CapabilityPaths {
 
 Connect-Cloud -Scopes "Application.Read.All", "RoleManagement.Read.Directory", "Directory.Read.All"
 
+$appIds = @{}
 $graphSp = "$script:Graph/servicePrincipals?`$filter=appId eq '00000003-0000-0000-c000-000000000000'&`$select=id,appRoles" | Get-GraphPage
 $names = if ($Capability -eq "All") { $capabilities.Keys } else { $Capability }
 

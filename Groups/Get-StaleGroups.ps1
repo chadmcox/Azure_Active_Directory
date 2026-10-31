@@ -80,7 +80,7 @@ function Get-UsedBy {
         if ($caGroups.ContainsKey($Group.id)) { "ConditionalAccess" }
         if ($Group.isAssignableToRole) { "RoleAssignable" }
         if ($Group.assignedLicenses) { "Licenses" }
-        if ("$script:Graph/groups/$($Group.id)/appRoleAssignments?`$top=1" | Get-GraphPage | Select-Object -First 1) { "AppAssignments" }
+        if ("$script:Graph/groups/$($Group.id)/appRoleAssignments" | Get-GraphPage | Select-Object -First 1) { "AppAssignments" }
     ) -join ";"
 }
 

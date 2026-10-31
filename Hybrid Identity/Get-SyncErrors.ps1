@@ -81,8 +81,8 @@ Connect-Cloud -Scopes "User.Read.All", "Group.Read.All", "OrgContact.Read.All", 
 $file = Join-Path $Path "entra_sync_errors.csv"
 Write-Host "Reading users, groups and contacts"
 @(
-    "$script:Graph/users?`$filter=onPremisesSyncEnabled eq true&`$select=id,displayName,userPrincipalName,onPremisesProvisioningErrors&`$top=999&`$count=true" | Get-GraphPage -Eventual | Get-Errors -ObjectType User
-    "$script:Graph/groups?`$filter=onPremisesSyncEnabled eq true&`$select=id,displayName,onPremisesProvisioningErrors&`$top=999&`$count=true" | Get-GraphPage -Eventual | Get-Errors -ObjectType Group
+    "$script:Graph/users?`$filter=onPremisesSyncEnabled eq true&`$select=id,displayName,userPrincipalName,onPremisesProvisioningErrors&`$count=true" | Get-GraphPage -Eventual | Get-Errors -ObjectType User
+    "$script:Graph/groups?`$filter=onPremisesSyncEnabled eq true&`$select=id,displayName,onPremisesProvisioningErrors&`$count=true" | Get-GraphPage -Eventual | Get-Errors -ObjectType Group
     "$script:Graph/contacts?`$select=id,displayName,onPremisesProvisioningErrors" | Get-GraphPage | Get-Errors -ObjectType Contact
 ) | Sort-Object DaysInError -Descending | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"
