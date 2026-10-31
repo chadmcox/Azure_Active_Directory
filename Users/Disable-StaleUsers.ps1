@@ -78,7 +78,7 @@ function Get-GraphPage {
 }
 
 function Get-Candidates {
-    $select = "id,userPrincipalName,accountEnabled,createdDateTime,onPremisesSyncEnabled,signInActivity"
+    $select = "id,userPrincipalName,accountEnabled,createdDateTime,onPremisesSyncEnabled,signInActivity,identityParentId"
     if ($CsvPath) {
         Import-Csv $CsvPath | ForEach-Object { Invoke-MgGraphRequest -Uri "$script:Graph/users/$($_.id)?`$select=$select" -OutputType PSObject }
     } else {
@@ -113,7 +113,7 @@ function Disable-User {
 Connect-Cloud -Scopes "User.ReadWrite.All", "AuditLog.Read.All" -Identity:$Identity
 
 $cutoff = (Get-Date).AddDays(-$Days)
-$results = Get-Candidates | Select-Stale | Select-Object -First $MaxRemovals | Disable-User
+$results = Get-Candidates | Where-Object { -not $_.identityParentId } | Select-Stale | Select-Object -First $MaxRemovals | Disable-User
 $results | Format-Table userPrincipalName, Action -AutoSize | Out-String | Write-Output
 if (-not $Identity) {
     $file = Join-Path $Path "entra_stale_users_disabled.csv"

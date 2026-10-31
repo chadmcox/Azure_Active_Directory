@@ -1,6 +1,6 @@
 <#PSScriptInfo
 .VERSION 2026.10
-.GUID db02097d-cb6f-4f57-9e62-d1500810763a
+.GUID 094cc5df-3668-4acf-a9d5-903d025670cf
 .AUTHOR Chad Cox
     https://blogs.technet.microsoft.com/chadcox/
     https://github.com/chadmcox
@@ -19,17 +19,19 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Lists agent identities in Entra ID: agent service principals, agent users and Copilot Studio agent apps, with their last sign-in.
-url: What are agent identities - https://learn.microsoft.com/en-us/entra/agent-id/identity-platform/what-is-agent-id
+Finds stale custom domains: domains that were added but never verified, and verified domains that no user, group or app uses any more.
+url: Manage custom domain names - https://learn.microsoft.com/en-us/entra/identity/users/domains-manage
+url: List domainNameReferences - https://learn.microsoft.com/en-us/graph/api/domain-list-domainnamereferences?view=graph-rest-beta
 #>
 <#
 .SYNOPSIS
-    Exports agent-related service principals and users.
+    Creates a stale domain report.
 .DESCRIPTION
-    Replaces Agent 365\Get Agent Related Service Principals, Agent 365\Get agent related user identities
-    and Applications\get-EntraCopilotServicePrincipals.
+    The default, initial (onmicrosoft.com) and federated domains are never reported as removable.
+    Review the CSV, remove rows to keep, then pass it to Remove-StaleDomains.ps1 -CsvPath.
+    Get-DomainUsage.ps1 shows every object that still uses a domain.
 .EXAMPLE
-    .\Get-AgentIdentities.ps1 -Environment Global
+    .\Get-StaleDomains.ps1 -Environment Global
 #>
 [CmdletBinding()]
 param(
@@ -65,24 +67,25 @@ function Get-GraphPage {
     }
 }
 
-function Format-Agent {
-    param([Parameter(ValueFromPipeline)]$Agent, [string]$Kind)
+function Select-Stale {
+    param([Parameter(ValueFromPipeline)]$Domain)
     process {
-        $Agent | Select-Object @{ n = "Kind"; e = { $Kind } }, id, appId, displayName, userPrincipalName, servicePrincipalType,
-            accountEnabled, publisherName, createdDateTime,
-            @{ n = "LastSignInDateTime"; e = { if ($_.appId) { $lastSignIns[$_.appId].lastSignInActivity.lastSignInDateTime } else { $_.signInActivity.lastSignInDateTime } } }
+        if ($Domain.isDefault -or $Domain.isInitial) { return }
+        $inUse = [bool]("$script:Graph/domains/$($Domain.id)/domainNameReferences?`$top=1&`$select=id" | Get-GraphPage | Select-Object -First 1)
+        $reason = if (-not $Domain.isVerified) { "NotVerified" } elseif (-not $inUse) { "NotUsed" }
+        if (-not $reason) { return }
+        $Domain | Select-Object id, isVerified, authenticationType, isRoot,
+            @{ n = "SupportedServices"; e = { $_.supportedServices -join ";" } },
+            @{ n = "StaleReason"; e = { $reason } },
+            @{ n = "Remediation"; e = {
+                if ($_.authenticationType -eq "Federated") { "Review - federated domain" }
+                elseif ($inUse) { "Move objects off the domain first (Get-DomainUsage.ps1)" }
+                else { "Remove-StaleDomains.ps1" } } }
     }
 }
 
-Connect-Cloud -Scopes "Application.Read.All", "User.Read.All", "AuditLog.Read.All"
+Connect-Cloud -Scopes "Domain.Read.All", "Directory.Read.All"
 
-$lastSignIns = @("$script:Graph/reports/servicePrincipalSignInActivities" | Get-GraphPage) | Group-Object appId -AsHashTable -AsString
-if (-not $lastSignIns) { $lastSignIns = @{} }
-
-$file = Join-Path $Path "entra_agent_identities.csv"
-@(
-    "$script:Graph/servicePrincipals?`$filter=servicePrincipalType eq 'ServiceIdentity'" | Get-GraphPage | Format-Agent -Kind "AgentServicePrincipal"
-    "$script:Graph/users/microsoft.graph.agentUser?`$select=id,displayName,userPrincipalName,accountEnabled,createdDateTime,signInActivity" | Get-GraphPage | Format-Agent -Kind "AgentUser"
-    "$script:Graph/servicePrincipals?`$filter=servicePrincipalType eq 'Application'&`$search=`"displayName:Microsoft Copilot Studio`"" | Get-GraphPage -Eventual | Format-Agent -Kind "CopilotStudioApp"
-) | Export-Csv $file -NoTypeInformation
+$file = Join-Path $Path "entra_stale_domains.csv"
+"$script:Graph/domains" | Get-GraphPage | Select-Stale | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

@@ -1,6 +1,6 @@
 # Azure Active Directory (Microsoft Entra ID) PowerShell
 
-Scripts for reporting on and maintaining Microsoft Entra ID. Check out the [Azure AD Security Wiki](https://github.com/chadmcox/Azure_Active_Directory/wiki) too.
+Scripts for reporting on and maintaining Microsoft Entra ID (formerly Azure Active Directory). Check out the [Azure AD Security Wiki](https://github.com/chadmcox/Azure_Active_Directory/wiki) too.
 
 ## How the scripts work
 
@@ -17,20 +17,28 @@ Each object type has a report and a remediation script. Run the report, review t
 
 | Object | Stale report | Remediate | What remediation does |
 | --- | --- | --- | --- |
-| Users | [Get-StaleUsers.ps1](Users/Get-StaleUsers.ps1) | [Disable-StaleUsers.ps1](Users/Disable-StaleUsers.ps1) | Disables cloud-only accounts; synced accounts are flagged for AD |
+| Users | [Get-StaleUsers.ps1](Users/Get-StaleUsers.ps1) | [Disable-StaleUsers.ps1](Users/Disable-StaleUsers.ps1) | Disables cloud-only accounts; synced accounts are flagged for AD. Agent users are left out (see Agent ID) |
 | Guests | [Get-StaleGuests.ps1](Guest/Get-StaleGuests.ps1) | [Remove-StaleGuests.ps1](Guest/Remove-StaleGuests.ps1) | Deletes inactive guests and old pending invites (30-day recycle bin) |
-| Devices | [Get-StaleDevices.ps1](Devices/Get-StaleDevices.ps1) | [Remove-StaleDevices.ps1](Devices/Remove-StaleDevices.ps1) | `-Action Disable` first, then `-Action Delete`; skips hybrid joined and Autopilot |
-| Enterprise apps | [Get-StaleApps.ps1](Applications/Get-StaleApps.ps1) | [Disable-StaleApps.ps1](Applications/Disable-StaleApps.ps1) | Disables the service principal (reversible); skips Microsoft apps |
-| Groups | [Get-StaleGroups.ps1](Groups/Get-StaleGroups.ps1) | [Remove-StaleGroups.ps1](Groups/Remove-StaleGroups.ps1) | Deletes empty, unused cloud groups after a JSON backup |
+| Agent ID | [Get-StaleAgentIdentities.ps1](Agent%20ID/Get-StaleAgentIdentities.ps1) | [Disable-StaleAgentIdentities.ps1](Agent%20ID/Disable-StaleAgentIdentities.ps1) | Disables agent identities (service principals), agent users and idle blueprint principals; blueprints are only reported |
+| Enterprise apps | [Get-StaleApps.ps1](Applications/Get-StaleApps.ps1) | [Disable-StaleApps.ps1](Applications/Disable-StaleApps.ps1) | Disables the service principal (reversible); skips Microsoft and agent apps |
 | App secrets | [Get-AppCredentials.ps1](Applications/Get-AppCredentials.ps1) | [Remove-ExpiredAppSecrets.ps1](Applications/Remove-ExpiredAppSecrets.ps1) | Removes expired client secrets |
+| Devices | [Get-StaleDevices.ps1](Devices/Get-StaleDevices.ps1) | [Remove-StaleDevices.ps1](Devices/Remove-StaleDevices.ps1) | `-Action Disable` first, then `-Action Delete`; skips hybrid joined and Autopilot |
+| Groups | [Get-StaleGroups.ps1](Groups/Get-StaleGroups.ps1) | [Remove-StaleGroups.ps1](Groups/Remove-StaleGroups.ps1) | Deletes empty, unused cloud groups after a JSON backup |
+| Role assignments | [Get-StaleRoleAssignments.ps1](Roles%20and%20PIM/Get-StaleRoleAssignments.ps1) | [Remove-StaleRoleAssignments.ps1](Roles%20and%20PIM/Remove-StaleRoleAssignments.ps1) | Removes assignments held by disabled or inactive accounts and eligible roles never activated; never Global Administrator |
+| Conditional Access | [Get-StaleCAObjects.ps1](Conditional%20Access%20Policy/Get-StaleCAObjects.ps1) | [Remove-StaleCAObjects.ps1](Conditional%20Access%20Policy/Remove-StaleCAObjects.ps1) | Removes references to deleted objects and deletes unused named locations; never deletes a policy |
+| Authentication methods | [Get-StaleAuthMethods.ps1](Authentication%20Methods/Get-StaleAuthMethods.ps1) | [Remove-StaleAuthMethods.ps1](Authentication%20Methods/Remove-StaleAuthMethods.ps1) | Removes methods not used in the window; never a user's last method |
+| Domains | [Get-StaleDomains.ps1](Domains/Get-StaleDomains.ps1) | [Remove-StaleDomains.ps1](Domains/Remove-StaleDomains.ps1) | Deletes unverified domains (and unused verified ones with `-IncludeVerified`) |
+| Risky users | [Get-RiskyUsers.ps1](Identity%20Protection/Get-RiskyUsers.ps1) | [Dismiss-RiskyUsers.ps1](Identity%20Protection/Dismiss-RiskyUsers.ps1) | Dismisses old low and medium user risk |
 
 ## Scripts
 
-### Agents
+### Agent ID
 
 | Script | What it does | Replaces |
 | --- | --- | --- |
-| [Get-AgentIdentities.ps1](Agents/Get-AgentIdentities.ps1) | Lists agent identities in Entra ID: agent service principals, agent users and Copilot Studio agent apps, with their last sign-in. | Agent 365\Get Agent Related Service Principals, Agent 365\Get agent related user identities and Applications\get-EntraCopilotServicePrincipals |
+| [Disable-StaleAgentIdentities.ps1](Agent%20ID/Disable-StaleAgentIdentities.ps1) | Disables stale Entra Agent ID objects: agent identities (service principals) and agent users (user accounts) with no sign-in for a set number of days, and blueprint principals with no active agents. Works from a reviewed Get-StaleAgentIdentities.ps1 report or finds them live. Never deletes and never touches blueprints. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
+| [Get-AgentIdentities.ps1](Agent%20ID/Get-AgentIdentities.ps1) | Inventories every Entra Agent ID object, separated by type: agent identity blueprints, blueprint principals, agent identities (service principals), agent users (user accounts) and Copilot Studio agent apps, with their parent, sponsors and last sign-in. | Agent 365\Get Agent Related Service Principals, Agent 365\Get agent related user identities and Applications\get-EntraCopilotServicePrincipals |
+| [Get-StaleAgentIdentities.ps1](Agent%20ID/Get-StaleAgentIdentities.ps1) | Finds stale Entra Agent ID objects and calls out each type separately: agent identities (service principals), agent users (user accounts tied to an agent identity), blueprint principals with no active agents, and blueprints that have no principal in this tenant. |  |
 
 ### Applications
 
@@ -43,7 +51,7 @@ Each object type has a report and a remediation script. Run the report, review t
 | [Get-AppPermissions.ps1](Applications/Get-AppPermissions.ps1) | Reports every application (app role) and delegated (OAuth2) permission granted to service principals, with optional filters for Exchange, SharePoint, Azure AD Graph and ReadWrite permissions. | the old get-AllAppAssignedPermissions, get-AllAppDelegatedPermissions, get-assignedEXOPerms, get-assignedSPOPerms, get-delegatedEXOPerms, get-delegatedSPOPerms, get-graphAssignedPermissions, get-AppWithEXOFullAccessPerm, get-ADGraphApplications, get-SPToMuchPerms, export-ApplicationConsents, export-ApplicationRoleAssignments and the createAAD*PermissionReport scripts |
 | [Get-MicrosoftAppsWithOwners.ps1](Applications/Get-MicrosoftAppsWithOwners.ps1) | Finds Microsoft first-party service principals that have owners assigned. Owners can add credentials to these apps and use their permissions. | get-BuiltinAPPOwners and AzureADModule\get-builtinAppwOwnerAssigned |
 | [Get-StaleApps.ps1](Applications/Get-StaleApps.ps1) | Finds enabled enterprise apps with no sign-in activity (user or app-only) for a set number of days, plus apps Entra recommends removing as unused, with owners and credentials so owners can be asked before the app is disabled. |  |
-| [Remove-ExpiredAppSecrets.ps1](Applications/Remove-ExpiredAppSecrets.ps1) | Removes client secrets that expired more than a set number of days ago from app registrations and service principals. Runs interactively or as an Azure Automation runbook with a managed identity. | (module-based version of Maintenance Task\runbook-removeAADExpiredCredentials) |
+| [Remove-ExpiredAppSecrets.ps1](Applications/Remove-ExpiredAppSecrets.ps1) | Removes client secrets that expired more than a set number of days ago from app registrations and service principals. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
 
 ### Authentication Methods
 
@@ -53,8 +61,10 @@ Each object type has a report and a remediation script. Run the report, review t
 | [Enable-HardwareOathToken.ps1](Authentication%20Methods/Enable-HardwareOathToken.ps1) | Activates a hardware OATH token that is assigned to a user, using a code shown on the token. | Hardware Oath Token\activate-UserHardwareOathToken |
 | [Get-MfaRegistration.ps1](Authentication%20Methods/Get-MfaRegistration.ps1) | Reports MFA, SSPR and passwordless registration for members or guests, and flags users who have phone numbers or alternate emails on their account but no registered methods (prepopulated). | create-AADUserMFAReport, create-AADGuestMFAReport, create-AADWH4BRegisteredUsers, get-HybridUserMFAandSSPRState and get-UserSMSPrepopulated |
 | [Get-PhoneSignInUsers.ps1](Authentication%20Methods/Get-PhoneSignInUsers.ps1) | Lists users who have a phone number set as a sign-in identity (identities issuer "phone"). | MFA\Get-PhoneIssuer |
+| [Get-StaleAuthMethods.ps1](Authentication%20Methods/Get-StaleAuthMethods.ps1) | Finds stale authentication methods: registered methods (Authenticator, phone, FIDO2, Windows Hello, software and hardware OATH, email) not used for a set number of days, and hardware OATH tokens that are not assigned to anyone. |  |
 | [Get-UserAuthMethods.ps1](Authentication%20Methods/Get-UserAuthMethods.ps1) | Lists every registered authentication method per user with its details: phone numbers and SMS sign-in state, Microsoft Authenticator app version and device, and when each method was last used. | get-phonemethods, get-SMSSignin, get-authenticatorversion and get-UserAuthMethodLastUsedDate |
 | [Remove-HardwareOathToken.ps1](Authentication%20Methods/Remove-HardwareOathToken.ps1) | Removes a hardware OATH token from a user so it can be reassigned or retired. | Hardware Oath Token\delete-HardwareOathTokenFromUser (which called the wrong URL) |
+| [Remove-StaleAuthMethods.ps1](Authentication%20Methods/Remove-StaleAuthMethods.ps1) | Removes stale authentication methods (not used for a set number of days) from users, never removing a user's last MFA method, and can delete unassigned hardware OATH tokens. Works from a reviewed Get-StaleAuthMethods.ps1 report or finds them live. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
 
 ### Conditional Access Policy
 
@@ -66,8 +76,10 @@ Each object type has a report and a remediation script. Run the report, review t
 | [Export-CAPoliciesToCsv.ps1](Conditional%20Access%20Policy/Export-CAPoliciesToCsv.ps1) | Flattens every Conditional Access policy into one CSV row with a column for every setting, by walking each policy object, so new policy settings show up without code changes. | exportConditionalAccessPolicytoCSV |
 | [Get-CAExclusions.ps1](Conditional%20Access%20Policy/Get-CAExclusions.ps1) | Lists everyone excluded from each Conditional Access policy, expanding excluded groups (including nested groups) and roles down to the actual users, so exclusions can be reviewed. | exportConditionalAccessExclusions and createConditionalAccessPolicyexclusionstats |
 | [Get-CAPolicyReport.ps1](Conditional%20Access%20Policy/Get-CAPolicyReport.ps1) | Reports each Conditional Access policy with how many users it targets and excludes (through users, groups, roles and guests), its apps, conditions, grant and session controls. | count-usersperconditionalaccesspolicy and Backup\export-ConditionalAccessPolicy |
+| [Get-StaleCAObjects.ps1](Conditional%20Access%20Policy/Get-StaleCAObjects.ps1) | Finds stale objects in Conditional Access: users, groups, roles, apps and named locations that policies still point to but no longer exist, named locations no policy uses, and policies that have been turned off for a set number of days. |  |
 | [Import-RecommendedCAPolicies.ps1](Conditional%20Access%20Policy/Import-RecommendedCAPolicies.ps1) | Imports recommended Conditional Access policies from this repo's JSON file into the tenant in report-only mode, one at a time from a menu or all at once. | Import-AADRecommendedConditionalAccessPolicies |
 | [New-TorNamedLocations.ps1](Conditional%20Access%20Policy/New-TorNamedLocations.ps1) | Creates untrusted IP named locations from a public list of Tor exit nodes (1,000 addresses per location), for use in a Conditional Access block policy. | exampletocreatebadiplocations |
+| [Remove-StaleCAObjects.ps1](Conditional%20Access%20Policy/Remove-StaleCAObjects.ps1) | Cleans up stale Conditional Access objects: removes references to deleted users, groups, roles, apps and named locations from policies, and deletes named locations no policy uses. Works from a reviewed Get-StaleCAObjects.ps1 report or finds them live. Never deletes or turns off a policy. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
 
 ### Devices
 
@@ -83,6 +95,8 @@ Each object type has a report and a remediation script. Run the report, review t
 | Script | What it does | Replaces |
 | --- | --- | --- |
 | [Get-DomainUsage.ps1](Domains/Get-DomainUsage.ps1) | Lists the registered domains and every place each domain is used on users, deleted users, groups, contacts, app registrations and service principals, which is needed before a domain can be removed. | Custom Domain\inventory-everyobjectdomainattribute and Backup\export-RegisteredDomains |
+| [Get-StaleDomains.ps1](Domains/Get-StaleDomains.ps1) | Finds stale custom domains: domains that were added but never verified, and verified domains that no user, group or app uses any more. |  |
+| [Remove-StaleDomains.ps1](Domains/Remove-StaleDomains.ps1) | Deletes stale custom domains: unverified domains and, with -IncludeVerified, verified domains nothing uses. Never touches the default, initial or federated domains or any domain still in use. Works from a reviewed Get-StaleDomains.ps1 report or finds them live. |  |
 
 ### Groups
 
@@ -145,6 +159,8 @@ Each object type has a report and a remediation script. Run the report, review t
 | [Get-RoleAuditEvents.ps1](Roles%20and%20PIM/Get-RoleAuditEvents.ps1) | Pulls audit events about directory roles and their members: role membership and PIM changes, changes made to admin accounts, and changes made by admin accounts. | Roles\auditRoleMembershipChanges, PIM\auditPIMRoleChanges, getAADChangesToGlobalAdmins, getAADChangesbyGlobalAdmins and Security\GatherRoleMemberChanges |
 | [Get-RoleMemberAppliedPolicies.ps1](Roles%20and%20PIM/Get-RoleMemberAppliedPolicies.ps1) | Shows which Conditional Access policies were applied to the sign-ins of privileged role members, to spot admins who are not covered. | Roles\getAADRoleCAPused |
 | [Get-RoleMembers.ps1](Roles%20and%20PIM/Get-RoleMembers.ps1) | Reports every active and eligible Entra directory role member, expanding role-assignable groups and PIM for Groups, with account state, last sign-in and MFA registration. | ExportAADDirectoryRoleMembers, getAzureADPrivRoleMembers, collectAzureADRoleMembersMFAStatus, getAADInactiveRoleMembers, createAADDirectoryRoleMemberReport, Export-AADRoleMembers, export-PIMROLEMembersstate, export-HighlyPrivAccountsMFA, exportAADPIMRoleMembers, RetrieveAdminsforKQL, Backup\export-DirectoryRoleMembership and Backup\export-PIMDirectoryRoles |
+| [Get-StaleRoleAssignments.ps1](Roles%20and%20PIM/Get-StaleRoleAssignments.ps1) | Finds stale directory role assignments: active or eligible assignments held by disabled accounts, by users or apps that have not signed in for a set number of days, and eligible assignments that were never activated in that time. |  |
+| [Remove-StaleRoleAssignments.ps1](Roles%20and%20PIM/Remove-StaleRoleAssignments.ps1) | Removes stale directory role assignments (held by disabled accounts, accounts with no sign-in, or eligible assignments never activated) through PIM admin remove requests, from a reviewed Get-StaleRoleAssignments.ps1 report or found live. Never touches Global Administrator, group assignments or the accounts you exclude. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
 
 ### Security
 
@@ -175,4 +191,4 @@ Each object type has a report and a remediation script. Run the report, review t
 - **Maintenance Task** - Azure Automation runbooks that need no modules (they get a token from the managed identity). See its [README](Maintenance%20Task/README.md) for setup.
 - **Log Analytics** - KQL queries for Log Analytics and Sentinel.
 - **_Archive** - older scripts that can't run on Microsoft Graph alone (Azure RBAC with the Az module, on-premises AD, local registry checks, the China cloud). Kept for reference, not maintained.
-- **Assessment**, **screen** - notes and images.
+- **screen** - Conditional Access screenshots.

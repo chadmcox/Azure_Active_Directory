@@ -145,6 +145,6 @@ if (-not $openIdClients) { $openIdClients = @{} }
 $file = Join-Path $Path "entra_app_inventory.csv"
 Write-Host "Getting enabled enterprise apps and building report"
 "$script:Graph/servicePrincipals?`$filter=servicePrincipalType eq 'Application' and accountEnabled eq true&`$expand=owners(`$select=id,displayName,userPrincipalName)" | Get-GraphPage |
-    Where-Object { $IncludeMicrosoftApps -or $_.appOwnerOrganizationId -ne $microsoftTenantId } |
+    Where-Object { ($IncludeMicrosoftApps -or $_.appOwnerOrganizationId -ne $microsoftTenantId) -and $_.'@odata.type' -notmatch 'agent' } |
     Format-App | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"
