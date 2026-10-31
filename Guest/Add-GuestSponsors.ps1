@@ -26,7 +26,7 @@ url: Add sponsors - https://learn.microsoft.com/en-us/graph/api/user-post-sponso
 .SYNOPSIS
     Adds the inviting user as sponsor on guests that have none.
 .DESCRIPTION
-    Replaces add-AADSponsoronGuest and Maintenance Task\runbook-AADAddSponsortoGuest. Audit logs only go
+    Replaces add-AADSponsoronGuest. The no-module runbook version is Maintenance Task\runbook-AADAddSponsortoGuest. Audit logs only go
     back 30 days, so run it on a schedule.
 .PARAMETER Days
     How many days of invite events to read. Default 30.

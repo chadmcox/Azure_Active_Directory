@@ -26,7 +26,7 @@ url: Manage emergency access accounts - https://learn.microsoft.com/en-us/entra/
 .SYNOPSIS
     Adds break glass accounts to every Conditional Access policy's exclusions.
 .DESCRIPTION
-    Replaces add-BreakGlasstoConditionalAccessPolicyExclusion and Maintenance Task\runbook-addAADBreakGlasstoConditionalAccessPolicy.
+    Replaces add-BreakGlasstoConditionalAccessPolicyExclusion. The no-module runbook version is Maintenance Task\runbook-addAADBreakGlasstoConditionalAccessPolicy.
 .PARAMETER BreakGlassAccount
     UPNs or object IDs of the emergency access accounts.
 .PARAMETER Identity

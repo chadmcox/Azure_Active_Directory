@@ -19,27 +19,31 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Disables cloud-only member accounts that have not signed in and have not changed their password for a set number of days. Runs interactively or as an Azure Automation runbook with a managed identity.
+Disables cloud-only member accounts that have not signed in for a set number of days, either from a reviewed Get-StaleUsers.ps1 report or by finding them live. Runs interactively or as an Azure Automation runbook with a managed identity.
 url: How to manage inactive user accounts - https://learn.microsoft.com/en-us/entra/identity/monitoring-health/howto-manage-inactive-user-accounts
 #>
 <#
 .SYNOPSIS
     Disables stale cloud-only users.
 .DESCRIPTION
-    Replaces disable-AADMGStaleUsers. Synced users are skipped; disable those in Active Directory.
+    Every account is checked again before it is disabled, so a user who signed in after the report was
+    made is skipped. Synced accounts are skipped; disable those in Active Directory.
+.PARAMETER CsvPath
+    A reviewed Get-StaleUsers.ps1 report. Without it, stale users are found live.
 .PARAMETER Days
-    Days with no sign-in and no password change. Default 180.
+    Days without any sign-in. Default 90.
 .PARAMETER MaxRemovals
     Stop after this many accounts, as a safety limit. Default 10.
 .PARAMETER Identity
     Sign in with the managed identity (Azure Automation). Pass -Environment too.
 .EXAMPLE
-    .\Disable-StaleUsers.ps1 -Environment Global -Days 180 -WhatIf
+    .\Disable-StaleUsers.ps1 -Environment Global -CsvPath .\entra_stale_users.csv -WhatIf
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [int]$Days = 180,
+    [string]$CsvPath,
+    [int]$Days = 90,
     [int]$MaxRemovals = 10,
     [switch]$Identity,
     [string]$Path = "$env:USERPROFILE\Downloads"
@@ -73,13 +77,21 @@ function Get-GraphPage {
     }
 }
 
-function Test-Stale {
+function Get-Candidates {
+    $select = "id,userPrincipalName,accountEnabled,createdDateTime,onPremisesSyncEnabled,signInActivity"
+    if ($CsvPath) {
+        Import-Csv $CsvPath | ForEach-Object { Invoke-MgGraphRequest -Uri "$script:Graph/users/$($_.id)?`$select=$select" -OutputType PSObject }
+    } else {
+        "$script:Graph/users?`$filter=userType eq 'Member' and accountEnabled eq true&`$select=$select&`$top=999" | Get-GraphPage
+    }
+}
+
+function Select-Stale {
     param([Parameter(ValueFromPipeline)]$User)
     process {
-        $cutoff = (Get-Date).AddDays(-$Days)
-        $recent = @($User.signInActivity.lastSignInDateTime, $User.signInActivity.lastNonInteractiveSignInDateTime, $User.lastPasswordChangeDateTime, $User.createdDateTime) |
+        $recent = @($User.signInActivity.lastSignInDateTime, $User.signInActivity.lastNonInteractiveSignInDateTime, $User.signInActivity.lastSuccessfulSignInDateTime, $User.createdDateTime) |
             Where-Object { $_ -and [datetime]$_ -ge $cutoff }
-        if (-not $recent) { $User }
+        if ($User.accountEnabled -and -not $User.onPremisesSyncEnabled -and -not $recent) { $User }
     }
 }
 
@@ -91,7 +103,7 @@ function Disable-User {
             Invoke-MgGraphRequest -Uri "$script:Graph/users/$($User.id)" -Method PATCH -Body (@{ accountEnabled = $false } | ConvertTo-Json) -ContentType "application/json"
             "Disabled"
         } else { "WhatIf" }
-        $User | Select-Object id, userPrincipalName, createdDateTime, lastPasswordChangeDateTime,
+        $User | Select-Object id, userPrincipalName, createdDateTime,
             @{ n = "LastSignInDateTime"; e = { $_.signInActivity.lastSignInDateTime } },
             @{ n = "LastNonInteractiveSignInDateTime"; e = { $_.signInActivity.lastNonInteractiveSignInDateTime } },
             @{ n = "Action"; e = { $action } }
@@ -100,8 +112,8 @@ function Disable-User {
 
 Connect-Cloud -Scopes "User.ReadWrite.All", "AuditLog.Read.All" -Identity:$Identity
 
-$results = "$script:Graph/users?`$filter=userType eq 'Member' and accountEnabled eq true&`$select=id,userPrincipalName,createdDateTime,lastPasswordChangeDateTime,onPremisesSyncEnabled,signInActivity&`$top=999" |
-    Get-GraphPage | Where-Object { -not $_.onPremisesSyncEnabled } | Test-Stale | Select-Object -First $MaxRemovals | Disable-User
+$cutoff = (Get-Date).AddDays(-$Days)
+$results = Get-Candidates | Select-Stale | Select-Object -First $MaxRemovals | Disable-User
 $results | Format-Table userPrincipalName, Action -AutoSize | Out-String | Write-Output
 if (-not $Identity) {
     $file = Join-Path $Path "entra_stale_users_disabled.csv"

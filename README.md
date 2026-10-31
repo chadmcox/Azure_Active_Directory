@@ -7,8 +7,22 @@ Scripts for reporting on and maintaining Microsoft Entra ID. Check out the [Azur
 - Every script only needs the **Microsoft.Graph.Authentication** module (`Install-Module Microsoft.Graph.Authentication`). They call Microsoft Graph directly with `Invoke-MgGraphRequest` on the **beta** endpoint.
 - Every script takes `-Environment Global|USGov|USGovDoD`. Leave it off and the script asks which cloud to use (Enter = Global).
 - Reports are written as CSV to your Downloads folder unless you pass `-Path`.
-- Scripts that change things support `-WhatIf`, and most have a safety limit such as `-MaxRemovals`.
-- Scripts with an `-Identity` switch also run as Azure Automation runbooks with a managed identity. See [Docs/Azure Automation Runbooks.md](Docs/Azure%20Automation%20Runbooks.md).
+- Scripts that change things support `-WhatIf` and have a safety limit such as `-MaxRemovals`. Scripts with an `-Identity` switch can also run in Azure Automation with a managed identity (import Microsoft.Graph.Authentication into the Automation account).
+- Need a runbook with **no modules at all**? Use the [Maintenance Task](Maintenance%20Task) folder.
+- Rules for adding or changing scripts are in [AGENTS.md](AGENTS.md).
+
+## Stale objects
+
+Each object type has a report and a remediation script. Run the report, review the CSV (delete the rows you want to keep), then pass it to the remediation script with `-CsvPath`. Run it with `-WhatIf` first. Every object is checked again before it's changed, so anything that became active after the report is skipped.
+
+| Object | Stale report | Remediate | What remediation does |
+| --- | --- | --- | --- |
+| Users | [Get-StaleUsers.ps1](Users/Get-StaleUsers.ps1) | [Disable-StaleUsers.ps1](Users/Disable-StaleUsers.ps1) | Disables cloud-only accounts; synced accounts are flagged for AD |
+| Guests | [Get-StaleGuests.ps1](Guest/Get-StaleGuests.ps1) | [Remove-StaleGuests.ps1](Guest/Remove-StaleGuests.ps1) | Deletes inactive guests and old pending invites (30-day recycle bin) |
+| Devices | [Get-StaleDevices.ps1](Devices/Get-StaleDevices.ps1) | [Remove-StaleDevices.ps1](Devices/Remove-StaleDevices.ps1) | `-Action Disable` first, then `-Action Delete`; skips hybrid joined and Autopilot |
+| Enterprise apps | [Get-StaleApps.ps1](Applications/Get-StaleApps.ps1) | [Disable-StaleApps.ps1](Applications/Disable-StaleApps.ps1) | Disables the service principal (reversible); skips Microsoft apps |
+| Groups | [Get-StaleGroups.ps1](Groups/Get-StaleGroups.ps1) | [Remove-StaleGroups.ps1](Groups/Remove-StaleGroups.ps1) | Deletes empty, unused cloud groups after a JSON backup |
+| App secrets | [Get-AppCredentials.ps1](Applications/Get-AppCredentials.ps1) | [Remove-ExpiredAppSecrets.ps1](Applications/Remove-ExpiredAppSecrets.ps1) | Removes expired client secrets |
 
 ## Scripts
 
@@ -22,12 +36,14 @@ Scripts for reporting on and maintaining Microsoft Entra ID. Check out the [Azur
 
 | Script | What it does | Replaces |
 | --- | --- | --- |
+| [Disable-StaleApps.ps1](Applications/Disable-StaleApps.ps1) | Disables enterprise apps (service principals) with no sign-in activity for a set number of days, either from a reviewed Get-StaleApps.ps1 report or by finding them live. Disabling blocks sign-ins and tokens but keeps the app, so it can be turned back on. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
 | [Get-AppCredentialChanges.ps1](Applications/Get-AppCredentialChanges.ps1) | Shows who added or changed certificates and secrets on app registrations and service principals, from the audit log. | Logs\whoAddedCredstoSPAPP |
 | [Get-AppCredentials.ps1](Applications/Get-AppCredentials.ps1) | Reports every certificate and client secret on app registrations and service principals, with expiry, lifetime and whether it is long-lived. | get-AllAppCredentials and createAADAPPandSPCredentialReport |
 | [Get-AppInventory.ps1](Applications/Get-AppInventory.ps1) | Inventories every enabled enterprise app with its sign-in type (SAML, OIDC, password, desktop, app proxy, OAuth2), last sign-in, 30-day sign-in count, owners and whether Entra recommends removing it as unused. | get-EntraApplicationsDetails, get-SPSignInActivity, get-EntraDesktopApplication, get-EntraSAMLApplications, get-StaleAppsfromEntra, get-StaleAppFromRecommendation and Backup\export-ServicePrincipals |
 | [Get-AppPermissions.ps1](Applications/Get-AppPermissions.ps1) | Reports every application (app role) and delegated (OAuth2) permission granted to service principals, with optional filters for Exchange, SharePoint, Azure AD Graph and ReadWrite permissions. | the old get-AllAppAssignedPermissions, get-AllAppDelegatedPermissions, get-assignedEXOPerms, get-assignedSPOPerms, get-delegatedEXOPerms, get-delegatedSPOPerms, get-graphAssignedPermissions, get-AppWithEXOFullAccessPerm, get-ADGraphApplications, get-SPToMuchPerms, export-ApplicationConsents, export-ApplicationRoleAssignments and the createAAD*PermissionReport scripts |
 | [Get-MicrosoftAppsWithOwners.ps1](Applications/Get-MicrosoftAppsWithOwners.ps1) | Finds Microsoft first-party service principals that have owners assigned. Owners can add credentials to these apps and use their permissions. | get-BuiltinAPPOwners and AzureADModule\get-builtinAppwOwnerAssigned |
-| [Remove-ExpiredAppSecrets.ps1](Applications/Remove-ExpiredAppSecrets.ps1) | Removes client secrets that expired more than a set number of days ago from app registrations and service principals. Runs interactively or as an Azure Automation runbook with a managed identity. | Maintenance Task\runbook-removeAADExpiredCredentials |
+| [Get-StaleApps.ps1](Applications/Get-StaleApps.ps1) | Finds enabled enterprise apps with no sign-in activity (user or app-only) for a set number of days, plus apps Entra recommends removing as unused, with owners and credentials so owners can be asked before the app is disabled. |  |
+| [Remove-ExpiredAppSecrets.ps1](Applications/Remove-ExpiredAppSecrets.ps1) | Removes client secrets that expired more than a set number of days ago from app registrations and service principals. Runs interactively or as an Azure Automation runbook with a managed identity. | (module-based version of Maintenance Task\runbook-removeAADExpiredCredentials) |
 
 ### Authentication Methods
 
@@ -44,7 +60,7 @@ Scripts for reporting on and maintaining Microsoft Entra ID. Check out the [Azur
 
 | Script | What it does | Replaces |
 | --- | --- | --- |
-| [Add-BreakGlassExclusions.ps1](Conditional%20Access%20Policy/Add-BreakGlassExclusions.ps1) | Makes sure the emergency access (break glass) accounts are excluded from every Conditional Access policy and adds them where they are missing. Runs interactively or as an Azure Automation runbook with a managed identity. | add-BreakGlasstoConditionalAccessPolicyExclusion and Maintenance Task\runbook-addAADBreakGlasstoConditionalAccessPolicy |
+| [Add-BreakGlassExclusions.ps1](Conditional%20Access%20Policy/Add-BreakGlassExclusions.ps1) | Makes sure the emergency access (break glass) accounts are excluded from every Conditional Access policy and adds them where they are missing. Runs interactively or as an Azure Automation runbook with a managed identity. | add-BreakGlasstoConditionalAccessPolicyExclusion |
 | [Add-ExclusionGroups.ps1](Conditional%20Access%20Policy/Add-ExclusionGroups.ps1) | Creates one exclusion group per Conditional Access policy inside a restricted administrative unit and adds each group to its policy's exclusions, so exclusions are managed through groups instead of the policies. | add-ExclusionGroupALLCAP |
 | [Compare-CABaseline.ps1](Conditional%20Access%20Policy/Compare-CABaseline.ps1) | Compares the tenant's Conditional Access policies against Microsoft's common policy templates and CIS benchmark policies, and lists which existing policies (if any) satisfy each one. | compare-baselineconditionalaccesspoliciestoexistingpolicies and its duplicate Backup\export-ConditionalAccessPolicyMapping |
 | [Export-CAPoliciesToCsv.ps1](Conditional%20Access%20Policy/Export-CAPoliciesToCsv.ps1) | Flattens every Conditional Access policy into one CSV row with a column for every setting, by walking each policy object, so new policy settings show up without code changes. | exportConditionalAccessPolicytoCSV |
@@ -59,6 +75,8 @@ Scripts for reporting on and maintaining Microsoft Entra ID. Check out the [Azur
 | --- | --- | --- |
 | [Get-DeviceReport.ps1](Devices/Get-DeviceReport.ps1) | Reports every device in Entra ID with its join type, OS, compliance, last sign-in and owner, and flags stale devices. | Devices\AzureADModule\AzureADDeviceScriptCollection and getAADDevicesStatus |
 | [Get-DisabledDevicesInUse.ps1](Devices/Get-DisabledDevicesInUse.ps1) | Finds disabled devices that people are still trying to use, from sign-ins that failed with error 135011 (device disabled), so they can be re-enabled or the users helped before devices are deleted. | Devices\AzureADModule\GetDisabledAADDevicesStillInUse |
+| [Get-StaleDevices.ps1](Devices/Get-StaleDevices.ps1) | Finds devices with no activity for a set number of days and says how to remediate each one: disable then delete in Entra, clean up in Active Directory for hybrid joined devices, or leave Windows Autopilot devices alone. |  |
+| [Remove-StaleDevices.ps1](Devices/Remove-StaleDevices.ps1) | Cleans up stale devices the way Microsoft recommends: first disables devices with no activity, then deletes devices that are already disabled and still inactive. Skips hybrid joined (synced) and Windows Autopilot devices. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
 
 ### Domains
 
@@ -74,15 +92,18 @@ Scripts for reporting on and maintaining Microsoft Entra ID. Check out the [Azur
 | [Export-GroupMemberships.ps1](Groups/Export-GroupMemberships.ps1) | Exports the security groups every member user, guest and group belongs to, including nested membership, as three CSV files. | export-groupsecuritymembership and Backup\export-GroupMemberShips |
 | [Get-GroupAppRoleAssignments.ps1](Groups/Get-GroupAppRoleAssignments.ps1) | Lists the apps and app roles every group is assigned to, to find broad groups (like All Users) that grant access to apps. | AzureADModule\getAADAllUsersGroupAppRoleAssignment |
 | [Get-GroupReport.ps1](Groups/Get-GroupReport.ps1) | Reports every group with its type, member and owner counts, licenses, dynamic rule state and duplicate names, so empty, ownerless, duplicate and broken dynamic groups can be found in one file. | get-GroupMemberCount, get-EmptySecurityGroups, get-SyncedEmptySecurityGroups, get-OwnerlessSecurityGroups, get-OwnerlessUnifiedGroups, get-DynamicGroupProcessingStateNotOn, get-memberofdynamicgroups, find-DuplicateGroups, Backup\export-Groups and the AzureADModule scripts getAADGroupsMissingOwner, getMemberlessAADGroups, getMemberlessAADUnifiedGroups, getAADLicensedGroups and getAADUnifiedGroupsMissingLifecyclePolicies |
+| [Get-StaleGroups.ps1](Groups/Get-StaleGroups.ps1) | Finds stale groups: cloud groups with no members and Microsoft 365 groups that have not been renewed for a set number of days, and flags groups that are still in use (Conditional Access, app assignments, licenses, roles) so they are not removed by mistake. |  |
+| [Remove-StaleGroups.ps1](Groups/Remove-StaleGroups.ps1) | Deletes stale cloud groups that are empty and not used anywhere (not in Conditional Access, not role-assignable, no licenses, no app assignments), after saving a JSON backup of each group. Works from a reviewed Get-StaleGroups.ps1 report or finds them live. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
 
 ### Guest
 
 | Script | What it does | Replaces |
 | --- | --- | --- |
-| [Add-GuestSponsors.ps1](Guest/Add-GuestSponsors.ps1) | Sets the person who invited each guest as the guest's sponsor, using the "Invite external user" audit events. Runs interactively or as a daily Azure Automation runbook with a managed identity. | add-AADSponsoronGuest and Maintenance Task\runbook-AADAddSponsortoGuest |
+| [Add-GuestSponsors.ps1](Guest/Add-GuestSponsors.ps1) | Sets the person who invited each guest as the guest's sponsor, using the "Invite external user" audit events. Runs interactively or as a daily Azure Automation runbook with a managed identity. | add-AADSponsoronGuest |
 | [Get-GuestAccess.ps1](Guest/Get-GuestAccess.ps1) | Exports what guests have access to and own: group memberships, app role assignments and owned objects, for review or as a backup before removing guests. | backup-GuestGroupMembership, backup-GuestAppRoleAssignments and find-GuestOwnedObjects |
 | [Get-GuestReport.ps1](Guest/Get-GuestReport.ps1) | Reports every guest with invite state, last sign-in, sponsors and sign-in issuer, and can check whether each guest's home tenant is viral (unmanaged). | create-GuestReport, create-GuestReportV2, create-GuestIsViralReport, create-GuestIsViralReportV2, get-GuestSponsors, get-MGEntraStaleGuest and Backup\export-Guests |
-| [Remove-StaleGuests.ps1](Guest/Remove-StaleGuests.ps1) | Deletes guests that have not signed in for a set number of days, or that never accepted their invitation. Runs interactively or as an Azure Automation runbook with a managed identity. Deleted guests stay in the recycle bin for 30 days. | remove-StaleGuest, remove-StalePendingGuest, and Maintenance Task\runbook-removeAADStaleGuest and runbook-removeAADUnacceptedGuest |
+| [Get-StaleGuests.ps1](Guest/Get-StaleGuests.ps1) | Finds guests that have not signed in for a set number of days and guests that never accepted their invitation, with sponsors and the reason each is stale. |  |
+| [Remove-StaleGuests.ps1](Guest/Remove-StaleGuests.ps1) | Deletes guests that have not signed in for a set number of days or never accepted their invitation, either from a reviewed Get-StaleGuests.ps1 report or by finding them live. Runs interactively or as an Azure Automation runbook with a managed identity. Deleted guests stay in the recycle bin for 30 days. |  |
 
 ### Hybrid Identity
 
@@ -94,7 +115,7 @@ Scripts for reporting on and maintaining Microsoft Entra ID. Check out the [Azur
 
 | Script | What it does | Replaces |
 | --- | --- | --- |
-| [Dismiss-RiskyUsers.ps1](Identity%20Protection/Dismiss-RiskyUsers.ps1) | Dismisses user risk that is older than a set number of days for the chosen risk levels. Runs interactively or as an Azure Automation runbook with a managed identity. | dismiss-IdentityProtectionRiskyUsers and Maintenance Task\runbook-dismissAIPRiskyUsers |
+| [Dismiss-RiskyUsers.ps1](Identity%20Protection/Dismiss-RiskyUsers.ps1) | Dismisses user risk that is older than a set number of days for the chosen risk levels. Runs interactively or as an Azure Automation runbook with a managed identity. | dismiss-IdentityProtectionRiskyUsers |
 | [Get-RiskyUsers.ps1](Identity%20Protection/Get-RiskyUsers.ps1) | Reports users Identity Protection currently marks as at risk, with risk level, when the risk was last updated and whether the user changed their password since. | export-IdentityProtectionAllRiskyUsers and Backup\export-RiskyUsers |
 
 ### Intune
@@ -143,13 +164,15 @@ Scripts for reporting on and maintaining Microsoft Entra ID. Check out the [Azur
 
 | Script | What it does | Replaces |
 | --- | --- | --- |
-| [Disable-StaleUsers.ps1](Users/Disable-StaleUsers.ps1) | Disables cloud-only member accounts that have not signed in and have not changed their password for a set number of days. Runs interactively or as an Azure Automation runbook with a managed identity. | disable-AADMGStaleUsers |
+| [Disable-StaleUsers.ps1](Users/Disable-StaleUsers.ps1) | Disables cloud-only member accounts that have not signed in for a set number of days, either from a reviewed Get-StaleUsers.ps1 report or by finding them live. Runs interactively or as an Azure Automation runbook with a managed identity. |  |
+| [Get-StaleUsers.ps1](Users/Get-StaleUsers.ps1) | Finds member accounts that have not signed in (interactively or non-interactively) for a set number of days and says how to remediate each one: disable in Entra for cloud-only accounts, disable in Active Directory for synced accounts. |  |
 | [Get-UserDirectReports.ps1](Users/Get-UserDirectReports.ps1) | Lists everyone who reports to a manager, directly or through other managers, all the way down the org chart. | get-AADUsersDirectReports |
 | [Get-UserReport.ps1](Users/Get-UserReport.ps1) | Reports every member user with sign-in activity, password age and hybrid sync state, and flags stale accounts, old passwords and synced users that stopped syncing. | create-AADMGUserReport, create-AADUserSigninreport, find-AADMGUsersStaleLastSignIn, find-AADMGUserStalePWD, find-usersnotsyncing, Get-EntraHybridUserPasswordChange, getAADUserSignons, Backup\export-Users and GCC\exportGCCAADUsers (pick USGov or USGovDoD for government clouds) |
 | [Get-UsersWithPersonalEmail.ps1](Users/Get-UsersWithPersonalEmail.ps1) | Finds member users whose alternate email addresses (otherMails) are personal mailboxes such as Gmail, Outlook.com or Yahoo, which can be used for password reset. | Security\findAADUsersPersonalAltEmail |
 
 ## Other folders
 
+- **Maintenance Task** - Azure Automation runbooks that need no modules (they get a token from the managed identity). See its [README](Maintenance%20Task/README.md) for setup.
 - **Log Analytics** - KQL queries for Log Analytics and Sentinel.
 - **_Archive** - older scripts that can't run on Microsoft Graph alone (Azure RBAC with the Az module, on-premises AD, local registry checks, the China cloud). Kept for reference, not maintained.
-- **Assessment**, **Docs**, **screen** - notes, guides and images.
+- **Assessment**, **screen** - notes and images.
