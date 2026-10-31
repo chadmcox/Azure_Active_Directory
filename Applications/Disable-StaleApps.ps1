@@ -117,7 +117,7 @@ $cutoff = (Get-Date).AddDays(-$Days)
 $lastSignIns = @("$script:Graph/reports/servicePrincipalSignInActivities" | Get-GraphPage) | Group-Object appId -AsHashTable -AsString
 if (-not $lastSignIns) { $lastSignIns = @{} }
 
-$results = Get-Candidates | Select-Stale | Select-Object -First $MaxRemovals | Disable-App
+$results = Get-Candidates | Where-Object { $_.'@odata.type' -notmatch 'agent' } | Select-Stale | Select-Object -First $MaxRemovals | Disable-App
 $results | Format-Table displayName, LastSignInDateTime, Action -AutoSize | Out-String | Write-Output
 if (-not $Identity) {
     $file = Join-Path $Path "entra_stale_apps_disabled.csv"

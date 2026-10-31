@@ -105,6 +105,6 @@ Connect-Cloud -Scopes "User.Read.All", "AuditLog.Read.All"
 $filter = if ($IncludeDisabled) { "userType eq 'Member'" } else { "userType eq 'Member' and accountEnabled eq true" }
 $file = Join-Path $Path "entra_users.csv"
 Write-Host "Getting users"
-"$script:Graph/users?`$filter=$filter&`$select=id,displayName,userPrincipalName,mail,jobTitle,department,accountEnabled,createdDateTime,onPremisesSyncEnabled,onPremisesDomainName,onPremisesSamAccountName,onPremisesLastSyncDateTime,lastPasswordChangeDateTime,refreshTokensValidFromDateTime,signInSessionsValidFromDateTime,signInActivity&`$top=999" |
-    Get-GraphPage | Format-User | Export-Csv $file -NoTypeInformation
+"$script:Graph/users?`$filter=$filter&`$select=id,displayName,userPrincipalName,mail,jobTitle,department,accountEnabled,createdDateTime,onPremisesSyncEnabled,onPremisesDomainName,onPremisesSamAccountName,onPremisesLastSyncDateTime,lastPasswordChangeDateTime,refreshTokensValidFromDateTime,signInSessionsValidFromDateTime,signInActivity,identityParentId&`$top=999" |
+    Get-GraphPage | Where-Object { -not $_.identityParentId } | Format-User | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"
