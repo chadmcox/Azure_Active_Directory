@@ -19,40 +19,33 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Deletes guests that have not signed in for a set number of days or never accepted their invitation, either from a reviewed Get-StaleGuests.ps1 report or by finding them live. Runs interactively or as an Azure Automation runbook with a managed identity. Deleted guests stay in the recycle bin for 30 days.
+Deletes guests that accepted their invitation but have not signed in for a set number of days, either from a reviewed Get-StaleGuests.ps1 report or by finding them live. Runs interactively or as an Azure Automation runbook with a managed identity. Deleted guests stay in the recycle bin for 30 days.
 url: How to manage inactive user accounts - https://learn.microsoft.com/en-us/entra/identity/monitoring-health/howto-manage-inactive-user-accounts
 url: Delete a user - https://learn.microsoft.com/en-us/graph/api/user-delete?view=graph-rest-beta
 #>
 <#
 .SYNOPSIS
-    Removes inactive guests and guests with old pending invitations.
+    Removes guests that have not signed in for a set number of days.
 .DESCRIPTION
-    Every guest is checked again before deletion, so a guest who signed in or accepted after the report
-    was made is skipped.
+    Replaces remove-StaleGuest and Maintenance Task\runbook-removeAADStaleGuest (still kept as a
+    no-module runbook). Every guest is checked again before deletion, so a guest who signed in after the
+    report was made is skipped. Guests with pending invitations are handled by Remove-PendingGuests.ps1.
 .PARAMETER CsvPath
     A reviewed Get-StaleGuests.ps1 report. Without it, stale guests are found live.
-.PARAMETER Mode
-    Inactive, PendingAcceptance or Both. Default Both.
 .PARAMETER Days
-    Days without a sign-in for accepted guests. Default 90.
-.PARAMETER PendingDays
-    Days an invitation can stay unaccepted. Default 30.
+    Days without a sign-in. Default 90.
 .PARAMETER MaxRemovals
     Stop after this many deletions, as a safety limit. Default 25.
 .PARAMETER Identity
     Sign in with the managed identity (Azure Automation). Pass -Environment too.
 .EXAMPLE
     .\Remove-StaleGuests.ps1 -Environment Global -CsvPath .\entra_stale_guests.csv -WhatIf
-.EXAMPLE
-    .\Remove-StaleGuests.ps1 -Environment Global -Mode PendingAcceptance -PendingDays 15 -Identity
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
     [string]$CsvPath,
-    [ValidateSet("Inactive", "PendingAcceptance", "Both")][string]$Mode = "Both",
     [int]$Days = 90,
-    [int]$PendingDays = 30,
     [int]$MaxRemovals = 25,
     [switch]$Identity,
     [string]$Path = "$env:USERPROFILE\Downloads"
@@ -97,12 +90,7 @@ function Get-Candidates {
 
 function Get-StaleReason {
     param($Guest)
-    if ($Guest.userType -ne "Guest") { return }
-    if ($Guest.externalUserState -eq "PendingAcceptance") {
-        if ($Mode -ne "Inactive" -and [datetime]$Guest.externalUserStateChangeDateTime -lt (Get-Date).AddDays(-$PendingDays)) { return "PendingAcceptance" }
-        return
-    }
-    if ($Mode -eq "PendingAcceptance") { return }
+    if ($Guest.userType -ne "Guest" -or $Guest.externalUserState -eq "PendingAcceptance") { return }
     $cutoff = (Get-Date).AddDays(-$Days)
     $recent = @($Guest.signInActivity.lastSignInDateTime, $Guest.signInActivity.lastNonInteractiveSignInDateTime, $Guest.signInActivity.lastSuccessfulSignInDateTime, $Guest.createdDateTime) |
         Where-Object { $_ -and [datetime]$_ -ge $cutoff }

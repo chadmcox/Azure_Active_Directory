@@ -139,12 +139,12 @@ Write-Host "Getting app registrations"
 $applications = @("$script:Graph/applications?`$select=appId,web" | Get-GraphPage) | Group-Object appId -AsHashTable -AsString
 if (-not $applications) { $applications = @{} }
 Write-Host "Getting apps with openid consent"
-$openIdClients = @("$script:Graph/oauth2PermissionGrants?`$top=999" | Get-GraphPage | Where-Object { $_.scope -match "\bopenid\b" }) | Group-Object clientId -AsHashTable -AsString
+$openIdClients = @("$script:Graph/oauth2PermissionGrants" | Get-GraphPage | Where-Object { $_.scope -match "\bopenid\b" }) | Group-Object clientId -AsHashTable -AsString
 if (-not $openIdClients) { $openIdClients = @{} }
 
 $file = Join-Path $Path "entra_app_inventory.csv"
 Write-Host "Getting enabled enterprise apps and building report"
-"$script:Graph/servicePrincipals?`$filter=servicePrincipalType eq 'Application' and accountEnabled eq true&`$expand=owners(`$select=id,displayName,userPrincipalName)" | Get-GraphPage |
+"$script:Graph/servicePrincipals?`$filter=servicePrincipalType eq 'Application' and accountEnabled eq true&`$select=id,appId,displayName,publisherName,accountEnabled,appRoleAssignmentRequired,preferredSingleSignOnMode,signInAudience,createdDateTime,replyUrls,tags,notificationEmailAddresses,appOwnerOrganizationId&`$expand=owners(`$select=id,displayName,userPrincipalName)" | Get-GraphPage |
     Where-Object { ($IncludeMicrosoftApps -or $_.appOwnerOrganizationId -ne $microsoftTenantId) -and $_.'@odata.type' -notmatch 'agent' } |
     Format-App | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

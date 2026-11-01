@@ -24,19 +24,17 @@ url: List authentication methods - https://learn.microsoft.com/en-us/graph/api/a
 #>
 <#
 .SYNOPSIS
-    Exports users' authentication methods.
+    Exports every registered authentication method per user.
 .DESCRIPTION
-    Replaces get-phonemethods, get-SMSSignin, get-authenticatorversion and get-UserAuthMethodLastUsedDate.
-    Only users who have registered a method are read. Passwords are left out.
-.PARAMETER MethodType
-    All, Phone or Authenticator.
+    Replaces get-UserAuthMethodLastUsedDate. Only users who have registered a method are read.
+    Passwords are left out. For phones or Authenticator only, use Get-UserPhoneMethods or
+    Get-AuthenticatorAppDetails.
 .EXAMPLE
-    .\Get-UserAuthMethods.ps1 -Environment Global -MethodType Phone
+    .\Get-UserAuthMethods.ps1 -Environment Global
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [ValidateSet("All", "Phone", "Authenticator")][string]$MethodType = "All",
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
 
@@ -72,7 +70,7 @@ function Get-Methods {
     param([Parameter(ValueFromPipeline)]$User)
     process {
         $u = $User
-        $collection = switch ($MethodType) { "Phone" { "phoneMethods" } "Authenticator" { "microsoftAuthenticatorMethods" } default { "methods" } }
+        $collection = "methods"
         "$script:Graph/users/$($u.id)/authentication/$collection" | Get-GraphPage |
             Where-Object { $_.'@odata.type' -ne "#microsoft.graph.passwordAuthenticationMethod" } |
             Select-Object @{ n = "UserId"; e = { $u.id } },
@@ -84,12 +82,8 @@ function Get-Methods {
 
 Connect-Cloud -Scopes "UserAuthenticationMethod.Read.All", "AuditLog.Read.All"
 
-$filter = switch ($MethodType) {
-    "Phone" { "?`$filter=methodsRegistered/any(m:m eq 'mobilePhone')" }
-    "Authenticator" { "?`$filter=methodsRegistered/any(m:m eq 'microsoftAuthenticatorPush')" }
-    default { "" }
-}
-$file = Join-Path $Path "entra_user_auth_methods_$MethodType.csv"
+$filter = ""
+$file = Join-Path $Path "entra_user_auth_methods.csv"
 Write-Host "Getting users with registered methods"
 "$script:Graph/reports/authenticationMethods/userRegistrationDetails$filter" | Get-GraphPage |
     Where-Object { $_.methodsRegistered } |

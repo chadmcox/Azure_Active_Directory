@@ -94,6 +94,6 @@ Connect-Cloud -Scopes "User.Read.All", "AuditLog.Read.All"
 $cutoff = (Get-Date).AddDays(-$Days)
 $file = Join-Path $Path "entra_stale_users.csv"
 Write-Host "Getting enabled member accounts"
-"$script:Graph/users?`$filter=userType eq 'Member' and accountEnabled eq true&`$select=id,displayName,userPrincipalName,accountEnabled,createdDateTime,onPremisesSyncEnabled,onPremisesSamAccountName,lastPasswordChangeDateTime,assignedLicenses,signInActivity,identityParentId&`$top=999" |
+"$script:Graph/users?`$filter=userType eq 'Member' and accountEnabled eq true&`$select=id,displayName,userPrincipalName,accountEnabled,createdDateTime,onPremisesSyncEnabled,onPremisesSamAccountName,lastPasswordChangeDateTime,assignedLicenses,signInActivity,identityParentId" |
     Get-GraphPage | Where-Object { -not $_.identityParentId } | Select-Stale | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

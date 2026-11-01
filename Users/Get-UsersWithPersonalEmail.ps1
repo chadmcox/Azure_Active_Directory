@@ -70,7 +70,7 @@ function Get-GraphPage {
 Connect-Cloud -Scopes "User.Read.All"
 
 $file = Join-Path $Path "entra_users_personal_alternate_email.csv"
-"$script:Graph/users?`$filter=userType eq 'Member'&`$select=id,displayName,userPrincipalName,otherMails&`$top=999" | Get-GraphPage |
+"$script:Graph/users?`$filter=userType eq 'Member'&`$select=id,displayName,userPrincipalName,otherMails" | Get-GraphPage |
     Where-Object { $_.otherMails -match $Pattern } |
     Select-Object id, displayName, userPrincipalName, @{ n = "OtherMails"; e = { $_.otherMails -join ";" } } |
     Export-Csv $file -NoTypeInformation

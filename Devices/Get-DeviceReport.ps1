@@ -72,7 +72,7 @@ Connect-Cloud -Scopes "Device.Read.All"
 
 $joinTypes = @{ AzureAd = "Microsoft Entra joined"; ServerAd = "Microsoft Entra hybrid joined"; Workplace = "Microsoft Entra registered" }
 $file = Join-Path $Path "entra_devices.csv"
-"$script:Graph/devices?`$select=id,deviceId,displayName,accountEnabled,approximateLastSignInDateTime,operatingSystem,operatingSystemVersion,trustType,profileType,isCompliant,isManaged,managementType,onPremisesSyncEnabled,onPremisesLastSyncDateTime,registrationDateTime,createdDateTime&`$expand=registeredOwners(`$select=id,userPrincipalName)&`$top=999" |
+"$script:Graph/devices?`$select=id,deviceId,displayName,accountEnabled,approximateLastSignInDateTime,operatingSystem,operatingSystemVersion,trustType,profileType,isCompliant,isManaged,managementType,onPremisesSyncEnabled,onPremisesLastSyncDateTime,registrationDateTime,createdDateTime&`$expand=registeredOwners(`$select=id,userPrincipalName)" |
     Get-GraphPage |
     Select-Object id, deviceId, displayName, accountEnabled, operatingSystem, operatingSystemVersion,
         @{ n = "JoinType"; e = { if ($_.trustType) { $joinTypes[$_.trustType] } else { "Unknown" } } },

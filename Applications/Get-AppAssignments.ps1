@@ -69,7 +69,7 @@ function Get-GraphPage {
 function Format-App {
     param([Parameter(ValueFromPipeline)]$App)
     process {
-        $assignments = @("$script:Graph/servicePrincipals/$($App.id)/appRoleAssignedTo?`$top=999" | Get-GraphPage)
+        $assignments = @("$script:Graph/servicePrincipals/$($App.id)/appRoleAssignedTo" | Get-GraphPage)
         $users = @($assignments | Where-Object { $_.principalType -eq "User" })
         $groups = @($assignments | Where-Object { $_.principalType -eq "Group" })
         $App | Select-Object id, appId, displayName, preferredSingleSignOnMode, appRoleAssignmentRequired,

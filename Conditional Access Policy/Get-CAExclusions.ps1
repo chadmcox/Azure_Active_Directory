@@ -90,14 +90,18 @@ function Get-Exclusions {
             $found | Format-Member -Policy $Policy -Via "User" -ViaName "Direct"
         }
         $users.excludeGroups | ForEach-Object {
-            $group = Invoke-MgGraphRequest -Uri "$script:Graph/groups/$($_)?`$select=id,displayName" -OutputType PSObject
-            "$script:Graph/groups/$($group.id)/transitiveMembers?`$select=id,displayName,userPrincipalName" | Get-GraphPage |
-                Format-Member -Policy $Policy -Via "Group" -ViaName $group.displayName
+            if (-not $groupCache.ContainsKey($_)) {
+                $group = Invoke-MgGraphRequest -Uri "$script:Graph/groups/$($_)?`$select=id,displayName" -OutputType PSObject
+                $groupCache[$_] = $group | Select-Object displayName, @{ n = "Members"; e = { @("$script:Graph/groups/$($group.id)/transitiveMembers?`$select=id,displayName,userPrincipalName" | Get-GraphPage) } }
+            }
+            $groupCache[$_].Members | Format-Member -Policy $Policy -Via "Group" -ViaName $groupCache[$_].displayName
         }
         $users.excludeRoles | ForEach-Object {
-            $role = Invoke-MgGraphRequest -Uri "$script:Graph/roleManagement/directory/roleDefinitions/$_" -OutputType PSObject
-            "$script:Graph/roleManagement/directory/roleAssignments?`$filter=roleDefinitionId eq '$_'&`$expand=principal" | Get-GraphPage |
-                ForEach-Object { $_.principal } | Format-Member -Policy $Policy -Via "Role" -ViaName $role.displayName
+            if (-not $roleCache.ContainsKey($_)) {
+                $role = Invoke-MgGraphRequest -Uri "$script:Graph/roleManagement/directory/roleDefinitions/$_" -OutputType PSObject
+                $roleCache[$_] = $role | Select-Object displayName, @{ n = "Members"; e = { @("$script:Graph/roleManagement/directory/roleAssignments?`$filter=roleDefinitionId eq '$($role.id)'&`$expand=principal" | Get-GraphPage | ForEach-Object { $_.principal }) } }
+            }
+            $roleCache[$_].Members | Format-Member -Policy $Policy -Via "Role" -ViaName $roleCache[$_].displayName
         }
         if ($users.excludeGuestsOrExternalUsers -or $users.excludeUsers -contains "GuestsOrExternalUsers") {
             $Policy | Select-Object @{ n = "Policy"; e = { $_.displayName } }, @{ n = "State"; e = { $_.state } },
@@ -108,6 +112,9 @@ function Get-Exclusions {
 }
 
 Connect-Cloud -Scopes "Policy.Read.All", "Directory.Read.All", "RoleManagement.Read.Directory"
+
+$groupCache = @{}
+$roleCache = @{}
 
 $file = Join-Path $Path "conditional_access_policy_exclusions.csv"
 "$script:Graph/identity/conditionalAccess/policies" | Get-GraphPage |

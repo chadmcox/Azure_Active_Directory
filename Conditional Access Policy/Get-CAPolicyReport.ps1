@@ -27,15 +27,13 @@ url: Building a Conditional Access policy - https://learn.microsoft.com/en-us/en
     Exports Conditional Access policies with targeted and excluded user counts.
 .DESCRIPTION
     Replaces count-usersperconditionalaccesspolicy and Backup\export-ConditionalAccessPolicy.
-.PARAMETER BackupJson
-    Also save each policy as a JSON file.
+    To back up the policies as JSON, use Backup-CAPolicies.ps1.
 .EXAMPLE
-    .\Get-CAPolicyReport.ps1 -Environment Global -BackupJson
+    .\Get-CAPolicyReport.ps1 -Environment Global
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [switch]$BackupJson,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
 
@@ -78,8 +76,14 @@ function Get-TargetCount {
     if ($userList -contains "All") { return "All ($($totalUsers + $totalGuests))" }
     $counts = @(
         @($userList | Where-Object { $_ -notin "GuestsOrExternalUsers", "None" }).Count
-        $Users."$($Side)Groups" | ForEach-Object { Get-Count -Uri "$script:Graph/groups/$_/transitiveMembers/`$count" }
-        $Users."$($Side)Roles" | ForEach-Object { @("$script:Graph/roleManagement/directory/roleAssignments?`$filter=roleDefinitionId eq '$_'" | Get-GraphPage | Select-Object principalId -Unique).Count }
+        $Users."$($Side)Groups" | ForEach-Object {
+            if (-not $groupCounts.ContainsKey($_)) { $groupCounts[$_] = Get-Count -Uri "$script:Graph/groups/$_/transitiveMembers/`$count" }
+            $groupCounts[$_]
+        }
+        $Users."$($Side)Roles" | ForEach-Object {
+            if (-not $roleCounts.ContainsKey($_)) { $roleCounts[$_] = @("$script:Graph/roleManagement/directory/roleAssignments?`$filter=roleDefinitionId eq '$_'" | Get-GraphPage | Select-Object principalId -Unique).Count }
+            $roleCounts[$_]
+        }
         if ($Users."$($Side)GuestsOrExternalUsers" -or $userList -contains "GuestsOrExternalUsers") { $totalGuests }
     )
     ($counts | Measure-Object -Sum).Sum
@@ -150,15 +154,12 @@ function Format-Policy {
 Connect-Cloud -Scopes "Policy.Read.All", "Directory.Read.All", "Application.Read.All"
 
 $appNames = @{}
+$groupCounts = @{}
+$roleCounts = @{}
 $objectNames = @{}
 $totalUsers = Get-Count -Uri "$script:Graph/users/`$count?`$filter=accountEnabled eq true and userType eq 'Member'"
 $totalGuests = Get-Count -Uri "$script:Graph/users/`$count?`$filter=userType eq 'Guest'"
 $file = Join-Path $Path "conditional_access_policy_report.csv"
 $policies = "$script:Graph/identity/conditionalAccess/policies" | Get-GraphPage
 $policies | Format-Policy | Export-Csv $file -NoTypeInformation
-if ($BackupJson) {
-    $folder = New-Item -ItemType Directory -Path (Join-Path $Path "CA_Policies_$(Get-Date -Format yyyy-MM-dd)") -Force
-    $policies | ForEach-Object { $_ | ConvertTo-Json -Depth 20 | Out-File (Join-Path $folder "$($_.displayName -replace '[\\/:*?"<>|]', '_').json") }
-    Write-Host "JSON backup: $folder"
-}
 Write-Host "Members: $totalUsers Guests: $totalGuests. Results: $file"

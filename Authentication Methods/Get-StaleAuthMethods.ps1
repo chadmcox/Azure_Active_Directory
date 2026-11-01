@@ -19,7 +19,7 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Finds stale authentication methods: registered methods (Authenticator, phone, FIDO2, Windows Hello, software and hardware OATH, email) not used for a set number of days, and hardware OATH tokens that are not assigned to anyone.
+Finds stale authentication methods: registered methods (Authenticator, phone, FIDO2, Windows Hello, software and hardware OATH, email) not used for a set number of days. Unassigned hardware OATH tokens are in Get-UnassignedHardwareTokens.ps1.
 url: Manage user authentication methods - https://learn.microsoft.com/en-us/entra/identity/authentication/howto-mfa-userdevicesettings
 url: List authentication methods - https://learn.microsoft.com/en-us/graph/api/authentication-list-methods?view=graph-rest-beta
 #>
@@ -96,11 +96,5 @@ Write-Host "Reading methods for users with registered methods (this can take a w
 @(
     "$script:Graph/reports/authenticationMethods/userRegistrationDetails" | Get-GraphPage |
         Where-Object { $_.methodsRegistered } | Select-Object id, userPrincipalName | Get-StaleMethods
-    try {
-        "$script:Graph/directory/authenticationMethodDevices/hardwareOathDevices" | Get-GraphPage | Where-Object { -not $_.assignedTo } |
-            Select-Object @{ n = "UserPrincipalName"; e = { $null } }, @{ n = "UserId"; e = { $null } }, @{ n = "MethodType"; e = { "unassignedHardwareOathToken" } },
-                @{ n = "MethodId"; e = { $_.id } }, @{ n = "displayName"; e = { "$($_.manufacturer) $($_.model) $($_.serialNumber)" } }, @{ n = "phoneNumber"; e = { $null } },
-                createdDateTime, lastUsedDateTime, @{ n = "OnlyMethod"; e = { $false } }, @{ n = "Remediation"; e = { "Assign or Remove-StaleAuthMethods.ps1 -IncludeUnassignedTokens" } }
-    } catch { Write-Warning "Hardware OATH tokens: $($_.Exception.Message)" }
 ) | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

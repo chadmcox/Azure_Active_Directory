@@ -19,7 +19,7 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Finds guests that have not signed in for a set number of days and guests that never accepted their invitation, with sponsors and the reason each is stale.
+Finds guests that accepted their invitation but have not signed in for a set number of days, with their sponsors.
 url: How to manage inactive user accounts - https://learn.microsoft.com/en-us/entra/identity/monitoring-health/howto-manage-inactive-user-accounts
 #>
 <#
@@ -27,19 +27,17 @@ url: How to manage inactive user accounts - https://learn.microsoft.com/en-us/en
     Creates a stale guest report.
 .DESCRIPTION
     Review the CSV (ask sponsors if needed), remove any guests to keep, then pass it to
-    Remove-StaleGuests.ps1 -CsvPath. Guests invited inside the window are never stale.
+    Remove-StaleGuests.ps1 -CsvPath. Guests created inside the window are never stale. Guests who never
+    accepted their invitation are in Get-PendingGuests.ps1.
 .PARAMETER Days
     Days without a sign-in for accepted guests. Default 90.
-.PARAMETER PendingDays
-    Days an invitation can stay unaccepted. Default 30.
 .EXAMPLE
-    .\Get-StaleGuests.ps1 -Environment Global -Days 90 -PendingDays 30
+    .\Get-StaleGuests.ps1 -Environment Global -Days 90
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
     [int]$Days = 90,
-    [int]$PendingDays = 30,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
 
@@ -73,10 +71,7 @@ function Get-GraphPage {
 
 function Get-StaleReason {
     param($Guest)
-    if ($Guest.externalUserState -eq "PendingAcceptance") {
-        if ([datetime]$Guest.externalUserStateChangeDateTime -lt (Get-Date).AddDays(-$PendingDays)) { return "PendingAcceptance" }
-        return
-    }
+    if ($Guest.externalUserState -eq "PendingAcceptance") { return }
     $cutoff = (Get-Date).AddDays(-$Days)
     $recent = @($Guest.signInActivity.lastSignInDateTime, $Guest.signInActivity.lastNonInteractiveSignInDateTime, $Guest.signInActivity.lastSuccessfulSignInDateTime, $Guest.createdDateTime) |
         Where-Object { $_ -and [datetime]$_ -ge $cutoff }

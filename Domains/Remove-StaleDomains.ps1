@@ -83,7 +83,7 @@ function Select-Removable {
         if ($Domain.isDefault -or $Domain.isInitial -or $Domain.authenticationType -eq "Federated") { return }
         if ($wanted -and -not $wanted.ContainsKey($Domain.id)) { return }
         if ($Domain.isVerified -and -not $IncludeVerified) { return }
-        $inUse = "$script:Graph/domains/$($Domain.id)/domainNameReferences?`$top=1&`$select=id" | Get-GraphPage | Select-Object -First 1
+        $inUse = "$script:Graph/domains/$($Domain.id)/domainNameReferences?`$select=id" | Get-GraphPage | Select-Object -First 1
         if (-not $inUse) { $Domain }
     }
 }

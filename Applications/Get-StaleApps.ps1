@@ -109,7 +109,7 @@ if (-not $unusedApps) { $unusedApps = @{} }
 
 $file = Join-Path $Path "entra_stale_apps.csv"
 Write-Host "Getting enabled enterprise apps"
-"$script:Graph/servicePrincipals?`$filter=servicePrincipalType eq 'Application' and accountEnabled eq true&`$expand=owners(`$select=id,displayName,userPrincipalName)" | Get-GraphPage |
+"$script:Graph/servicePrincipals?`$filter=servicePrincipalType eq 'Application' and accountEnabled eq true&`$select=id,appId,displayName,publisherName,accountEnabled,createdDateTime,preferredSingleSignOnMode,appRoleAssignmentRequired,keyCredentials,passwordCredentials,notificationEmailAddresses,appOwnerOrganizationId&`$expand=owners(`$select=id,displayName,userPrincipalName)" | Get-GraphPage |
     Where-Object { $_.appOwnerOrganizationId -ne $microsoftTenantId -and $_.'@odata.type' -notmatch 'agent' } |
     Select-Stale | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

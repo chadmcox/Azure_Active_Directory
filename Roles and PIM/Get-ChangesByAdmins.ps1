@@ -1,6 +1,6 @@
 <#PSScriptInfo
 .VERSION 2026.10
-.GUID bb8c8fbf-d7ce-43a5-953f-c8e7ded1d082
+.GUID bf96b6d9-801e-4892-b2b8-aaeca9803f3c
 .AUTHOR Chad Cox
     https://blogs.technet.microsoft.com/chadcox/
     https://github.com/chadmcox
@@ -19,28 +19,22 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Pulls audit events about directory roles and their members: role membership and PIM changes, changes made to admin accounts, and changes made by admin accounts.
+Pulls every change made by an account that holds a privileged role from the audit log for a set number of days.
 url: List directoryAudits - https://learn.microsoft.com/en-us/graph/api/directoryaudit-list?view=graph-rest-beta
 #>
 <#
 .SYNOPSIS
-    Exports role-related audit events.
+    Exports every change made by an account that holds a privileged role.
 .DESCRIPTION
-    Replaces Roles\auditRoleMembershipChanges, PIM\auditPIMRoleChanges, getAADChangesToGlobalAdmins,
-    getAADChangesbyGlobalAdmins and Security\GatherRoleMemberChanges.
-.PARAMETER Report
-    RoleChanges - every RoleManagement audit event (role and PIM changes).
-    ChangesToAdmins - events where an admin account was the target.
-    ChangesByAdmins - events an admin account started.
+    Replaces getAADChangesbyGlobalAdmins and Security\GatherRoleMemberChanges. Audit logs keep 30 days.
 .PARAMETER Days
-    How many days back to search. Audit logs keep 30 days.
+    How many days back to search.
 .EXAMPLE
-    .\Get-RoleAuditEvents.ps1 -Environment Global -Report ChangesByAdmins -Days 7
+    .\Get-ChangesByAdmins.ps1 -Environment Global -Days 7
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [ValidateSet("RoleChanges", "ChangesToAdmins", "ChangesByAdmins")][string]$Report = "RoleChanges",
     [int]$Days = 30,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
@@ -94,17 +88,7 @@ Connect-Cloud -Scopes "AuditLog.Read.All", "RoleManagement.Read.Directory", "Dir
 
 $since = (Get-Date).ToUniversalTime().AddDays(-$Days).ToString("yyyy-MM-ddTHH:mm:ssZ")
 $audits = "$script:Graph/auditLogs/directoryAudits"
-$events = switch ($Report) {
-    "RoleChanges" {
-        "$($audits)?`$filter=category eq 'RoleManagement' and activityDateTime ge $since" | Get-GraphPage
-    }
-    "ChangesToAdmins" {
-        Get-AdminMembers | ForEach-Object { "$($audits)?`$filter=targetResources/any(t:t/id eq '$($_.id)') and activityDateTime ge $since" | Get-GraphPage }
-    }
-    "ChangesByAdmins" {
-        Get-AdminMembers | ForEach-Object { "$($audits)?`$filter=initiatedBy/user/id eq '$($_.id)' and activityDateTime ge $since" | Get-GraphPage }
-    }
-}
-$file = Join-Path $Path "entra_role_audit_$Report.csv"
+$events = Get-AdminMembers | ForEach-Object { "$($audits)?`$filter=initiatedBy/user/id eq '$($_.id)' and activityDateTime ge $since" | Get-GraphPage }
+$file = Join-Path $Path "entra_changesbyadmins.csv"
 $events | Format-AuditEvent | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

@@ -77,7 +77,9 @@ function Get-MemberCount {
 
 function Get-LifecyclePolicy {
     param($Group)
-    if ($Group.groupTypes -notcontains "Unified") { return }
+    if ($Group.groupTypes -notcontains "Unified" -or -not $lifecyclePolicy) { return }
+    # Only a "Selected" policy needs a per-group lookup; "All" covers every Microsoft 365 group.
+    if ($lifecyclePolicy.managedGroupTypes -eq "All") { return $lifecyclePolicy.groupLifetimeInDays }
     ("$script:Graph/groups/$($Group.id)/groupLifecyclePolicies" | Get-GraphPage | Select-Object -First 1).groupLifetimeInDays
 }
 
@@ -103,6 +105,7 @@ function Format-Group {
 
 Connect-Cloud -Scopes "Group.Read.All", "Directory.Read.All"
 
+$lifecyclePolicy = "$script:Graph/groupLifecyclePolicies" | Get-GraphPage | Where-Object { $_.managedGroupTypes -ne "None" } | Select-Object -First 1
 Write-Host "Getting groups"
 $groups = "$script:Graph/groups?`$select=id,displayName,groupTypes,securityEnabled,mailEnabled,mail,onPremisesSyncEnabled,onPremisesDomainName,onPremisesLastSyncDateTime,isAssignableToRole,createdDateTime,expirationDateTime,assignedLicenses,membershipRule,membershipRuleProcessingState&`$expand=owners(`$select=id,displayName,userPrincipalName)" | Get-GraphPage
 $nameCounts = $groups | Group-Object displayName -AsHashTable -AsString

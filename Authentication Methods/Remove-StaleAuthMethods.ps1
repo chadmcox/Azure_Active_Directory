@@ -19,7 +19,7 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Removes stale authentication methods (not used for a set number of days) from users, never removing a user's last MFA method, and can delete unassigned hardware OATH tokens. Works from a reviewed Get-StaleAuthMethods.ps1 report or finds them live. Runs interactively or as an Azure Automation runbook with a managed identity.
+Removes stale authentication methods (not used for a set number of days) from users, never removing a user's last MFA method. Unassigned hardware OATH tokens are removed by Remove-UnassignedHardwareTokens.ps1. Works from a reviewed Get-StaleAuthMethods.ps1 report or finds them live. Runs interactively or as an Azure Automation runbook with a managed identity.
 url: Manage user authentication methods - https://learn.microsoft.com/en-us/entra/identity/authentication/howto-mfa-userdevicesettings
 #>
 <#
@@ -32,8 +32,6 @@ url: Manage user authentication methods - https://learn.microsoft.com/en-us/entr
     A reviewed Get-StaleAuthMethods.ps1 report. Without it, stale methods are found live.
 .PARAMETER Days
     Days without use. Default 180.
-.PARAMETER IncludeUnassignedTokens
-    Also delete hardware OATH tokens that are not assigned to anyone.
 .PARAMETER MaxRemovals
     Stop after this many methods, as a safety limit. Default 25.
 .PARAMETER Identity
@@ -46,7 +44,6 @@ param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
     [string]$CsvPath,
     [int]$Days = 180,
-    [switch]$IncludeUnassignedTokens,
     [int]$MaxRemovals = 25,
     [switch]$Identity,
     [string]$Path = "$env:USERPROFILE\Downloads"
@@ -119,8 +116,7 @@ function Remove-Method {
     [CmdletBinding(SupportsShouldProcess)]
     param([Parameter(ValueFromPipeline)]$Method)
     process {
-        $uri = if ($Method.MethodType -eq "unassignedHardwareOathToken") { "$script:Graph/directory/authenticationMethodDevices/hardwareOathDevices/$($Method.MethodId)" }
-            elseif ($collections.ContainsKey($Method.MethodType)) { "$script:Graph/users/$($Method.UserId)/authentication/$($collections[$Method.MethodType])/$($Method.MethodId)" }
+        $uri = if ($collections.ContainsKey($Method.MethodType)) { "$script:Graph/users/$($Method.UserId)/authentication/$($collections[$Method.MethodType])/$($Method.MethodId)" }
         $action = if (-not $uri) { "Skipped - unsupported type" }
             elseif ($PSCmdlet.ShouldProcess("$($Method.UserPrincipalName) $($Method.MethodType) $($Method.displayName)", "Remove")) {
                 Invoke-MgGraphRequest -Uri $uri -Method DELETE
@@ -136,12 +132,6 @@ $cutoff = (Get-Date).AddDays(-$Days)
 $wanted = if ($CsvPath) { Import-Csv $CsvPath | Group-Object MethodId -AsHashTable -AsString } else { $null }
 $results = @(
     Get-Users | Get-StaleMethods
-    if ($IncludeUnassignedTokens) {
-        "$script:Graph/directory/authenticationMethodDevices/hardwareOathDevices" | Get-GraphPage |
-            Where-Object { -not $_.assignedTo -and (-not $wanted -or $wanted.ContainsKey($_.id)) } |
-            Select-Object @{ n = "UserId"; e = { $null } }, @{ n = "UserPrincipalName"; e = { $null } }, @{ n = "MethodType"; e = { "unassignedHardwareOathToken" } },
-                @{ n = "MethodId"; e = { $_.id } }, @{ n = "displayName"; e = { $_.serialNumber } }, lastUsedDateTime
-    }
 ) | Select-Object -First $MaxRemovals | Remove-Method
 $results | Format-Table UserPrincipalName, MethodType, Action -AutoSize | Out-String | Write-Output
 if (-not $Identity) {

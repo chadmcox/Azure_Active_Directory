@@ -98,7 +98,7 @@ Connect-Cloud -Scopes "SecurityEvents.Read.All"
 Write-Host "Getting Secure Score control profiles"
 $profiles = "$script:Graph/security/secureScoreControlProfiles" | Get-GraphPage | Group-Object id -AsHashTable -AsString
 Write-Host "Getting the latest Secure Score"
-$score = Invoke-MgGraphRequest -Uri "$script:Graph/security/secureScores?`$top=1" -OutputType PSObject | Select-Object -ExpandProperty value | Select-Object -First 1
+$score = Invoke-MgGraphRequest -Uri "$script:Graph/security/secureScores" -OutputType PSObject | Select-Object -ExpandProperty value | Select-Object -First 1
 $file = Join-Path $Path "microsoft_secure_score.csv"
 $score.controlScores | Format-Control | Sort-Object { [int]$_.Rank } | Export-Csv $file -NoTypeInformation
 Write-Host "Secure Score: $($score.currentScore) of $($score.maxScore). Results: $file"

@@ -78,7 +78,7 @@ try {
 } catch { Write-Warning "BitLocker: $($_.Exception.Message)" }
 
 $file = Join-Path $Path "entra_device_key_coverage.csv"
-"$script:Graph/devices?`$filter=operatingSystem eq 'Windows' and accountEnabled eq true&`$select=id,deviceId,displayName,trustType,operatingSystemVersion,approximateLastSignInDateTime,isManaged&`$top=999&`$count=true" |
+"$script:Graph/devices?`$filter=operatingSystem eq 'Windows' and accountEnabled eq true&`$select=id,deviceId,displayName,trustType,operatingSystemVersion,approximateLastSignInDateTime,isManaged&`$count=true" |
     Get-GraphPage -Eventual |
     Select-Object displayName, deviceId, trustType, operatingSystemVersion, isManaged, approximateLastSignInDateTime,
         @{ n = "LapsBackup"; e = { $laps[[string]$_.deviceId] } },

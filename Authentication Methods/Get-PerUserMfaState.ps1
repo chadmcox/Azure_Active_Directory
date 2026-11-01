@@ -79,7 +79,7 @@ Connect-Cloud -Scopes "User.Read.All", "Policy.Read.All", "UserAuthenticationMet
 
 $file = Join-Path $Path "entra_per_user_mfa.csv"
 Write-Host "Reading per-user MFA state for every enabled member"
-"$script:Graph/users?`$filter=userType eq 'Member' and accountEnabled eq true&`$select=id,userPrincipalName,onPremisesSyncEnabled,identityParentId&`$top=999" |
+"$script:Graph/users?`$filter=userType eq 'Member' and accountEnabled eq true&`$select=id,userPrincipalName,onPremisesSyncEnabled,identityParentId" |
     Get-GraphPage | Where-Object { -not $_.identityParentId } | Add-MfaState |
     Where-Object { $All -or $_.PerUserMfaState -in "enabled", "enforced" } |
     Export-Csv $file -NoTypeInformation
