@@ -33,8 +33,6 @@ url: Manage the lifecycle of agent identities - https://learn.microsoft.com/en-u
 .PARAMETER CsvPath
     A reviewed Get-StaleAgentIdentities.ps1 report. Only rows with Recommendation "Disable" are used.
     Without it, stale objects are found live.
-.PARAMETER ObjectType
-    Which types to disable. Default all three.
 .PARAMETER Days
     Days without use. Default 90.
 .PARAMETER MaxRemovals
@@ -43,14 +41,11 @@ url: Manage the lifecycle of agent identities - https://learn.microsoft.com/en-u
     Sign in with the managed identity (Azure Automation). Pass -Environment too.
 .EXAMPLE
     .\Disable-StaleAgentIdentities.ps1 -Environment Global -CsvPath .\entra_stale_agent_identities.csv -WhatIf
-.EXAMPLE
-    .\Disable-StaleAgentIdentities.ps1 -Environment Global -ObjectType AgentUser -WhatIf
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
     [string]$CsvPath,
-    [ValidateSet("AgentIdentity", "AgentUser", "BlueprintPrincipal")][string[]]$ObjectType = @("AgentIdentity", "AgentUser", "BlueprintPrincipal"),
     [int]$Days = 90,
     [int]$MaxRemovals = 25,
     [switch]$Identity,
@@ -88,15 +83,11 @@ function Get-GraphPage {
 function Get-Candidates {
     $wanted = if ($CsvPath) { Import-Csv $CsvPath | Where-Object { $_.Recommendation -eq "Disable" } | Group-Object id -AsHashTable -AsString } else { $null }
     @(
-        if ("AgentIdentity" -in $ObjectType) { $agentIdentities | Select-Object *, @{ n = "ObjectType"; e = { "AgentIdentity" } } }
-        if ("AgentUser" -in $ObjectType) {
-            "$script:Graph/users/microsoft.graph.agentUser?`$select=id,displayName,userPrincipalName,accountEnabled,createdDateTime,identityParentId" | Get-GraphPage |
-                Select-Object *, @{ n = "ObjectType"; e = { "AgentUser" } }
-        }
-        if ("BlueprintPrincipal" -in $ObjectType) {
-            "$script:Graph/servicePrincipals/microsoft.graph.agentIdentityBlueprintPrincipal?`$select=id,appId,displayName,accountEnabled,createdDateTime" | Get-GraphPage |
-                Select-Object *, @{ n = "ObjectType"; e = { "BlueprintPrincipal" } }
-        }
+        $agentIdentities | Select-Object *, @{ n = "ObjectType"; e = { "AgentIdentity" } }
+        "$script:Graph/users/microsoft.graph.agentUser?`$select=id,displayName,userPrincipalName,accountEnabled,createdDateTime,identityParentId" | Get-GraphPage |
+            Select-Object *, @{ n = "ObjectType"; e = { "AgentUser" } }
+        "$script:Graph/servicePrincipals/microsoft.graph.agentIdentityBlueprintPrincipal?`$select=id,appId,displayName,accountEnabled,createdDateTime" | Get-GraphPage |
+            Select-Object *, @{ n = "ObjectType"; e = { "BlueprintPrincipal" } }
     ) | Where-Object { $_.accountEnabled -and (-not $wanted -or $wanted.ContainsKey($_.id)) }
 }
 

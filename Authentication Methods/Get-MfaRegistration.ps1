@@ -19,32 +19,22 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Reports MFA, SSPR and passwordless registration for members or guests, and flags users who have phone numbers or alternate emails on their account but no registered methods (prepopulated).
+Reports MFA, SSPR and passwordless registration for every member account, and flags users who have phone numbers or alternate emails on their account but no registered methods (prepopulated).
 url: List userRegistrationDetails - https://learn.microsoft.com/en-us/graph/api/authenticationmethodsroot-list-userregistrationdetails?view=graph-rest-beta
 #>
 <#
 .SYNOPSIS
-    Exports authentication method registration details.
+    Exports authentication method registration for member accounts.
 .DESCRIPTION
-    Replaces create-AADUserMFAReport, create-AADGuestMFAReport, create-AADWH4BRegisteredUsers,
-    get-HybridUserMFAandSSPRState and get-UserSMSPrepopulated.
-.PARAMETER UserType
-    Member, Guest or All.
-.PARAMETER Method
-    Only users with this method registered, for example windowsHelloForBusiness, fido2, microsoftAuthenticatorPush, mobilePhone.
-.PARAMETER SyncedOnly
-    Only users synced from on-premises Active Directory.
+    Replaces create-AADUserMFAReport and get-UserSMSPrepopulated. For guests, synced users or Windows
+    Hello for Business use Get-GuestMfaRegistration, Get-HybridUserMfaRegistration or
+    Get-WindowsHelloRegistration.
 .EXAMPLE
-    .\Get-MfaRegistration.ps1 -Environment Global -UserType Member -SyncedOnly
-.EXAMPLE
-    .\Get-MfaRegistration.ps1 -Environment Global -Method windowsHelloForBusiness
+    .\Get-MfaRegistration.ps1 -Environment Global
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [ValidateSet("Member", "Guest", "All")][string]$UserType = "Member",
-    [string]$Method,
-    [switch]$SyncedOnly,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
 
@@ -80,7 +70,6 @@ function Format-Registration {
     param([Parameter(ValueFromPipeline)]$Registration)
     process {
         $user = $users[$Registration.id]
-        if ($SyncedOnly -and -not $user.onPremisesSyncEnabled) { return }
         $Registration | Select-Object id, userPrincipalName, userDisplayName, userType,
             @{ n = "AccountEnabled"; e = { $user.accountEnabled } },
             @{ n = "OnPremisesSyncEnabled"; e = { [bool]$user.onPremisesSyncEnabled } },
@@ -94,15 +83,11 @@ function Format-Registration {
 
 Connect-Cloud -Scopes "AuditLog.Read.All", "UserAuthenticationMethod.Read.All", "User.Read.All"
 
-$filters = @(
-    if ($UserType -ne "All") { "userType eq '$($UserType.ToLower())'" }
-    if ($Method) { "methodsRegistered/any(m:m eq '$Method')" }
-)
-$query = if ($filters) { "?`$filter=$($filters -join ' and ')" } else { "" }
+$query = "?`$filter=userType eq 'member'"
 
 Write-Host "Getting users"
-$users = "$script:Graph/users?`$select=id,accountEnabled,onPremisesSyncEnabled,mobilePhone,businessPhones,otherMails" | Get-GraphPage | Group-Object id -AsHashTable -AsString
-$file = Join-Path $Path "entra_mfa_registration_$UserType.csv"
+$users = "$script:Graph/users?`$filter=userType eq 'Member'&`$select=id,accountEnabled,onPremisesSyncEnabled,mobilePhone,businessPhones,otherMails" | Get-GraphPage | Group-Object id -AsHashTable -AsString
+$file = Join-Path $Path "entra_mfa_registration.csv"
 Write-Host "Getting registration details"
 "$script:Graph/reports/authenticationMethods/userRegistrationDetails$query" | Get-GraphPage |
     Format-Registration | Export-Csv $file -NoTypeInformation

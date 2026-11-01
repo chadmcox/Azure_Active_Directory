@@ -19,7 +19,7 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Reports every guest with invite state, last sign-in, sponsors and sign-in issuer, and can check whether each guest's home tenant is viral (unmanaged).
+Reports every guest with invite state, last sign-in, sponsors and sign-in issuer.
 url: Properties of a B2B guest user - https://learn.microsoft.com/en-us/entra/external-id/user-properties
 url: Reset redemption status for a guest user - https://learn.microsoft.com/en-us/entra/external-id/reset-redemption-status
 #>
@@ -27,18 +27,14 @@ url: Reset redemption status for a guest user - https://learn.microsoft.com/en-u
 .SYNOPSIS
     Exports a report of all guest accounts.
 .DESCRIPTION
-    Replaces create-GuestReport, create-GuestReportV2, create-GuestIsViralReport, create-GuestIsViralReportV2,
-    get-GuestSponsors, get-MGEntraStaleGuest and Backup\export-Guests. Filter DaysSinceLastSignIn for stale guests.
-    Guests in viral tenants can't be helped with a password reset; reset their redemption status and turn on email one-time passcode.
-.PARAMETER CheckViral
-    Look up each guest's home realm to see if it is a viral (unmanaged) tenant. Slower.
+    Replaces create-GuestReport, create-GuestReportV2, get-GuestSponsors, get-MGEntraStaleGuest and
+    Backup\export-Guests. Use Get-ViralGuests.ps1 to find guests in viral tenants.
 .EXAMPLE
-    .\Get-GuestReport.ps1 -Environment Global -CheckViral
+    .\Get-GuestReport.ps1 -Environment Global
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [switch]$CheckViral,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
 
@@ -70,13 +66,6 @@ function Get-GraphPage {
     }
 }
 
-function Test-ViralTenant {
-    param([string]$Mail)
-    if (-not $CheckViral -or -not $Mail) { return }
-    $realm = Invoke-RestMethod -Uri "$loginEndpoint/common/userrealm/?user=$([uri]::EscapeDataString($Mail))&api-version=2.1" -ErrorAction SilentlyContinue
-    [bool]($realm.IsViral -eq $true -or $realm.IsViral -eq "True")
-}
-
 function Get-LastDate {
     param($Guest)
     @($Guest.signInActivity.lastSignInDateTime, $Guest.signInActivity.lastNonInteractiveSignInDateTime, $Guest.signInActivity.lastSuccessfulSignInDateTime) |
@@ -93,13 +82,12 @@ function Format-Guest {
             @{ n = "LastNonInteractiveSignInDateTime"; e = { $_.signInActivity.lastNonInteractiveSignInDateTime } },
             @{ n = "LastSuccessfulSignInDateTime"; e = { $_.signInActivity.lastSuccessfulSignInDateTime } },
             @{ n = "DaysSinceLastSignIn"; e = { if ($last) { [int]((Get-Date) - $last).TotalDays } } },
-            @{ n = "Sponsors"; e = { ($_.sponsors | ForEach-Object { if ($_.userPrincipalName) { $_.userPrincipalName } else { $_.displayName } }) -join ";" } },
-            @{ n = "IsViral"; e = { Test-ViralTenant -Mail $_.mail } }
+            @{ n = "Sponsors"; e = { ($_.sponsors | ForEach-Object { if ($_.userPrincipalName) { $_.userPrincipalName } else { $_.displayName } }) -join ";" } }
+
     }
 }
 
 Connect-Cloud -Scopes "User.Read.All", "AuditLog.Read.All"
-$loginEndpoint = (Get-MgEnvironment -Name $script:Environment).AzureADEndpoint
 
 $file = Join-Path $Path "entra_guests.csv"
 Write-Host "Getting guests"

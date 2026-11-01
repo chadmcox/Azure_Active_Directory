@@ -19,19 +19,17 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Cleans up stale devices the way Microsoft recommends: first disables devices with no activity, then deletes devices that are already disabled and still inactive. Skips hybrid joined (synced) and Windows Autopilot devices. Runs interactively or as an Azure Automation runbook with a managed identity.
+Deletes stale devices that are already disabled (run Disable-StaleDevices.ps1 first) and still have no activity. Skips hybrid joined (synced) and Windows Autopilot devices. Works from a reviewed Get-StaleDevices.ps1 report or finds them live. Runs interactively or as an Azure Automation runbook with a managed identity.
 url: Manage stale devices in Microsoft Entra ID - https://learn.microsoft.com/en-us/entra/identity/devices/manage-stale-devices
 #>
 <#
 .SYNOPSIS
-    Disables or deletes stale devices.
+    Deletes disabled stale devices.
 .DESCRIPTION
-    Every device is checked again before it is changed. Deleting a device also deletes its BitLocker
-    recovery keys, so run -Action Disable first and wait (for example 30 days) before -Action Delete.
+    Only devices that are already disabled are deleted, so run Disable-StaleDevices.ps1 first and wait.
+    Deleting a device also deletes its BitLocker recovery keys. Every device is checked again first.
 .PARAMETER CsvPath
-    A reviewed Get-StaleDevices.ps1 report. Without it, stale devices are found live.
-.PARAMETER Action
-    Disable - disable enabled stale devices. Delete - delete stale devices that are already disabled.
+    A reviewed Get-StaleDevices.ps1 report. Without it, disabled stale devices are found live.
 .PARAMETER Days
     Days without activity. Default 180.
 .PARAMETER MaxRemovals
@@ -39,13 +37,12 @@ url: Manage stale devices in Microsoft Entra ID - https://learn.microsoft.com/en
 .PARAMETER Identity
     Sign in with the managed identity (Azure Automation). Pass -Environment too.
 .EXAMPLE
-    .\Remove-StaleDevices.ps1 -Environment Global -CsvPath .\entra_stale_devices.csv -Action Disable -WhatIf
+    .\Remove-StaleDevices.ps1 -Environment Global -CsvPath .\entra_stale_devices.csv -WhatIf
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
     [string]$CsvPath,
-    [ValidateSet("Disable", "Delete")][string]$Action = "Disable",
     [int]$Days = 180,
     [int]$MaxRemovals = 50,
     [switch]$Identity,
@@ -95,7 +92,7 @@ function Select-Stale {
         $last = $Device.approximateLastSignInDateTime
         $stale = (-not $Device.registrationDateTime -or [datetime]$Device.registrationDateTime -lt $cutoff) -and (-not $last -or [datetime]$last -lt $cutoff)
         $allowed = -not $Device.onPremisesSyncEnabled -and $Device.physicalIds -notmatch "\[ZTDID\]"
-        $ready = if ($Action -eq "Disable") { $Device.accountEnabled } else { -not $Device.accountEnabled }
+        $ready = -not $Device.accountEnabled
         if ($stale -and $allowed -and $ready) { $Device }
     }
 }
@@ -104,14 +101,10 @@ function Update-Device {
     [CmdletBinding(SupportsShouldProcess)]
     param([Parameter(ValueFromPipeline)]$Device)
     process {
-        $result = if (-not $PSCmdlet.ShouldProcess($Device.displayName, "$Action device")) { "WhatIf" }
-            elseif ($Action -eq "Disable") {
-                Invoke-MgGraphRequest -Uri "$script:Graph/devices/$($Device.id)" -Method PATCH -Body (@{ accountEnabled = $false } | ConvertTo-Json) -ContentType "application/json"
-                "Disabled"
-            } else {
-                Invoke-MgGraphRequest -Uri "$script:Graph/devices/$($Device.id)" -Method DELETE
-                "Deleted"
-            }
+        $result = if ($PSCmdlet.ShouldProcess($Device.displayName, "Delete device")) {
+            Invoke-MgGraphRequest -Uri "$script:Graph/devices/$($Device.id)" -Method DELETE
+            "Deleted"
+        } else { "WhatIf" }
         $Device | Select-Object id, deviceId, displayName, operatingSystem, trustType, registrationDateTime, approximateLastSignInDateTime, @{ n = "Action"; e = { $result } }
     }
 }
@@ -122,7 +115,7 @@ $cutoff = (Get-Date).AddDays(-$Days)
 $results = Get-Candidates | Select-Stale | Select-Object -First $MaxRemovals | Update-Device
 $results | Format-Table displayName, operatingSystem, Action -AutoSize | Out-String | Write-Output
 if (-not $Identity) {
-    $file = Join-Path $Path "entra_stale_devices_$($Action.ToLower()).csv"
+    $file = Join-Path $Path "entra_stale_devices_deleted.csv"
     $results | Export-Csv $file -NoTypeInformation -WhatIf:$false
     Write-Host "Results: $file"
 }

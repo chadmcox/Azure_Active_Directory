@@ -27,15 +27,13 @@ url: Building a Conditional Access policy - https://learn.microsoft.com/en-us/en
     Exports Conditional Access policies with targeted and excluded user counts.
 .DESCRIPTION
     Replaces count-usersperconditionalaccesspolicy and Backup\export-ConditionalAccessPolicy.
-.PARAMETER BackupJson
-    Also save each policy as a JSON file.
+    To back up the policies as JSON, use Backup-CAPolicies.ps1.
 .EXAMPLE
-    .\Get-CAPolicyReport.ps1 -Environment Global -BackupJson
+    .\Get-CAPolicyReport.ps1 -Environment Global
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [switch]$BackupJson,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
 
@@ -164,9 +162,4 @@ $totalGuests = Get-Count -Uri "$script:Graph/users/`$count?`$filter=userType eq 
 $file = Join-Path $Path "conditional_access_policy_report.csv"
 $policies = "$script:Graph/identity/conditionalAccess/policies" | Get-GraphPage
 $policies | Format-Policy | Export-Csv $file -NoTypeInformation
-if ($BackupJson) {
-    $folder = New-Item -ItemType Directory -Path (Join-Path $Path "CA_Policies_$(Get-Date -Format yyyy-MM-dd)") -Force
-    $policies | ForEach-Object { $_ | ConvertTo-Json -Depth 20 | Out-File (Join-Path $folder "$($_.displayName -replace '[\\/:*?"<>|]', '_').json") }
-    Write-Host "JSON backup: $folder"
-}
 Write-Host "Members: $totalUsers Guests: $totalGuests. Results: $file"

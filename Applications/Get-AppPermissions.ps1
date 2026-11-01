@@ -19,35 +19,27 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Reports every application (app role) and delegated (OAuth2) permission granted to service principals, with optional filters for Exchange, SharePoint, Azure AD Graph and ReadWrite permissions.
+Reports every application (app role) and delegated (OAuth2) permission granted to service principals, with the app's owners.
 url: List appRoleAssignedTo - https://learn.microsoft.com/en-us/graph/api/serviceprincipal-list-approleassignedto?view=graph-rest-beta
 url: List oauth2PermissionGrants - https://learn.microsoft.com/en-us/graph/api/oauth2permissiongrant-list?view=graph-rest-beta
 #>
 <#
 .SYNOPSIS
-    Exports the application and delegated permissions granted to apps in Entra ID.
+    Exports every application and delegated permission granted to apps in Entra ID.
 .DESCRIPTION
-    Replaces the old get-AllAppAssignedPermissions, get-AllAppDelegatedPermissions, get-assignedEXOPerms,
-    get-assignedSPOPerms, get-delegatedEXOPerms, get-delegatedSPOPerms, get-graphAssignedPermissions,
-    get-AppWithEXOFullAccessPerm, get-ADGraphApplications, get-SPToMuchPerms, export-ApplicationConsents,
-    export-ApplicationRoleAssignments and the createAAD*PermissionReport scripts.
-.PARAMETER PermissionType
-    All, Application (app roles) or Delegated (OAuth2 grants).
-.PARAMETER Workload
-    All, Exchange (mailbox permissions), SharePoint (sites and files), AzureADGraph (retiring API)
-    ReadWrite (any write permission - check the Owners column, owners of these apps are sensitive)
-    or HighRisk (the consent grants the operations guide says to review: mail access, user impersonation
-    and any ReadWrite permission).
+    Replaces get-AllAppAssignedPermissions, get-AllAppDelegatedPermissions, get-graphAssignedPermissions,
+    export-ApplicationConsents and export-ApplicationRoleAssignments. The PermissionType column tells
+    application and delegated permissions apart. For one workload use Get-AppExchangePermissions,
+    Get-AppSharePointPermissions, Get-AppAzureADGraphPermissions, Get-AppReadWritePermissions or
+    Get-AppHighRiskPermissions.
 .PARAMETER IncludeMicrosoftApps
     Include Microsoft first-party apps. They are left out by default.
 .EXAMPLE
-    .\Get-AppPermissions.ps1 -Environment Global -Workload Exchange
+    .\Get-AppPermissions.ps1 -Environment Global
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [ValidateSet("All", "Application", "Delegated")][string]$PermissionType = "All",
-    [ValidateSet("All", "Exchange", "SharePoint", "AzureADGraph", "ReadWrite", "HighRisk")][string]$Workload = "All",
     [switch]$IncludeMicrosoftApps,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
@@ -115,21 +107,6 @@ function Get-DelegatedPermissions {
     }
 }
 
-function Select-Workload {
-    param([Parameter(ValueFromPipeline)]$Permission)
-    process {
-        $keep = switch ($Workload) {
-            "Exchange"     { $Permission.Permission -in $exchangePermissions }
-            "SharePoint"   { $Permission.Permission -like "Sites.*" -or $Permission.Permission -like "Files.*" }
-            "AzureADGraph" { $Permission.APIAppId -eq "00000002-0000-0000-c000-000000000000" }
-            "ReadWrite"    { $Permission.Permission -match "ReadWrite|FullControl|full_access_as_app|Manage" }
-            "HighRisk"     { $Permission.Permission -in $highRiskPermissions -or $Permission.Permission -match "ReadWrite|FullControl" }
-            default        { $true }
-        }
-        if ($keep) { $Permission }
-    }
-}
-
 function Add-AppDetails {
     param([Parameter(ValueFromPipeline)]$Permission)
     process {
@@ -150,24 +127,16 @@ Connect-Cloud -Scopes "Application.Read.All", "Directory.Read.All"
 
 # Microsoft's public first-party app tenant, used to leave out Microsoft's own apps.
 $microsoftTenantId = "f8cdef31-a31e-4b4a-93e4-5f571e91255a"
-$exchangePermissions = "Mail.Read", "Mail.Read.Shared", "Mail.ReadBasic", "Mail.ReadBasic.All", "Mail.ReadWrite",
-    "Mail.ReadWrite.Shared", "Mail.Send", "Mail.Send.Shared", "MailboxSettings.Read", "MailboxSettings.ReadWrite",
-    "EWS.AccessAsUser.All", "Exchange.Manage", "full_access_as_app", "IMAP.AccessAsUser.All", "POP.AccessAsUser.All", "SMTP.Send"
-
-# Permissions the operations guide says to scrutinize: mail access and full user impersonation.
-$highRiskPermissions = "EAS.AccessAsUser.All", "EWS.AccessAsUser.All", "Mail.Read", "Mail.Read.Shared", "Mail.ReadWrite", "Mail.Send",
-    "Directory.AccessAsUser.All", "user_impersonation", "full_access_as_app", "RoleManagement.ReadWrite.Directory", "AppRoleAssignment.ReadWrite.All"
-
 Write-Host "Getting service principals"
 $servicePrincipals = Get-ServicePrincipals
 $spById = $servicePrincipals | Group-Object id -AsHashTable -AsString
 
-$file = Join-Path $Path "entra_app_permissions_$Workload.csv"
+$file = Join-Path $Path "entra_app_permissions.csv"
 Write-Host "Building report"
 @(
-    if ($PermissionType -in "All", "Application") { $servicePrincipals | Get-ApplicationPermissions }
-    if ($PermissionType -in "All", "Delegated") { Get-DelegatedPermissions }
-) | Select-Workload | Add-AppDetails |
+    $servicePrincipals | Get-ApplicationPermissions
+    Get-DelegatedPermissions
+) | Add-AppDetails |
     Where-Object { $IncludeMicrosoftApps -or -not $_.MicrosoftApp } |
     Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"

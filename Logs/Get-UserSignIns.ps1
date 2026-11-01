@@ -19,33 +19,25 @@ and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and
 against any claims or lawsuits, including attorneys` fees, that arise or result
 from the use or distribution of the Sample Code..
 .description
-Pulls sign-in logs for one user or for a specific error code, including the Conditional Access policies that applied, for troubleshooting and lockout investigations.
+Pulls sign-in logs for one user or for everyone, including the Conditional Access policies that applied, for troubleshooting.
 url: List signIns - https://learn.microsoft.com/en-us/graph/api/signin-list?view=graph-rest-beta
 url: Sign-in error codes - https://learn.microsoft.com/en-us/entra/identity-platform/reference-error-codes
 #>
 <#
 .SYNOPSIS
-    Exports sign-ins for a user or an error code.
+    Exports sign-ins for a user or for everyone.
 .DESCRIPTION
-    Replaces viewAADUserSignins, viewAADUserSigninwithCAP and findAccountsWithLockoutEvents (use -ErrorCode 50053).
+    Replaces viewAADUserSignins and viewAADUserSigninwithCAP. Interactive sign-ins only; for non-interactive sign-ins use Get-UserNonInteractiveSignIns.ps1, for account lockouts Get-LockedOutAccounts.ps1.
 .PARAMETER UserPrincipalName
     Only this user's sign-ins.
-.PARAMETER ErrorCode
-    Only sign-ins with this error code, for example 50053 (account locked).
-.PARAMETER NonInteractive
-    Read non-interactive sign-ins instead of interactive ones.
 .EXAMPLE
     .\Get-UserSignIns.ps1 -Environment Global -UserPrincipalName "<person UPN>" -Days 3
-.EXAMPLE
-    .\Get-UserSignIns.ps1 -Environment Global -ErrorCode 50053
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
     [string]$UserPrincipalName,
-    [int]$ErrorCode,
     [int]$Days = 7,
-    [switch]$NonInteractive,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
 
@@ -83,8 +75,6 @@ $since = (Get-Date).ToUniversalTime().AddDays(-$Days).ToString("yyyy-MM-ddTHH:mm
 $filters = @(
     "createdDateTime ge $since"
     if ($UserPrincipalName) { "userPrincipalName eq '$UserPrincipalName'" }
-    if ($PSBoundParameters.ContainsKey("ErrorCode")) { "status/errorCode eq $ErrorCode" }
-    if ($NonInteractive) { "signInEventTypes/any(t: t eq 'nonInteractiveUser')" }
 )
 $file = Join-Path $Path "entra_signins.csv"
 "$script:Graph/auditLogs/signIns?`$filter=$($filters -join ' and ')" | Get-GraphPage |

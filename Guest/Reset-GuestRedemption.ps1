@@ -27,7 +27,7 @@ url: Reset redemption status for a guest user - https://learn.microsoft.com/en-u
     Resets guest redemption and sends a new invitation.
 .DESCRIPTION
     Takes guest UPNs, or a CSV with an id column (for example the viral guests from
-    Get-GuestReport.ps1 -CheckViral). Use -NoEmail to reset without sending the invitation email.
+    Get-ViralGuests.ps1). Use -NoEmail to reset without sending the invitation email.
 .EXAMPLE
     .\Reset-GuestRedemption.ps1 -Environment Global -UserPrincipalName "<guest UPN>" -WhatIf
 #>

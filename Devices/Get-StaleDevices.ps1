@@ -72,8 +72,8 @@ function Get-Remediation {
     param($Device)
     if ($Device.physicalIds -match "\[ZTDID\]") { return "Keep - Windows Autopilot device (remove from Autopilot first)" }
     if ($Device.onPremisesSyncEnabled) { return "Disable or delete the computer in Active Directory" }
-    if ($Device.accountEnabled) { return "Disable" }
-    "Delete"
+    if ($Device.accountEnabled) { return "Disable-StaleDevices.ps1" }
+    "Remove-StaleDevices.ps1"
 }
 
 function Select-Stale {

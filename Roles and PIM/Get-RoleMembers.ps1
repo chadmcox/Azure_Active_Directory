@@ -29,20 +29,14 @@ url: List roleEligibilityScheduleInstances - https://learn.microsoft.com/en-us/g
 .DESCRIPTION
     Replaces ExportAADDirectoryRoleMembers, getAzureADPrivRoleMembers, collectAzureADRoleMembersMFAStatus,
     getAADInactiveRoleMembers, createAADDirectoryRoleMemberReport, Export-AADRoleMembers,
-    export-PIMROLEMembersstate, export-HighlyPrivAccountsMFA, exportAADPIMRoleMembers, RetrieveAdminsforKQL,
-    Backup\export-DirectoryRoleMembership and Backup\export-PIMDirectoryRoles.
-.PARAMETER PrivilegedOnly
-    Only report roles Microsoft marks as privileged.
-.PARAMETER KqlList
-    Also write the user object IDs as a quoted, comma-separated list to paste into a KQL query.
+    export-PIMROLEMembersstate, exportAADPIMRoleMembers,
+    Backup\export-DirectoryRoleMembership and Backup\export-PIMDirectoryRoles. For privileged roles only, use Get-PrivilegedRoleMembers.ps1.
 .EXAMPLE
-    .\Get-RoleMembers.ps1 -Environment Global -PrivilegedOnly
+    .\Get-RoleMembers.ps1 -Environment Global
 #>
 [CmdletBinding()]
 param(
     [ValidateSet("Global", "USGov", "USGovDoD")][string]$Environment,
-    [switch]$PrivilegedOnly,
-    [switch]$KqlList,
     [string]$Path = "$env:USERPROFILE\Downloads"
 )
 
@@ -161,15 +155,10 @@ Write-Host "Getting role assignments"
 $rows = @(
     Get-Assignments -State Active
     Get-Assignments -State Eligible
-) | Where-Object { -not $PrivilegedOnly -or $roles[$_.roleDefinitionId].isPrivileged } |
+) |
     Expand-Principal | Format-RoleMember
 
 $file = Join-Path $Path "entra_role_members.csv"
 $rows | Export-Csv $file -NoTypeInformation
 Write-Host "Results: $file"
 
-if ($KqlList) {
-    $kqlFile = Join-Path $Path "entra_role_member_ids_for_kql.txt"
-    '"' + (($rows | Where-Object { $_.PrincipalType -eq "user" } | Select-Object -ExpandProperty PrincipalId -Unique) -join '","') + '"' | Out-File $kqlFile
-    Write-Host "KQL list: $kqlFile"
-}

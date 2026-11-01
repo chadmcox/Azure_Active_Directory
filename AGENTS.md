@@ -2,6 +2,8 @@
 
 These are the owner's rules. Follow them in every script you add or change.
 
+The scripts are built to run fast and write their results to a CSV file, so people can open it, analyze it and decide what to do. Keep that in mind: a report script should finish quickly and export a CSV with one row per object and clear column names; scripts that change things should take that reviewed CSV back in.
+
 - Use straight Microsoft Graph calls: `Connect-MgGraph` and `Invoke-MgGraphRequest` only (module Microsoft.Graph.Authentication). Don't require any other module or cmdlet (no `Get-Mg*`, `New-Mg*`, Entra or Az modules).
 - Use the Microsoft Graph **beta** endpoint (`https://graph.microsoft.com/beta`) for every call. It usually has more properties and APIs than v1.0.
 - Keep it simple. Don't over-complicate the code.
@@ -18,7 +20,10 @@ These are the owner's rules. Follow them in every script you add or change.
 
 - Put each script in the folder for the object type it works on (Users, Guest, Agent ID, Groups, Applications, Devices, Roles and PIM, Conditional Access Policy, and so on). Don't add scripts to the repo root, and delete folders that end up empty.
 - In `Agent ID`, always say which kind of object each row is: `Blueprint` (the agent identity blueprint application), `BlueprintPrincipal`, `AgentIdentity` (the agent's service principal) or `AgentUser` (the agent's user account). Leave agent users out of the Users scripts and agent service principals out of the Applications scripts.
-- Don't add a second script that does the same job as an existing one. Add a parameter or a column to the existing script instead.
+- One script per use case. Most people who use these scripts have a very specific job to do, so give each job its own script with a name that says what it does (for example `Get-ViralGuests.ps1`, not `Get-GuestReport.ps1 -CheckViral`).
+- Don't use switches or mode parameters (like `-Mode`, `-Report`, `-Workload`, `-Action`, `-PrivilegedOnly`, `-NonInteractive`) to pick between jobs, reports or data sources. Write a separate script for each one instead.
+- Parameters are fine for values the job needs (`-Days`, `-UserPrincipalName`, `-CsvPath`), safety settings (`-MaxRemovals`, `-WhatIf`, opting in to riskier changes) and running as a runbook (`-Identity`).
+- Don't add a second script that does the same job as an existing one. Extend the existing script instead (a new column is fine).
 - Folders that only hold reports or settings (Hybrid Identity, Identity Governance, Intune, Logs, Security, Tenant) don't need stale scripts.
 - Each object type folder has a stale object report (`Get-Stale<Type>.ps1`) and a remediation script (`Disable-Stale<Type>.ps1` or `Remove-Stale<Type>.ps1`). Remediation scripts take the reviewed report with `-CsvPath`, check each object again before changing it, support `-WhatIf`, have a `-MaxRemovals` limit and take `-Identity` to run as a runbook.
 - List every new script in README.md. If it covers a task in the Microsoft Entra operations reference guide, add it to the guide coverage table too.
